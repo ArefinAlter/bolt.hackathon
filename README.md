@@ -43,7 +43,6 @@ This is an open-source project for a hackathon, but we adhere to strict security
    - We will not use or store any real personal information (names, addresses, order details) of any individuals.
 
 ### 3. **Responsible AI Usage**
-   - The AI models will be trained and prompted with generic, non-sensitive data.
    - The system is designed to be helpful and empathetic, with clear escalation paths to human agents when the AI cannot handle a request or a customer is frustrated.
 
 ### 4. **Privacy by Design**
