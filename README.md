@@ -1,30 +1,50 @@
-# AI Returns Agent
+# AI Returns Agent for E-commerce & F-Commerce
 
-## Description
+This project is a submission for the **bolt.new World's Largest Hackathon**.
 
-The AI Returns Agent is a B2B service designed for e-commerce and retail businesses in fcommerce to streamline their product returns and refund processes. It features a conversational AI agent that interacts with customers to process return requests, triages items based on store policies, and determines the most cost-effective disposition for each returned product (e.g., return to stock, refurbish, donate, or recycle).
+## Project Goal
 
-This project aims to reduce the financial impact of returns by minimizing manual processing costs, ensuring consistent policy application, and recovering value from returned goods. It provides a seamless experience for the end-customer and a powerful dashboard for business administrators.
+The AI Returns Agent is a B2B SaaS platform designed to solve a critical and costly problem for e-commerce and f-commerce businesses: managing product returns. Our goal is to transform the returns process from a logistical nightmare and margin killer into a streamlined, value-recovering, and positive customer experience.
 
-This project is being developed for the bolt.new World's Largest Hackathon.
+The agent automates return merchandise authorizations (RMAs), triages products for the most cost-effective disposition, and provides a seamless conversational interface for customers, freeing up human support agents to handle high-value tasks.
 
 ## Key Features
 
-- **Conversational AI Chatbot**: Engages customers to initiate and process return requests via text and voice.
-- **Automated RMA Triage**: Automatically checks return eligibility against business policies (e.g., return window, product condition).
-- **Intelligent Disposition**: Decides the best route for returned items to maximize value recovery.
-- **Image-based Fraud Detection**: Analyzes customer-uploaded photos to detect potential fraud.
-- **Admin Dashboard**: Allows businesses to configure policies, monitor returns, and manage escalations.
-- **Automated Notifications**: Keeps customers informed with shipping labels and status updates.
+- **Conversational AI Chatbot**: Engages customers via text and voice (powered by ElevenLabs & Tavus) to initiate and process return requests.
+- **Automated RMA Triage**: Automatically checks return eligibility against business policies (return window, product condition, etc.) using data from the business's backend.
+- **Intelligent Disposition Engine**: Decides the best route for returned items (return to stock, refurbish, donate, recycle) to maximize value recovery.
+- **Business Admin Dashboard**: A central hub for businesses to configure return policies, monitor all return requests in real-time, and handle escalations.
+- **Automated Customer Communication**: Keeps customers informed with RMA status updates, shipping labels, and refund notifications.
 
 ## Tech Stack
 
 - **Frontend**: Next.js (A popular framework for building modern web applications)
-- **Backend & Database**: Supabase
+- **Backend & Database**: Supabase (For user management, database, and secure API access)
 - **AI & Voice**:
   - **Core Logic**: OpenAI GPT API
   - **Text-to-Speech & Voice Cloning**: ElevenLabs
   - **Conversational Video**: Tavus
-- **Workflow Automation**: n8n
+- **Workflow Automation**: n8n (To orchestrate the complex return logic and connect different services)
 - **Deployment**: Netlify
-- **Source Control**: GitHub 
+- **Source Control**: GitHub
+
+---
+
+## 🛑 Ground Rules & Security Guidelines
+
+This is an open-source project for a hackathon, but we adhere to strict security and privacy rules.
+
+### 1. **Protect Secrets at All Costs**
+   - **DO NOT** commit any secret keys, passwords, or sensitive credentials directly into the code. This includes API keys for OpenAI, ElevenLabs, Supabase, etc.
+   - We will use **environment variables** to manage these secrets. A special file (`.env.local`), which is ignored by Git, will hold these keys on our local development machines. For deployment, we will configure these secrets directly in the Netlify dashboard.
+
+### 2. **No Real Customer Data**
+   - During development and for the hackathon demo, we will use **mock (fake) data only**.
+   - We will not use or store any real personal information (names, addresses, order details) of any individuals.
+
+### 3. **Responsible AI Usage**
+   - The AI models will be trained and prompted with generic, non-sensitive data.
+   - The system is designed to be helpful and empathetic, with clear escalation paths to human agents when the AI cannot handle a request or a customer is frustrated.
+
+### 4. **Privacy by Design**
+   - While this is a POC, it's designed with privacy in mind. A production version would require a comprehensive privacy policy and clear data handling procedures for business clients. 
