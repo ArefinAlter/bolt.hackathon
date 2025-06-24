@@ -1,0 +1,26 @@
+{
+  "name": "bolt.hackathon",
+  "version": "1.0.0",
+  "description": "This project is a submission for the **bolt.new World's Largest Hackathon**.",
+  "homepage": "https://github.com/ArefinAlter/bolt.hackathon#readme",
+  "bugs": {
+    "url": "https://github.com/ArefinAlter/bolt.hackathon/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArefinAlter/bolt.hackathon.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "supabase": "^2.26.9"
+  }
+}

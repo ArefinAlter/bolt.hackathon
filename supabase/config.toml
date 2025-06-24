@@ -1,0 +1,44 @@
+
+[functions.init-return]
+enabled = true
+verify_jwt = true
+import_map = "./functions/init-return/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/init-return/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/init-return/*.html" ]
+
+[functions.triage-return]
+enabled = true
+verify_jwt = true
+import_map = "./functions/triage-return/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/triage-return/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/triage-return/*.html" ]
+
+[functions.update-return-status]
+enabled = true
+verify_jwt = true
+import_map = "./functions/update-return-status/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/update-return-status/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/update-return-status/*.html" ]
+
+[functions.get-return-request]
+enabled = true
+verify_jwt = true
+import_map = "./functions/get-return-request/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/get-return-request/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/get-return-request/*.html" ]
