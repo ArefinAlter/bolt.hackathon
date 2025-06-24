@@ -1,15 +1,15 @@
-# Backend Structure: AI Returns Agent (Supabase)
+# Backend Structure: Dokani Platform
 
 ## 1. Overview
 
-This document specifies the database schema for the AI Returns Agent project, to be implemented in Supabase. Supabase uses a PostgreSQL database.
+This document specifies the backend architecture for the Dokani platform, which includes the database schema (PostgreSQL via Supabase), serverless functions, and the Model Context Protocol (MCP) server layer.
 
 ## 2. Authentication
 
-- We will use Supabase's built-in authentication.
+- We will use Supabase's built-in authentication for Merchants.
 - **Table**: `auth.users` (managed by Supabase)
-- **Primary User Role**: `business_admin`
-- **Authentication Method**: Email/Password and social provider (Google).
+- **Primary User Role**: `merchant`
+- **Authentication Method**: Email/Password.
 
 ## 3. Database Tables
 
@@ -26,37 +26,39 @@ This table stores public data related to a registered user. It has a one-to-one 
   - `business_name` (text): The name of the e-commerce business.
   - `website` (text, nullable): The company's website.
 
-### Table 2: `return_policies`
+### Table 2: `policies`
 
-Stores the specific return policy rules for each business.
+Stores versioned return policy rules for each business. The complex, hierarchical rule structure is stored in a JSONB column.
 
-- **Purpose**: To allow the AI to look up and apply the correct return rules for a given business.
+- **Purpose**: To provide a flexible and version-controlled source of truth for the Policy Engine and AI Agents.
 - **Fields**:
   - `id` (bigint, Primary Key): Auto-incrementing unique identifier.
   - `created_at` (timestamp with time zone): Automatically managed.
   - `business_id` (uuid): Foreign key to `profiles.id`. Links the policy to a business.
-  - `return_window_days` (integer): The number of days a customer has to return an item (e.g., 30).
-  - `non_returnable_categories` (array of text, nullable): List of product categories that cannot be returned (e.g., `["final_sale", "gift_cards"]`).
-  - `requires_photo_for_defect` (boolean, default: true): Whether a photo is mandatory for "defective" returns.
+  - `version` (text): Semantic version number (e.g., "1.0.0", "1.1.0").
+  - `is_active` (boolean, default: false): Indicates if this is the currently active policy version.
+  - `effective_date` (timestamp with time zone): When this policy version becomes active.
+  - `rules` (jsonb): A JSON object containing the detailed policy configuration, including general rules, category customizations, and auto-approval logic.
 
 ### Table 3: `return_requests`
 
 The core table that tracks every single return request initiated by a customer.
 
-- **Purpose**: To serve as the main log of all return activities, viewable on the admin dashboard.
+- **Purpose**: To serve as the main log of all return activities, viewable on the Business Dashboard.
 - **Fields**:
   - `id` (bigint, Primary Key): Auto-incrementing unique identifier.
   - `public_id` (uuid, default: `gen_random_uuid()`): A unique, non-guessable identifier for public-facing links.
   - `created_at` (timestamp with time zone): Automatically managed.
   - `business_id` (uuid): Foreign key to `profiles.id`. Links the request to a business.
-  - `order_id` (text): The original order number from the e-commerce store (e.g., "ORDER-12345").
+  - `order_id` (text): The original order number from the e-commerce store.
   - `customer_email` (text): The email of the customer making the return.
   - `reason_for_return` (text): The reason provided by the customer.
-  - `status` (text): The current status of the request. Must be one of: `pending`, `approved`, `rejected`, `escalated`, `shipped`, `completed`.
-  - `product_photos_urls` (array of text, nullable): An array of URLs pointing to images uploaded by the customer.
-  - `rma_number` (text, nullable): The unique Return Merchandise Authorization number generated upon approval.
-  - `disposition` (text, nullable): The final decision for the item: `return_to_stock`, `refurbish`, `donate`, `recycle`.
-  - `admin_notes` (text, nullable): Internal notes added by a customer service agent or admin.
+  - `status` (text): The current status of the request. Must be one of: `pending_triage`, `pending_review`, `approved`, `denied`, `completed`.
+  - `evidence_urls` (array of text, nullable): An array of URLs pointing to images or other evidence uploaded by the customer.
+  - `conversation_log` (jsonb, nullable): A structured log of the conversation between the customer and the AI agent.
+  - `ai_recommendation` (text, nullable): The recommendation from the Triage Agent (e.g., "Auto-Approve", "Flag for Review").
+  - `ai_confidence_score` (float, nullable): The confidence score of the AI's recommendation.
+  - `admin_notes` (text, nullable): Internal notes added by a merchant during a human review.
 
 ### Table 4: `mock_orders`
 
@@ -71,9 +73,25 @@ A simple table to simulate an external ERP/order management system for the hacka
   - `product_name` (text): Name of the product purchased.
   - `product_category` (text): Category of the product.
 
-## 4. Storage
+## 4. Serverless Functions (Supabase Edge Functions)
+
+Supabase Edge Functions are the compute layer of the application, responsible for:
+- **Request Initiation**: A function is triggered by social media chat plugins to create a new `return_requests` record and generate a unique portal link.
+- **AI Agent Orchestration**: Functions host the logic for the AI Customer Service and Triage Agents, managing the conversation flow and state.
+- **Triage System**: A core function that takes request data, fetches the active policy from the `policies` table, and runs the evaluation logic (auto-approve, deny, or flag for review).
+- **External API Integration**: Functions handle all communication with external services like OpenAI (for AI models) and Stripe (for processing refunds).
+
+## 5. Storage
 
 - We will use **Supabase Storage**.
-- A single bucket named `product-images` will be created.
-- It will be used to store the photos customers upload for their return requests.
-- Row Level Security (RLS) policies will be configured to ensure that users can only upload images for their own return requests and that images are not publicly readable without permission. 
+- A bucket named `return-evidence` will be created.
+- It will be used to store the photos and other evidence files customers upload for their return requests.
+- Row Level Security (RLS) policies will be configured to ensure that customers can only upload files for their own return requests.
+
+## 6. MCP Server Architecture (Conceptual)
+
+To ensure secure and structured communication, the platform uses a conceptual Model Context Protocol (MCP) server layer. This layer sits between the AI Agents and the core business data/services.
+
+- **Policy MCP Server**: Serves policy documents to AI agents, validates requests against rules, and logs all policy-related decisions.
+- **Request MCP Server**: Manages the end-to-end lifecycle of a return request, including status changes, evidence handling, and coordinating with payment systems.
+- **Communication MCP Server**: Secures inter-agent messaging, implements security measures like circuit breakers and rate limiting, and ensures a complete audit trail. 

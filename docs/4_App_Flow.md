@@ -1,80 +1,90 @@
-# App Flow: AI Returns Agent
+# App Flow: Dokani Platform
 
 ## 1. Overview
-This document outlines the primary user flows for the AI Returns Agent application.
+This document outlines the primary user flows for the Dokani platform.
 
 ---
 
-## Flow 1: New Business Admin Onboarding
+## Flow 1: New Merchant Onboarding
 
-**Persona**: Business Admin
-**Goal**: To sign up, set up their business profile, and configure their first return policy.
+**Persona**: Merchant
+**Goal**: To sign up, set up their business profile, and configure their return policies.
 
-1.  **Landing Page**: User arrives at the main landing page.
-2.  **Sign Up**: User clicks "Sign Up" and registers for a new account using email/password or Google social sign-on.
-3.  **First Login & Welcome**: Upon first login, the user is greeted with a welcome message and guided to set up their profile.
-4.  **Profile Setup**: User enters their "Business Name" and "Website" into a simple form. This populates their record in the `profiles` table.
-5.  **Policy Configuration**: The user is then directed to the "Policy Configuration" page.
-6.  **Define Rules**: The user fills out the return policy form:
-    -   Return Window (e.g., `30` days)
-    -   Non-returnable Categories (e.g., `final_sale`)
-    -   Sets photo requirement for defects.
-7.  **Save Policy**: User saves the policy. They are now ready to process returns. The dashboard is currently empty.
+1.  **Landing Page**: Merchant arrives at the main landing page.
+2.  **Sign Up**: Merchant clicks "Sign Up" and registers for a new account.
+3.  **First Login & Welcome**: Upon first login, the user is guided to set up their business profile.
+4.  **Profile Setup**: Merchant enters their "Business Name" and "Website" into a simple form.
+5.  **Policy Configuration**: The merchant is then directed to the "Policy Management" dashboard.
+6.  **Define Rules**: Using the visual policy editor, the merchant defines their return rules across multiple dimensions:
+    - **General Rules**: Return window, required evidence, etc.
+    - **Category Rules**: Specific rules for different product categories.
+    - **Auto-Approval**: Thresholds for order value, risk scores, etc.
+7.  **Save and Version Policy**: The merchant saves the policy, creating `v1.0.0`. They can test it in a simulation environment before activating it. Once activated, the system is ready to process returns against these rules.
 
 ---
 
-## Flow 2: End-Customer Initiates a Return (Happy Path)
+## Flow 2: Instant Approval Flow
 
 **Persona**: End-Customer
-**Goal**: To successfully and automatically get a return approved and receive a shipping label.
+**Business Triggers**: Low-value order, within policy, valid reason, evidence provided.
+**Goal**: To have a simple return request approved and refunded automatically.
 
-1.  **Initiation**: Customer visits the merchant's website (a mock page for the POC) and opens the "Return Helper" chatbot. The chat interface displays a visual progress stepper, with the first stage "Initiated" highlighted.
-2.  **Greeting**: The chatbot greets the customer and asks for their **Order Number**.
-3.  **Order Lookup**:
-    -   The frontend sends the Order Number to the n8n workflow. The UI stepper moves to "Verifying Order".
-    -   n8n queries the `mock_orders` table in Supabase to find the order.
-    -   **If not found**: The bot replies, "Sorry, I can't find that order number. Please double-check and try again." The stepper returns to "Initiated". -> **[End Flow]**
-    -   **If found**: The workflow proceeds. The UI stepper moves to "Gathering Information".
-4.  **Reason for Return**: The bot asks, "Why would you like to return this item?". It might offer buttons for common reasons (`Defective`, `Wrong Item`, `Changed Mind`).
-5.  **Photo Upload (Conditional)**:
-    -   The n8n workflow checks the merchant's `return_policies`. If the reason is `Defective` and `requires_photo_for_defect` is true, the bot asks the customer to upload a photo.
-    -   The customer uploads a photo. The frontend uploads it directly to Supabase Storage and gets a URL back. This URL is passed to the n8n workflow.
-6.  **AI Triage (n8n Workflow)**: The n8n workflow now has all the data: order details, reason, and photo URL (if applicable). The UI stepper moves to "Checking Policy".
-    -   **Step 1 (Policy Check)**: The purchase date is checked against the `return_window_days` from the policy. The product category is checked against `non_returnable_categories`.
-    -   **Step 2 (AI Decision)**: The collected data is passed to the OpenAI GPT API with a system prompt explaining its role. The prompt asks for a JSON output with `decision` (`approved`/`rejected`), `reasoning`, and `disposition` (`return_to_stock`, `recycle`, etc.).
-7.  **Approval & RMA**:
-    -   The AI decides to `approve`. The UI stepper moves to "Approved!".
-    -   n8n generates a unique RMA number and creates a new entry in the `return_requests` table.
-    -   n8n reads the `public_id` from the newly created row.
-    -   The bot replies to the customer: "Great news! Your return is approved. Your RMA number is [RMA]. You can track the status of your return at any time using this link: /return/[public_id]". -> **[End Flow]**
+1.  **Initiation**: Customer is on a social media channel (e.g., Facebook Messenger) and clicks a "Start a Return" button in the chat with the business.
+2.  **Redirection to Portal**: A Supabase Edge Function generates a unique, secure link that is sent to the customer. Clicking it opens the **Return/Refund Portal**.
+3.  **Information Collection**: The AI Customer Service Agent greets the customer and collects the necessary information (e.g., order number, reason for return). The portal's visual timeline shows the current status.
+4.  **Evidence Upload**: The agent prompts the customer to upload a photo of the defective item. The file is saved to Supabase Storage.
+5.  **Triage System (Automated)**: The collected data is sent to the Triage System. A Supabase Edge Function fetches the merchant's active policy and evaluates the request.
+6.  **Risk Assessment**: The system determines the request is low-risk and compliant with all auto-approval rules.
+7.  **Auto-Approval & Refund**:
+    - The Triage System marks the `return_requests` status as `approved`.
+    - It triggers another function to process the refund immediately via the Stripe API.
+8.  **Customer Notification**: The agent informs the customer: "Your return has been approved and your refund has been processed. You will see it in your account within 3-5 business days." The timeline is updated to "Completed". -> **[End Flow]**
 
 ---
 
-## Flow 3: Return is Denied or Escalated
+## Flow 3: Automatic Denial Flow
 
 **Persona**: End-Customer
-**Goal**: To understand why a return was denied or be connected with a human agent.
+**Business Triggers**: Clear policy violation (e.g., return window expired, final sale item).
+**Goal**: To receive a clear, immediate explanation for a denied return request.
 
-1.  **Steps 1-6**: Same as Flow 2.
-2.  **AI Triage (Denial)**: The AI, based on the policy (e.g., outside return window), decides to `reject`. The UI stepper moves to "Decision".
-3.  **Communicate Denial**:
-    -   n8n updates the `return_requests` table with status `rejected`.
-    -   The bot replies with an empathetic, clear message based on the AI's reasoning: "I'm sorry, but it looks like this item was purchased more than [policy.days] days ago, so it's outside our return window and cannot be returned." The stepper shows "Denied".
-4.  **Customer Escalation**: The customer is unhappy and types, "This is ridiculous, I want to speak to a person."
-5.  **Escalation Trigger**: The frontend or n8n detects frustration or keywords like "agent" or "person".
-6.  **Flag for Review**:
-    -   n8n updates the `return_requests` table status to `escalated`. The stepper shows "Escalated to Agent".
-    -   The bot replies: "I understand your frustration. I've flagged your request for review by our support team. They will reach out to you at [customer.email] within 24 hours." -> **[End Flow]**
+1.  **Steps 1-5**: Same as Flow 2.
+2.  **Risk Assessment**: The Triage System determines the request is a clear policy violation (e.g., the order is 90 days old, but the return window is 30 days).
+3.  **Auto-Denial**: The Triage System marks the `return_requests` status as `denied`.
+4.  **Customer Communication**: The AI agent provides a clear, empathetic explanation: "I'm sorry, but this request cannot be approved because the item was purchased more than 30 days ago, which is outside our return window." It also provides a link to the policy and an option to appeal to a human. The timeline is updated to "Denied". -> **[End Flow]**
 
 ---
 
-## Flow 4: Admin Manages an Escalation
+## Flow 4: Human Review Flow
 
-**Persona**: Business Admin / Customer Service Agent
-**Goal**: To review an escalated case and make a final decision.
+**Persona**: End-Customer
+**Business Triggers**: High-value order, complex case, conflicting evidence.
+**Goal**: To have a complex case reviewed by the business.
 
-1.  **Notification**: The admin logs into the dashboard and sees a "1" next to the "Escalated" filter.
-2.  **Review**: The admin clicks the filter and sees the escalated request. They click to open the full details page.
-3.  **Investigate**: The admin reviews the order details, the full chat transcript (future feature, simulated for now), the customer's photo, and the AI's initial reasoning for denial.
-4.  **Manual Override**: The admin uses their judgment. They can add internal notes in the `admin_notes` field. They then click either "Approve" or "Reject".
-5.  **Finalize**: The system updates the request status. (For the POC, a manual email to the customer is assumed next). -> **[End Flow]** 
+1.  **Steps 1-5**: Same as Flow 2.
+2.  **Risk Assessment**: The Triage System determines the request requires human judgment (e.g., a very expensive item with a non-standard return reason).
+3.  **Flag for Review**:
+    - The Triage System provides a recommendation (e.g., "Approve") and a confidence score.
+    - It updates the `return_requests` status to `pending_review` and flags it for the merchant.
+4.  **Customer Notification**: The AI agent informs the customer: "Thank you for the information. Your request requires a closer look by our team. We will review it and notify you of the decision within 1-2 business days." The timeline is updated to "Under Review". -> **[End Flow]**
+
+---
+
+## Flow 5: Merchant Manages a Human Review Case
+
+**Persona**: Merchant
+**Goal**: To review a flagged case and make a final decision.
+
+1.  **Notification**: The merchant logs into the Business Dashboard and sees a new item in their "Review Queue".
+2.  **Review Case**: The merchant opens the case details page. They can see all collected information: customer chat history, uploaded evidence, order details, and the AI's recommendation ("Approve") and confidence score (e.g., 85%).
+3.  **Decision**: The merchant reviews the information and makes a judgment. They can add internal notes. They then click either **"Approve"** or **"Deny"**.
+4.  **System Action**:
+    - **If Approved**: The system updates the status to `approved` and initiates the refund via Stripe.
+    - **If Denied**: The system updates the status to `denied`.
+5.  **Final Notification**: A notification is automatically sent to the customer informing them of the final decision. -> **[End Flow]**
+
+---
+
+## Future Enhancements: Multimodal Communication
+
+The flows described above can be enhanced in the future with voice and video capabilities. For example, in the **Instant Approval Flow**, a customer could initiate the return by sending a voice note. The AI Customer Service Agent would transcribe the audio, process the request, and could respond with a generated voice message from ElevenLabs confirming the refund, creating a more natural and accessible interaction.

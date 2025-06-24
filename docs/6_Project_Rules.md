@@ -1,6 +1,6 @@
 # Project Rules for AI Assistant
 
-You are an expert AI programmer helping me build a B2B SaaS application called "AI Returns Agent" for a hackathon. Your goal is to help me develop the app efficiently and according to plan.
+You are an expert AI programmer helping me build a B2B SaaS application called "Dokani" for a hackathon. Your goal is to help me develop the app efficiently and according to plan.
 
 ## 1. Adhere to the Documentation
 
@@ -18,6 +18,7 @@ Your suggestions and code must be consistent with these documents. If I ask for 
 - You must **NEVER** write API keys, passwords, or any other secrets directly in the code.
 - Always assume that secrets will be handled by environment variables (e.g., `process.env.SUPABASE_KEY`).
 - When generating code that accesses Supabase, always use the environment variable placeholders for the URL and anon key.
+- All communication between AI agents and core business systems must be structured and secured according to the MCP Server Architecture described in `3_Backend_Structure.md`.
 - Remind me to create a `.env.local` file and add it to `.gitignore` if it's missing.
 
 ## 3. Frontend Development
@@ -31,21 +32,11 @@ Your suggestions and code must be consistent with these documents. If I ask for 
 ## 4. Backend (Supabase)
 
 - When writing SQL or database-related code, you must adhere strictly to the table and column names defined in `3_Backend_Structure.md`.
+- All backend business logic, workflows, and orchestration must be implemented as **Supabase Edge Functions** using TypeScript.
 - When I need to set up the database, you should provide me with the exact SQL statements to create the tables and enable Row Level Security (RLS).
 - For database access from the frontend, use the official `@supabase/supabase-js` library.
 
-## 5. Workflow (n8n)
-
-- When designing the n8n workflow, you should provide a JSON export of the workflow if possible.
-- If not, describe the nodes and their connections in detail:
-  1.  **Webhook Node**: To receive requests from the frontend.
-  2.  **Supabase Nodes**: To execute queries and fetch data.
-  3.  **HTTP Request Nodes**: To call external APIs like OpenAI and ElevenLabs.
-  4.  **Function Nodes (Code)**: For custom data transformation.
-  5.  **Switch/IF Nodes**: For conditional logic (e.g., checking the return policy).
-- All API calls from n8n must use credentials stored securely within n8n's credential manager, not hardcoded in the node.
-
-## 6. Code Quality
+## 5. Code Quality
 
 - Your code should be clean, readable, and well-commented (but only for non-obvious logic).
 - Follow standard conventions for the language and framework we are using.

@@ -18,9 +18,10 @@ This document details the technology stack chosen for the AI Returns Agent proje
 
 | Component                   | Service                               | Rationale                                                                                                                                                         |
 | --------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Core AI Logic**           | **OpenAI GPT-4o**            | State-of-the-art for natural language understanding, reasoning, and response generation. Essential for parsing customer requests and making policy-based decisions. |
-| **Voice Generation (TTS)**  | **ElevenLabs**                        | Provides high-quality, natural-sounding text-to-speech, including voice cloning. This is key to fulfilling the voice component of the hackathon challenge.       |
-| **Conversational Video**    | **Tavus**                             | To be used for creating a more engaging, personalized video-based initial interaction or for delivering key outcomes (like an approval message).                     |
+| **Core AI Logic**           | **OpenAI GPT-4o**                     | State-of-the-art for powering the conversational AI agents (Customer Service and Triage). Essential for understanding requests and making policy-based decisions. |
+| **Payment Processing**      | **Stripe**                            | Integrated for automated refund processing when returns are approved. Provides secure and reliable payment handling with complete transaction logging.        |
+| **Voice Generation (Future)** | **ElevenLabs**                        | Planned integration to provide high-quality, natural-sounding text-to-speech, enabling the AI agent to handle voice calls and respond with audio.            |
+| **Video Generation (Future)** | **Tavus**                             | Planned integration for creating personalized, AI-driven video messages to customers at key points in the return process, enhancing engagement.             |
 
 ## 4. Development & Operations
 
