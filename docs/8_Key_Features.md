@@ -1,11 +1,11 @@
-# Key Features: Dokani Platform
+# Key Features: Dokani Platform (Hackathon Demo)
 
-This document highlights the standout features of the Dokani platform, designed to provide a robust, intelligent, and scalable B2B returns solution.
+This document highlights the standout features of the Dokani platform, designed to provide a robust, intelligent, and scalable B2B returns solution. **This is a simulation-focused demo for hackathon purposes.**
 
-## 1. Social Media Chat Integration
-Dokani meets customers where they are. Businesses can integrate "Start a Return" buttons directly into their Facebook Messenger and WhatsApp chat flows. This seamless starting point reduces friction and initiates the return process instantly by triggering a backend function that generates a unique link to the portal.
+## 1. Direct Portal Access
+Dokani provides a seamless return experience through direct access to the Return/Refund Portal. Customers can initiate returns through a unique link that provides immediate access to the AI-powered return process, reducing friction and streamlining the customer experience.
 
-- **Technology**: Web plugins, Supabase Edge Functions
+- **Technology**: Next.js, Supabase Edge Functions
 
 ## 2. Dynamic, Multi-Flow Triage System
 At the heart of Dokani is an intelligent Triage System that assesses each return request and automatically routes it down one of three paths:
@@ -21,6 +21,7 @@ This ensures efficiency for the business and fast, clear outcomes for the custom
 Customers receive a unique link to a modern, single-page portal built with Next.js. This portal features:
 - **An AI-powered chat interface** for conversational information gathering.
 - **A real-time visual timeline** that shows the customer the exact status of their case from initiation to completion.
+- **Simulated refund processing** for complete workflow demonstration.
 
 - **Technology**: Next.js, Supabase Realtime, Tailwind CSS
 
@@ -48,5 +49,14 @@ The platform is built on a modern, serverless stack designed for security and sc
 
 - **Technology**: Supabase (Database, Auth, Storage, Edge Functions), Next.js
 
-## 8. Future-Ready: Voice & Video Capabilities
-The architecture is designed to be extensible for multimodal communication. Planned future integrations with services like **ElevenLabs (voice)** and **Tavus (video)** will allow the AI agents to handle customer interactions via voice notes or video calls, and respond in the same medium for a highly engaging and accessible experience.
+## 8. Voice & Video Capabilities
+The platform features multimodal communication capabilities. Integrations with **ElevenLabs (voice)** and **Tavus (video)** allow the AI agents to handle customer interactions via voice notes or video calls, and respond in the same medium for a highly engaging and accessible experience.
+
+- **Technology**: ElevenLabs API, Tavus API, Real-time Communication
+
+## 9. Demo-Optimized Experience
+Designed specifically for hackathon demonstration:
+- **Simulated Refund Processing**: Complete return workflow demonstration without payment complexity
+- **Seamless Role Switching**: Single user can experience both business and customer perspectives
+- **Real-time AI Interaction**: Live conversations and decision making for compelling demos
+- **Pre-populated Demo Data**: Realistic test scenarios for immediate demonstration

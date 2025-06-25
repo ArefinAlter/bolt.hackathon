@@ -10,6 +10,7 @@ Deno.serve(async (req) => {
 
   try {
     const { createClient } = await import('npm:@supabase/supabase-js@2')
+    const { CustomerServiceAgent } = await import('../ai-core/customer-service-agent/index.ts')
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -26,10 +27,10 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Verify session exists
+    // Verify session exists and get business context
     const { data: session, error: sessionError } = await supabaseClient
       .from('chat_sessions')
-      .select('*')
+      .select('*, businesses(*)')
       .eq('id', session_id)
       .single()
 
@@ -59,63 +60,82 @@ Deno.serve(async (req) => {
       throw messageError
     }
 
-    let agentResponse = null
+    let agentResponse: string | null = null
 
-    // If user message, generate AI response
+    // If user message, generate AI response using CustomerServiceAgent
     if (sender === 'user') {
-      // Check if message mentions return/refund
-      const isReturnRequest = /return|refund|broken|defective|wrong|damaged/i.test(message)
+      // Initialize AI agent
+      const customerServiceAgent = new CustomerServiceAgent()
       
-      if (isReturnRequest) {
-        // Extract order ID if mentioned
-        const orderIdMatch = message.match(/ORDER-\d+/i)
-        
-        if (orderIdMatch) {
-          const orderId = orderIdMatch[0].toUpperCase()
+      // Get conversation history for context
+      const { data: conversationHistory } = await supabaseClient
+        .from('chat_messages')
+        .select('*')
+        .eq('session_id', session_id)
+        .order('created_at', { ascending: true })
+
+      // Prepare agent context
+      const agentContext = {
+        businessId: session.business_id || '123e4567-e89b-12d3-a456-426614174000',
+        customerEmail: session.customer_email,
+        sessionId: session_id,
+        userRole: 'customer' as const,
+        timestamp: new Date().toISOString()
+      }
+
+      // Get AI response
+      const aiResponse = await customerServiceAgent.processMessage(
+        message,
+        agentContext,
+        conversationHistory || []
+      )
+
+      if (aiResponse.success) {
+        agentResponse = aiResponse.message
+
+        // If return request detected, create return request
+        if (aiResponse.data?.returnRequest) {
+          const returnRequest = aiResponse.data.returnRequest
           
           // Check if order exists
           const { data: order } = await supabaseClient
             .from('mock_orders')
             .select('*')
-            .eq('order_id', orderId)
+            .eq('order_id', returnRequest.orderId)
             .single()
 
           if (order) {
             // Create return request
-            const { data: returnRequest } = await supabaseClient
+            const { data: newReturnRequest } = await supabaseClient
               .from('return_requests')
               .insert([
                 {
-                  business_id: session.business_id || '123e4567-e89b-12d3-a456-426614174000',
-                  order_id: orderId,
-                  customer_email: order.customer_email,
-                  reason_for_return: message,
+                  business_id: session.business_id,
+                  order_id: returnRequest.orderId,
+                  customer_email: returnRequest.customerEmail,
+                  reason_for_return: returnRequest.reason,
                   conversation_log: [
                     {
                       message: message,
                       timestamp: new Date().toISOString(),
                       sender: 'customer'
                     }
-                  ]
+                  ],
+                  confidence_score: returnRequest.confidence
                 }
               ])
               .select()
               .single()
 
-            if (returnRequest) {
-              agentResponse = `I've found your order ${orderId} for ${order.product_name}. I understand you're having an issue with this item. I've created a return request for you with ID ${returnRequest.public_id}. 
-
-Would you like me to process this return automatically, or would you prefer to upload some evidence first? You can access your return portal here: ${Deno.env.get('SITE_URL')}/return/${returnRequest.public_id}`
+            if (newReturnRequest) {
+              // Update agent response with return portal link
+              agentResponse += `\n\nI've created a return request for you with ID ${newReturnRequest.public_id}. You can access your return portal here: ${Deno.env.get('SITE_URL')}/return/${newReturnRequest.public_id}`
             }
-          } else {
-            agentResponse = `I couldn't find order ${orderId} in our system. Could you please double-check the order number? You can find it in your confirmation email.`
           }
-        } else {
-          agentResponse = `I'd be happy to help you with your return request! Could you please provide your order number? It should look like ORDER-12345.`
         }
       } else {
-        // General AI response
-        agentResponse = `I understand you're reaching out about an issue. I'm here to help with returns, refunds, and order problems. Could you tell me more about what's wrong with your order?`
+        // Fallback response if AI fails
+        agentResponse = "I'm here to help with your return or refund request. Could you please provide your order number and describe the issue you're experiencing?"
       }
 
       // Store agent response
@@ -127,7 +147,12 @@ Would you like me to process this return automatically, or would you prefer to u
               session_id,
               sender: 'agent',
               message: agentResponse,
-              message_type: 'text'
+              message_type: 'text',
+              metadata: {
+                ai_confidence_score: aiResponse.confidence,
+                return_detected: !!aiResponse.data?.returnRequest,
+                next_action: aiResponse.nextAction
+              }
             }
           ])
           .select()
@@ -137,7 +162,9 @@ Would you like me to process this return automatically, or would you prefer to u
           JSON.stringify({ 
             success: true,
             user_message: userMessage,
-            agent_response: response
+            agent_response: response,
+            ai_confidence_score: aiResponse.confidence,
+            return_detected: !!aiResponse.data?.returnRequest
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
