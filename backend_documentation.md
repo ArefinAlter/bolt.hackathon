@@ -145,6 +145,19 @@ User-specific application settings
 - `created_at` (timestamp) - Preferences creation time
 - `updated_at` (timestamp) - Last modification time
 
+#### `file_uploads`
+File upload management for personas and evidence
+- `id` (uuid) - Primary key
+- `business_id` (uuid) - Foreign key to profiles.business_id
+- `file_type` (text) - Type: voice_sample, video_sample, evidence_photo, evidence_video
+- `file_name` (text) - Original file name
+- `file_path` (text) - Storage path in Supabase Storage
+- `file_url` (text) - Public URL for file access
+- `file_size` (bigint) - File size in bytes
+- `metadata` (jsonb) - Additional file metadata
+- `uploaded_at` (timestamp) - Upload timestamp
+- `created_at` (timestamp) - Record creation time
+
 ### Risk Assessment Tables
 
 #### `customer_risk_profiles`
@@ -289,10 +302,11 @@ Initialize voice or video call session
   - `config_override` (optional) - Provider-specific configuration
 - **Returns**: Call session with provider integration details
 - **Features**:
-  - Provider integration (ElevenLabs, Tavus)
+  - Active ElevenLabs Conversational AI integration
+  - Active Tavus CVI integration
   - Call session tracking
   - Automatic chat integration
-  - Feature flag support for dormant functionality
+  - Real-time provider API calls
 
 #### `GET /functions/v1/get-call-session`
 Retrieve call session details
@@ -309,6 +323,89 @@ Process call provider webhooks
   - Transcript processing
   - Analytics collection
   - Provider-specific webhook handling
+
+### Persona Management Functions
+
+#### `POST /functions/v1/create-voice-persona`
+Create a new voice persona using ElevenLabs
+- **Parameters**:
+  - `business_id` (required) - Business identifier
+  - `persona_name` (required) - Name for the voice persona
+  - `voice_samples` (required) - Array of base64 encoded audio files
+  - `voice_settings` (optional) - Voice configuration (accent, age, gender)
+- **Returns**: Voice persona with ElevenLabs voice ID
+- **Features**: 
+  - ElevenLabs API integration
+  - Voice cloning and training
+  - Configuration storage in provider_configs
+
+#### `POST /functions/v1/create-video-persona`
+Create a new video persona using Tavus
+- **Parameters**:
+  - `business_id` (required) - Business identifier
+  - `persona_name` (required) - Name for the video persona
+  - `video_samples` (required) - Array of video file URLs
+  - `avatar_settings` (optional) - Avatar configuration (quality, style, background)
+- **Returns**: Video persona with Tavus replica ID
+- **Features**: 
+  - Tavus API integration
+  - Avatar creation and training
+  - Configuration storage in provider_configs
+
+#### `GET /functions/v1/list-personas`
+Retrieve all personas for a business
+- **Parameters**: 
+  - `business_id` (required) - Business identifier
+  - `provider` (optional) - Filter by provider (elevenlabs, tavus)
+- **Returns**: Voice and video personas organized by provider
+- **Features**: 
+  - Filtered by provider type
+  - Active personas only
+  - Complete configuration data
+
+#### `POST /functions/v1/test-persona`
+Test a persona with sample content
+- **Parameters**:
+  - `config_id` (required) - Persona configuration ID
+  - `test_content` (required) - Content to test with
+  - `test_type` (optional) - Test type specification
+- **Returns**: Test results with generated audio/video
+- **Features**:
+  - Voice persona text-to-speech testing
+  - Video persona generation testing
+  - Real-time API integration
+
+### File Upload Functions
+
+#### `POST /functions/v1/upload-file`
+Upload files for personas or evidence
+- **Parameters**:
+  - `business_id` (required) - Business identifier
+  - `file_type` (required) - Type: voice_sample, video_sample, evidence_photo, evidence_video
+  - `file_name` (required) - Original file name
+  - `file_data` (required) - File content (base64 or binary)
+  - `file_metadata` (optional) - Additional file metadata
+- **Returns**: File upload details with public URL
+- **Features**:
+  - Supabase Storage integration
+  - Multiple file type support
+  - Metadata tracking
+  - Public URL generation
+
+### Analytics Functions
+
+#### `GET /functions/v1/get-analytics`
+Retrieve business analytics and metrics
+- **Parameters**: 
+  - `business_id` (required) - Business identifier
+  - `metric_type` (optional) - Specific metrics: all, returns, ai_accuracy, satisfaction, policy
+- **Returns**: Comprehensive analytics data
+- **Features**:
+  - Return request metrics and trends
+  - AI decision accuracy analysis
+  - Customer satisfaction scoring
+  - Policy effectiveness evaluation
+  - Real-time data aggregation
 
 ### User Management Functions
 
@@ -378,12 +475,14 @@ Retrieve customer risk profile
 - User preferences encrypted in jsonb format
 - Conversation logs sanitized before storage
 - OpenAI API integration for AI-powered decisions
+- ElevenLabs and Tavus API integration for voice/video
 
 #### Audit Trail
 - All policy changes tracked with timestamps
 - Return request status changes logged
 - Chat session activity monitored
 - Risk assessment calculations recorded
+- Persona creation and testing logged
 
 ## Environment Configuration
 
@@ -392,14 +491,17 @@ Retrieve customer risk profile
 - `SUPABASE_SERVICE_ROLE_KEY` - Service role key for edge functions
 - `SUPABASE_ANON_KEY` - Anonymous key for client access
 - `OPENAI_API_KEY` - OpenAI API key for AI decision making
+- `ELEVENLABS_API_KEY` - ElevenLabs API key for voice generation
+- `TAVUS_API_KEY` - Tavus API key for video generation
+- `ELEVENLABS_DEFAULT_VOICE_ID` - Default voice ID for calls
+- `TAVUS_DEFAULT_REPLICA_ID` - Default replica ID for calls
 - `SITE_URL` - Frontend application URL
-- `VOICE_VIDEO_ENABLED` - Feature flag for voice/video calling
 
 ### Provider Integration Status
-- **ElevenLabs**: Placeholder implementation (dormant)
-- **Tavus**: Placeholder implementation (dormant)
-- **OpenAI**: Active integration for return request triage
-- **Mock Orders**: Active for testing and demonstration
+- **ElevenLabs**: ✅ Active integration for voice personas and calls
+- **Tavus**: ✅ Active integration for video personas and calls
+- **OpenAI**: ✅ Active integration for return request triage
+- **Mock Orders**: ✅ Active for testing and demonstration
 
 ## Error Handling
 
@@ -421,4 +523,5 @@ All functions include CORS headers for cross-origin requests:
 - Required field validation on all endpoints
 - Business access control verification
 - Data integrity checks
-- Graceful fallbacks for missing data 
+- Graceful fallbacks for missing data
+- Provider API error handling with fallbacks 

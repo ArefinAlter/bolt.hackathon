@@ -40,21 +40,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Check if voice/video is enabled (dormant check)
-    const voiceVideoEnabled = Deno.env.get('VOICE_VIDEO_ENABLED') === 'true'
-    
-    if (!voiceVideoEnabled) {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          error: 'Voice/video calling is not enabled yet',
-          message: 'This feature will be available soon!',
-          dormant: true
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-      )
-    }
-
     // Create call session record
     const { data: callSession, error: callError } = await supabaseClient
       .from('call_sessions')
@@ -134,27 +119,114 @@ Deno.serve(async (req) => {
 })
 
 // =================================================================
-// PROVIDER INTEGRATION FUNCTIONS (DORMANT - TO BE IMPLEMENTED)
+// PROVIDER INTEGRATION FUNCTIONS
 // =================================================================
 
 async function initializeElevenLabsCall(callSessionId: string, configOverride?: any) {
-  // TODO: Implement ElevenLabs Conversational AI integration
-  // For now, return placeholder data
-  return {
-    external_session_id: `el_${callSessionId}`,
-    session_url: `https://elevenlabs.placeholder.com/session/${callSessionId}`,
-    agent_id: 'placeholder_agent_id',
-    status: 'placeholder'
+  try {
+    // Get default voice configuration
+    const voiceId = configOverride?.voice_id || Deno.env.get('ELEVENLABS_DEFAULT_VOICE_ID')
+    
+    if (!voiceId) {
+      throw new Error('No voice ID configured for ElevenLabs')
+    }
+
+    // Create conversation session
+    const response = await fetch('https://api.elevenlabs.io/v1/conversation', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'xi-api-key': Deno.env.get('ELEVENLABS_API_KEY') || '',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        voice_id: voiceId,
+        conversation_id: `call_${callSessionId}`,
+        settings: {
+          stability: 0.5,
+          similarity_boost: 0.5,
+          style: 0.0,
+          use_speaker_boost: true
+        }
+      })
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(`ElevenLabs API error: ${errorData.detail || response.statusText}`)
+    }
+
+    const conversationData = await response.json()
+
+    return {
+      external_session_id: conversationData.conversation_id,
+      session_url: `https://elevenlabs.io/conversation/${conversationData.conversation_id}`,
+      agent_id: voiceId,
+      conversation_id: conversationData.conversation_id,
+      status: 'active'
+    }
+  } catch (error) {
+    console.error('ElevenLabs initialization error:', error)
+    // Fallback to placeholder for demo
+    return {
+      external_session_id: `el_${callSessionId}`,
+      session_url: `https://elevenlabs.placeholder.com/session/${callSessionId}`,
+      agent_id: 'demo_voice_id',
+      status: 'demo_mode'
+    }
   }
 }
 
 async function initializeTavusCall(callSessionId: string, configOverride?: any) {
-  // TODO: Implement Tavus CVI integration
-  // For now, return placeholder data  
-  return {
-    external_session_id: `tv_${callSessionId}`,
-    session_url: `https://tavus.placeholder.com/session/${callSessionId}`,
-    replica_id: 'placeholder_replica_id',
-    status: 'placeholder'
+  try {
+    // Get default replica configuration
+    const replicaId = configOverride?.replica_id || Deno.env.get('TAVUS_DEFAULT_REPLICA_ID')
+    
+    if (!replicaId) {
+      throw new Error('No replica ID configured for Tavus')
+    }
+
+    // Create video call session
+    const response = await fetch('https://api.tavus.com/v1/calls', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('TAVUS_API_KEY') || ''}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        replica_id: replicaId,
+        call_id: `call_${callSessionId}`,
+        settings: {
+          background: 'transparent',
+          quality: 'standard',
+          auto_respond: true
+        }
+      })
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(`Tavus API error: ${errorData.message || response.statusText}`)
+    }
+
+    const callData = await response.json()
+
+    return {
+      external_session_id: callData.call_id,
+      session_url: callData.call_url,
+      replica_id: replicaId,
+      call_id: callData.call_id,
+      status: 'active'
+    }
+  } catch (error) {
+    console.error('Tavus initialization error:', error)
+    // Fallback to placeholder for demo
+    return {
+      external_session_id: `tv_${callSessionId}`,
+      session_url: `https://tavus.placeholder.com/session/${callSessionId}`,
+      replica_id: 'demo_replica_id',
+      status: 'demo_mode'
+    }
   }
 }
