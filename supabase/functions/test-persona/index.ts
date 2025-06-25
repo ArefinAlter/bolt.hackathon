@@ -84,11 +84,14 @@ async function testVoicePersona(personaConfig: any, testContent: string) {
     },
     body: JSON.stringify({
       text: testContent,
-      model_id: 'eleven_monolingual_v1',
+      model_id: 'eleven_flash_v2.5',
       voice_settings: {
         stability: 0.5,
-        similarity_boost: 0.5
-      }
+        similarity_boost: 0.5,
+        style: 0.0,
+        use_speaker_boost: true
+      },
+      output_format: 'mp3_44100_128'
     })
   })
 
@@ -102,25 +105,29 @@ async function testVoicePersona(personaConfig: any, testContent: string) {
   return {
     audio_url: `data:audio/mpeg;base64,${audioBase64}`,
     duration: 'Generated successfully',
-    voice_id: voiceId
+    voice_id: voiceId,
+    model_used: 'eleven_flash_v2.5'
   }
 }
 
 async function testVideoPersona(personaConfig: any, testContent: string) {
   const replicaId = personaConfig.config_data.replica_id
   
-  const response = await fetch('https://api.tavus.com/v1/videos', {
+  const response = await fetch('https://api.tavus.com/v2/videos', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
-      'Authorization': `Bearer ${Deno.env.get('TAVUS_API_KEY') || ''}`,
+      'x-api-key': Deno.env.get('TAVUS_API_KEY') || '',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       replica_id: replicaId,
       script: testContent,
-      background_url: 'transparent',
-      test_mode: true
+      callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-call-webhook`,
+      settings: {
+        background: 'transparent',
+        quality: 'standard'
+      }
     })
   })
 
@@ -134,6 +141,7 @@ async function testVideoPersona(personaConfig: any, testContent: string) {
     video_id: videoData.video_id,
     status: videoData.status,
     replica_id: replicaId,
-    estimated_duration: 'Processing...'
+    estimated_duration: 'Processing...',
+    callback_url: videoData.callback_url
   }
 } 

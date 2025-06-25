@@ -1,8 +1,8 @@
-# Backend Structure: Dokani Platform
+# Backend Structure: Dokani Platform (Hackathon Demo)
 
 ## 1. Overview
 
-This document specifies the backend architecture for the Dokani platform, which includes the database schema (PostgreSQL via Supabase), serverless functions, and the Model Context Protocol (MCP) server layer.
+This document specifies the backend architecture for the Dokani platform, which includes the database schema (PostgreSQL via Supabase), serverless functions, and the Model Context Protocol (MCP) server layer. **This is a simulation-focused demo for hackathon purposes.**
 
 ## 2. Authentication
 
@@ -76,10 +76,11 @@ A simple table to simulate an external ERP/order management system for the hacka
 ## 4. Serverless Functions (Supabase Edge Functions)
 
 Supabase Edge Functions are the compute layer of the application, responsible for:
-- **Request Initiation**: A function is triggered by social media chat plugins to create a new `return_requests` record and generate a unique portal link.
+- **Request Initiation**: A function is triggered by direct portal access to create a new `return_requests` record and generate a unique portal link.
 - **AI Agent Orchestration**: Functions host the logic for the AI Customer Service and Triage Agents, managing the conversation flow and state.
 - **Triage System**: A core function that takes request data, fetches the active policy from the `policies` table, and runs the evaluation logic (auto-approve, deny, or flag for review).
-- **External API Integration**: Functions handle all communication with external services like OpenAI (for AI models) and Stripe (for processing refunds).
+- **External API Integration**: Functions handle all communication with external services like OpenAI (for AI models), ElevenLabs (for voice), and Tavus (for video).
+- **Simulated Refund Processing**: Functions handle simulated refund workflow for demo purposes.
 
 ## 5. Storage
 
@@ -93,5 +94,18 @@ Supabase Edge Functions are the compute layer of the application, responsible fo
 To ensure secure and structured communication, the platform uses a conceptual Model Context Protocol (MCP) server layer. This layer sits between the AI Agents and the core business data/services.
 
 - **Policy MCP Server**: Serves policy documents to AI agents, validates requests against rules, and logs all policy-related decisions.
-- **Request MCP Server**: Manages the end-to-end lifecycle of a return request, including status changes, evidence handling, and coordinating with payment systems.
-- **Communication MCP Server**: Secures inter-agent messaging, implements security measures like circuit breakers and rate limiting, and ensures a complete audit trail. 
+- **Request MCP Server**: Manages the end-to-end lifecycle of a return request, including status changes, evidence handling, and coordinating with simulated payment systems.
+- **Communication MCP Server**: Secures inter-agent messaging, implements security measures like circuit breakers and rate limiting, and ensures a complete audit trail.
+
+## 7. Demo-Specific Architecture
+
+### 7.1 Simulation Components
+- **Mock Payment Processing**: Simulated refund workflow without actual payment integration
+- **Demo Data**: Pre-populated with realistic test scenarios and mock orders
+- **Direct Portal Access**: Return process initiated through direct portal access rather than social media integration
+
+### 7.2 Hackathon Optimizations
+- **Rapid Development**: Focus on core AI functionality and user experience
+- **Single User Experience**: Seamless switching between business and customer roles
+- **Real-time Interaction**: Live AI conversations and decision making
+- **Voice/Video Integration**: Ready-to-use ElevenLabs and Tavus integration for enhanced demo experience 

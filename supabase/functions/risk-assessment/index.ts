@@ -42,7 +42,7 @@ serve(async (req) => {
 })
 
 async function calculateRiskScore(req: Request, supabase: any) {
-  const { customer_email, business_id, order_value, return_reason } = await req.json()
+  const { customer_email, business_id, order_value, reason_for_return } = await req.json()
 
   // Get or create customer risk profile
   let { data: profile } = await supabase
@@ -88,7 +88,7 @@ async function calculateRiskScore(req: Request, supabase: any) {
   // Factor 3: Suspicious return reasons
   const suspiciousReasons = ['wrong item', 'not as described', 'defective']
   if (suspiciousReasons.some(reason => 
-    return_reason?.toLowerCase().includes(reason)
+    reason_for_return?.toLowerCase().includes(reason)
   )) {
     riskScore += 0.05
     riskFactors.push('Potentially suspicious reason')
@@ -146,7 +146,7 @@ async function updateCustomerProfile(req: Request, supabase: any) {
     .upsert({
       customer_email,
       business_id,
-      fraud_indicators: fraud_indicator ? { [fraud_indicator]: true } : {},
+      fraud_flags: fraud_indicator ? { [fraud_indicator]: true } : {},
       behavior_patterns: behavior_data || {},
       last_updated: new Date().toISOString()
     })

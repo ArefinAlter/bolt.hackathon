@@ -1,5 +1,69 @@
 # Backend Documentation
 
+## Recent Updates (Latest)
+
+### Conflict Resolution & Architecture Improvements
+- **MCP Server Conflicts Resolved**: All action and method name conflicts resolved through unique naming and layered architecture
+- **AI Agent Conflicts Fixed**: Inconsistent OpenAI API usage, missing database logging, and method name conflicts resolved
+- **File Structure Reorganized**: Moved AI core and MCP servers to separate folders with proper deno.json configurations
+- **Layered Decision Engine**: Implemented 4-layer architecture integrating AI agents and MCP servers for intelligent decision making
+- **Import Path Fixes**: All function calls and imports updated to use correct relative paths after restructuring
+- **Redundant Function Removal**: Removed `create-video-persona` as `create-tavus-persona` covers its functionality
+- **Deployment Fixes**: Fixed syntax errors in layered-decision-engine for successful Supabase deployment
+
+### New Architecture Components
+
+#### Layered Decision Engine (`/functions/layered-decision-engine/`)
+**4-Layer Architecture:**
+1. **Data Collection Layer**: Gathers customer history, call sessions, and validates required fields
+2. **Policy Validation Layer**: Checks business rules and policy compliance
+3. **AI Analysis Layer**: Integrates TriageAgent and CustomerServiceAgent for intelligent decision making
+4. **Action Execution Layer**: Executes final decisions and logs complete audit trail
+
+**Key Features:**
+- Integrates all MCP servers (request, policy, call, conversation)
+- Combines AI analysis with policy validation
+- Provides complete audit trail for all decisions
+- Supports human review escalation when needed
+- Real-time performance logging to database
+
+#### Reorganized File Structure
+```
+supabase/functions/
+├── ai-core/                    # AI Agent Components
+│   ├── triage-agent/
+│   ├── customer-service-agent/
+│   ├── agent-config/
+│   └── layered-decision-engine/
+├── mcp-servers/               # MCP Server Components
+│   ├── mcp-base/
+│   ├── request-mcp-server/
+│   ├── policy-mcp-server/
+│   ├── call-mcp-server/
+│   └── conversation-mcp-server/
+├── streaming/                 # Real-time Processing
+│   ├── stream-ai-response/
+│   ├── stream-voice-call/
+│   ├── audio-stream-processor/
+│   └── video-stream-processor/
+├── communication/             # Voice/Video Functions
+│   ├── initiate-call/
+│   ├── initiate-video-conversation/
+│   ├── handle-call-webhook/
+│   └── process-voice-input/
+├── management/                # Core Management
+│   ├── create-chat-session/
+│   ├── send-chat-message/
+│   ├── create-tavus-persona/
+│   ├── create-voice-persona/
+│   └── list-personas/
+└── utilities/                 # Support Functions
+    ├── upload-file/
+    ├── get-analytics/
+    ├── websocket-manager/
+    └── test-ai-agents/
+```
+
 ## Database Structure
 
 ### Authentication Tables
@@ -188,6 +252,90 @@ Sample order data for testing and demonstrations
 
 ## Edge Functions API
 
+### AI Core Functions
+
+#### `POST /functions/v1/layered-decision-engine`
+**NEW**: Main decision engine integrating AI agents with MCP servers
+- **Parameters**:
+  - `business_id` (required) - Business identifier
+  - `action` (required) - Action type (e.g., 'process_return_request')
+  - `data` (required) - Request data (orderId, customerEmail, reason, etc.)
+  - `context` (required) - Request context (userRole, sessionId, etc.)
+- **Returns**: Layered decision with confidence score, policy compliance, and audit trail
+- **Features**:
+  - 4-layer decision architecture (Data Collection → Policy Validation → AI Analysis → Action Execution)
+  - Integrates all MCP servers and AI agents
+  - Complete audit trail for all decisions
+  - Automatic human review escalation
+  - Real-time performance logging
+
+#### `POST /functions/v1/triage-agent`
+AI-powered return request triage and decision making
+- **Parameters**:
+  - `public_id` (required) - Return request public identifier
+  - `reason_for_return` (required) - Customer's return reason
+  - `evidence_urls` (optional) - Array of evidence file URLs
+  - `conversation_log` (optional) - Chat conversation history
+- **Returns**: AI decision with confidence score and reasoning
+- **Features**:
+  - OpenAI GPT-4 integration for intelligent decision making
+  - Policy compliance checking
+  - Automatic status updates (approved/denied/pending_review)
+  - Risk assessment integration
+  - Database logging for performance tracking
+
+#### `POST /functions/v1/customer-service-agent`
+AI customer service agent for chat interactions
+- **Parameters**:
+  - `session_id` (required) - Chat session identifier
+  - `message` (required) - Customer message
+  - `context` (optional) - Conversation context
+- **Returns**: AI response with return request detection
+- **Features**:
+  - Natural language processing
+  - Return request detection and creation
+  - Order lookup and validation
+  - Context-aware responses
+  - Database logging for analytics
+
+### MCP Server Functions
+
+#### `POST /functions/v1/request-mcp-server`
+Model Context Protocol server for return request management
+- **Actions**:
+  - `create_return_request` - Create new return request
+  - `get_customer_history` - Retrieve customer return history
+  - `update_return_status` - Update request status
+  - `get_return_details` - Get detailed request information
+- **Features**: Database operations, validation, audit logging
+
+#### `POST /functions/v1/policy-mcp-server`
+Model Context Protocol server for policy management
+- **Actions**:
+  - `get_active_policy` - Retrieve active business policy
+  - `validate_request` - Validate return request against policy
+  - `check_compliance` - Check policy compliance
+  - `get_policy_rules` - Get policy rules and thresholds
+- **Features**: Policy validation, compliance checking, rule evaluation
+
+#### `POST /functions/v1/call-mcp-server`
+Model Context Protocol server for call management
+- **Actions**:
+  - `initiate_call` - Start voice/video call
+  - `get_call_status` - Get current call status
+  - `end_call` - End active call
+  - `get_call_analytics` - Retrieve call performance data
+- **Features**: Call session management, provider integration, analytics
+
+#### `POST /functions/v1/conversation-mcp-server`
+Model Context Protocol server for conversation management
+- **Actions**:
+  - `create_conversation` - Create new conversation session
+  - `add_message` - Add message to conversation
+  - `get_conversation_history` - Retrieve conversation history
+  - `analyze_sentiment` - Analyze conversation sentiment
+- **Features**: Conversation tracking, sentiment analysis, context management
+
 ### Chat Management Functions
 
 #### `POST /functions/v1/create-chat-session`
@@ -339,8 +487,8 @@ Create a new voice persona using ElevenLabs
   - Voice cloning and training
   - Configuration storage in provider_configs
 
-#### `POST /functions/v1/create-video-persona`
-Create a new video persona using Tavus
+#### `POST /functions/v1/create-tavus-persona`
+Create a new video persona using Tavus (replaces create-video-persona)
 - **Parameters**:
   - `business_id` (required) - Business identifier
   - `persona_name` (required) - Name for the video persona
@@ -449,6 +597,65 @@ Retrieve customer risk profile
 - **Returns**: Customer risk profile or null
 - **Features**: Complete risk assessment history
 
+## Deployment Guide
+
+### Prerequisites
+1. **Supabase CLI**: Install with `npm install -g supabase`
+2. **Project Link**: Run `supabase link --project-ref YOUR_PROJECT_ID`
+3. **Environment Variables**: Set all required environment variables in Supabase dashboard
+
+### Deployment Commands
+
+#### Deploy All Functions
+```bash
+npx supabase functions deploy
+```
+
+#### Deploy Individual Functions
+```bash
+npx supabase functions deploy function-name
+```
+
+#### Deploy AI Core Functions
+```bash
+npx supabase functions deploy layered-decision-engine
+npx supabase functions deploy triage-agent
+npx supabase functions deploy customer-service-agent
+```
+
+#### Deploy MCP Servers
+```bash
+npx supabase functions deploy request-mcp-server
+npx supabase functions deploy policy-mcp-server
+npx supabase functions deploy call-mcp-server
+npx supabase functions deploy conversation-mcp-server
+```
+
+### Environment Variables Setup
+Set these in Supabase Dashboard → Settings → Edge Functions:
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `OPENAI_API_KEY`
+- `ELEVENLABS_API_KEY`
+- `TAVUS_API_KEY`
+- `ELEVENLABS_DEFAULT_VOICE_ID`
+- `TAVUS_DEFAULT_REPLICA_ID`
+
+### Testing Deployed Functions
+```bash
+# Test layered decision engine
+curl -X POST https://your-project.supabase.co/functions/v1/layered-decision-engine \
+  -H "Authorization: Bearer YOUR_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"business_id": "test", "action": "test", "data": {}, "context": {}}'
+
+# Test individual functions
+curl -X POST https://your-project.supabase.co/functions/v1/triage-agent \
+  -H "Authorization: Bearer YOUR_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"public_id": "test", "reason_for_return": "test"}'
+```
+
 ## Authentication & Authorization
 
 ### Access Control Patterns
@@ -483,6 +690,7 @@ Retrieve customer risk profile
 - Chat session activity monitored 
 - Risk assessment calculations recorded
 - Persona creation and testing logged
+- Layered decision engine audit trail for all decisions
 
 ## Environment Configuration
 
@@ -500,8 +708,9 @@ Retrieve customer risk profile
 ### Provider Integration Status
 - **ElevenLabs**: ✅ Active integration for voice personas and calls
 - **Tavus**: ✅ Active integration for video personas and calls
-- **OpenAI**: ✅ Active integration for return request triage
+- **OpenAI**: ✅ Active integration for return request triage and AI agents
 - **Mock Orders**: ✅ Active for testing and demonstration
+- **Layered Decision Engine**: ✅ Active 4-layer architecture for intelligent decision making
 
 ## Error Handling
 
@@ -524,4 +733,5 @@ All functions include CORS headers for cross-origin requests:
 - Business access control verification
 - Data integrity checks
 - Graceful fallbacks for missing data
-- Provider API error handling with fallbacks 
+- Provider API error handling with fallbacks
+- Layered decision engine error handling with audit trail 

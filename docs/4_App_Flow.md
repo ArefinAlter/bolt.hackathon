@@ -1,7 +1,7 @@
-# App Flow: Dokani Platform
+# App Flow: Dokani Platform (Hackathon Demo)
 
 ## 1. Overview
-This document outlines the primary user flows for the Dokani platform, designed as a proof-of-concept demo that allows users to experience both business and customer perspectives with a single login.
+This document outlines the primary user flows for the Dokani platform, designed as a proof-of-concept demo that allows users to experience both business and customer perspectives with a single login. **This is a simulation-focused demo for hackathon purposes.**
 
 ---
 
@@ -168,6 +168,11 @@ This document outlines the primary user flows for the Dokani platform, designed 
    - Next steps and timeline
    - Access to return portal if needed
 
+3. **Simulated Refund Processing**: For approved returns:
+   - System simulates refund processing workflow
+   - Customer receives confirmation of simulated refund
+   - No actual payment processing occurs (demo only)
+
 ---
 
 ## Flow 5: Role Switching
@@ -239,29 +244,23 @@ This document outlines the primary user flows for the Dokani platform, designed 
 - Real-time policy evaluation and risk assessment
 
 ### Provider Integration Status
-- **ElevenLabs**: Placeholder implementation (dormant but ready)
-- **Tavus**: Placeholder implementation (dormant but ready)
+- **ElevenLabs**: Active integration for voice generation
+- **Tavus**: Active integration for video avatar creation
 - **OpenAI**: Active integration for chat and decision making
 - **Mock Data**: Active for comprehensive testing
 
 ---
 
-## Future Enhancements
+## Demo-Specific Features
 
-### Advanced Persona Builder
-- Drag-and-drop voice sample organization
-- Advanced video avatar customization
-- Persona performance analytics
-- Multi-language support
+### Simulation Components
+- **Mock Payment Processing**: Simulated refund workflow for demo purposes
+- **Direct Portal Access**: Return process initiated through direct portal access
+- **Demo Data**: Pre-populated with realistic test scenarios
+- **Role Switching**: Seamless experience between business and customer perspectives
 
-### Enhanced Customer Experience
-- Multi-channel integration (WhatsApp, Facebook Messenger)
-- Advanced voice emotion detection
-- Real-time video avatar improvements
-- Personalized conversation flows
-
-### Business Intelligence
-- Advanced analytics dashboard
-- Predictive return analysis
-- Customer behavior insights
-- Policy optimization recommendations 
+### Hackathon Optimizations
+- **Rapid Development**: Focus on core AI functionality and user experience
+- **Real-time Interaction**: Live AI conversations and decision making
+- **Compelling Demo**: Complete workflow demonstration without external dependencies
+- **Voice/Video Ready**: Full multimodal communication capabilities 
