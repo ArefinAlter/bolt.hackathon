@@ -480,7 +480,7 @@ Retrieve customer risk profile
 #### Audit Trail
 - All policy changes tracked with timestamps
 - Return request status changes logged
-- Chat session activity monitored
+- Chat session activity monitored 
 - Risk assessment calculations recorded
 - Persona creation and testing logged
 
