@@ -145,6 +145,20 @@ User-specific application settings
 - `created_at` (timestamp) - Preferences creation time
 - `updated_at` (timestamp) - Last modification time
 
+### Risk Assessment Tables
+
+#### `customer_risk_profiles`
+Customer risk assessment and behavior tracking
+- `id` (uuid) - Primary key
+- `customer_email` (text) - Customer email address
+- `business_id` (uuid) - Foreign key to profiles.business_id
+- `risk_score` (numeric) - Calculated risk score (0-1)
+- `return_frequency` (integer) - Number of returns by this customer
+- `fraud_indicators` (jsonb) - Fraud detection flags
+- `behavior_patterns` (jsonb) - Customer behavior analysis
+- `last_updated` (timestamp) - Last profile update time
+- `created_at` (timestamp) - Profile creation time
+
 ### Test Data Tables
 
 #### `mock_orders`
@@ -159,130 +173,184 @@ Sample order data for testing and demonstrations
 - `order_status` (text) - Order status (default: 'delivered')
 - `quantity` (integer) - Quantity ordered (default: 1)
 
-## API Functions
+## Edge Functions API
+
+### Chat Management Functions
+
+#### `POST /functions/v1/create-chat-session`
+Create a new chat session
+- **Parameters**: 
+  - `user_id` (required) - User identifier
+  - `session_name` (optional) - Session display name (default: 'Test Session')
+  - `chat_mode` (optional) - Communication mode (default: 'normal')
+  - `session_type` (optional) - Session type (default: 'test_mode')
+- **Returns**: Session object with ID and welcome message
+- **Features**: Automatically adds welcome message and validates user access
+
+#### `POST /functions/v1/send-chat-message`
+Send a message in a chat session with AI response generation
+- **Parameters**:
+  - `session_id` (required) - Chat session identifier
+  - `message` (required) - Message content
+  - `sender` (required) - Message sender (user, agent, system)
+  - `message_type` (optional) - Content type (default: 'text')
+  - `metadata` (optional) - Additional message data
+- **Returns**: User message and AI agent response
+- **Features**: 
+  - Automatic return request detection and creation
+  - Order lookup and validation
+  - AI-powered response generation
+  - Integration with return request system
+
+### Return Request Management Functions
+
+#### `POST /functions/v1/init-return`
+Initialize a new return request
+- **Parameters**:
+  - `order_id` (required) - Order identifier
+  - `business_id` (required) - Business identifier
+- **Returns**: Return request with public ID and portal URL
+- **Features**: Order validation and automatic return request creation
+
+#### `POST /functions/v1/triage-return`
+AI-powered return request triage and decision making
+- **Parameters**:
+  - `public_id` (required) - Return request public identifier
+  - `reason_for_return` (required) - Customer's return reason
+  - `evidence_urls` (optional) - Array of evidence file URLs
+  - `conversation_log` (optional) - Chat conversation history
+- **Returns**: AI decision with confidence score and reasoning
+- **Features**:
+  - OpenAI GPT-4 integration for intelligent decision making
+  - Policy compliance checking
+  - Automatic status updates (approved/denied/pending_review)
+  - Risk assessment integration
+
+#### `GET /functions/v1/get-return-request`
+Retrieve return request details
+- **Parameters**: `public_id` (query parameter) - Return request public identifier
+- **Returns**: Complete return request with order details
+- **Features**: Public access for customer portals
+
+#### `PUT /functions/v1/update-return-status`
+Update return request status (admin function)
+- **Parameters**:
+  - `public_id` (required) - Return request public identifier
+  - `status` (required) - New status
+  - `admin_notes` (optional) - Administrative notes
+- **Returns**: Updated return request
+- **Features**: Status validation and audit trail
 
 ### Policy Management Functions
 
-#### `GET /policies`
-Retrieve all policy versions for a business
-- **Parameters**: business_id (query parameter)
+#### `GET /functions/v1/policies`
+Retrieve all policies for a business
+- **Parameters**: `business_id` (query parameter) - Business identifier
 - **Access Control**: User must belong to specified business
 - **Returns**: Array of policy objects ordered by creation date
 
-#### `POST /policies`
+#### `POST /functions/v1/policies`
 Create new policy version
-- **Parameters**: business_id, version, rules, effective_date (request body)
+- **Parameters**: 
+  - `business_id` (required) - Business identifier
+  - `version` (required) - Policy version name
+  - `rules` (required) - Policy rules configuration
+  - `effective_date` (required) - Policy effective date
 - **Access Control**: User must belong to specified business
 - **Validation**: Prevents duplicate version names
 - **Returns**: Created policy object
 
-#### `PUT /policies/:id`
+#### `PUT /functions/v1/policies/:id`
 Update existing policy version
-- **Parameters**: policy_id (URL parameter), policy data (request body)
+- **Parameters**: 
+  - `policy_id` (URL parameter) - Policy identifier
+  - Policy data (request body)
 - **Access Control**: User must belong to policy's business
 - **Restrictions**: Cannot edit active policies
 - **Returns**: Updated policy object
 
-#### `PUT /policies/:id/activate`
+#### `PUT /functions/v1/policies/:id/activate`
 Activate a policy version
-- **Parameters**: policy_id (URL parameter), business_id (request body)
+- **Parameters**: 
+  - `policy_id` (URL parameter) - Policy identifier
+  - `business_id` (request body) - Business identifier
 - **Access Control**: User must belong to specified business
 - **Behavior**: Deactivates all other policies, activates selected one
 - **Returns**: Activated policy object
 
-#### `GET /policies/active`
-Retrieve currently active policy for a business
-- **Parameters**: business_id (query parameter)
-- **Access Control**: Public read access for AI agents
-- **Returns**: Active policy object or null
+### Voice/Video Communication Functions
 
-### AI Policy Helper Functions
+#### `POST /functions/v1/initiate-call`
+Initialize voice or video call session
+- **Parameters**:
+  - `chat_session_id` (required) - Associated chat session
+  - `call_type` (required) - Call type (voice, video)
+  - `provider` (required) - Service provider (elevenlabs, tavus)
+  - `config_override` (optional) - Provider-specific configuration
+- **Returns**: Call session with provider integration details
+- **Features**:
+  - Provider integration (ElevenLabs, Tavus)
+  - Call session tracking
+  - Automatic chat integration
+  - Feature flag support for dormant functionality
 
-#### `GET /ai-policy-helper/active`
-Get active policy for AI decision making
-- **Parameters**: business_id (query parameter)
-- **Access Control**: Service role authentication
-- **Fallback**: Returns default policy if none active
-- **Returns**: Policy object with default flag
+#### `GET /functions/v1/get-call-session`
+Retrieve call session details
+- **Parameters**: `call_session_id` (query parameter) - Call session identifier
+- **Returns**: Complete call session with provider data
+- **Features**: Real-time call status and analytics
 
-#### `POST /ai-policy-helper/evaluate-return`
-Evaluate return request against business policy
-- **Parameters**: business_id, order_id, customer_email, reason_for_return, purchase_date, product_category (request body)
-- **Access Control**: Service role authentication
-- **Processing**: Calculates eligibility based on policy rules
-- **Returns**: Evaluation object with recommendation and confidence score
-
-### Chat Management Functions
-
-#### `GET /chat-sessions`
-Retrieve chat sessions for a business or user
-- **Parameters**: business_id or user_id (query parameters)
-- **Access Control**: User must belong to specified business
-- **Returns**: Array of chat session objects
-
-#### `POST /chat-sessions`
-Create new chat session
-- **Parameters**: user_id, business_id, session_name, chat_mode, session_type (request body)
-- **Access Control**: User must belong to specified business
-- **Returns**: Created chat session object
-
-#### `GET /chat-messages/:session_id`
-Retrieve messages for a specific chat session
-- **Parameters**: session_id (URL parameter)
-- **Access Control**: User must have access to session's business
-- **Returns**: Array of message objects ordered by timestamp
-
-#### `POST /chat-messages`
-Send new message in chat session
-- **Parameters**: session_id, sender, message, message_type, metadata (request body)
-- **Access Control**: User must have access to session's business
-- **Returns**: Created message object
-
-### Return Request Management Functions
-
-#### `GET /return-requests`
-Retrieve return requests for a business
-- **Parameters**: business_id (query parameter)
-- **Access Control**: User must belong to specified business
-- **Returns**: Array of return request objects
-
-#### `POST /return-requests`
-Create new return request
-- **Parameters**: business_id, order_id, customer_email, reason_for_return (request body)
-- **Access Control**: Public endpoint for customer use
-- **Returns**: Created return request with public_id
-
-#### `PUT /return-requests/:id/status`
-Update return request status
-- **Parameters**: request_id (URL parameter), status, admin_notes (request body)
-- **Access Control**: User must belong to request's business
-- **Returns**: Updated return request object
+#### `POST /functions/v1/handle-call-webhook`
+Process call provider webhooks
+- **Parameters**: Webhook payload from call providers
+- **Returns**: Webhook processing confirmation
+- **Features**: 
+  - Call status updates
+  - Transcript processing
+  - Analytics collection
+  - Provider-specific webhook handling
 
 ### User Management Functions
 
-#### `GET /profiles`
-Retrieve user profile information
-- **Parameters**: user_id (from authentication)
-- **Access Control**: Users can only access their own profile
-- **Returns**: Profile object with business information
+#### `GET /functions/v1/get-user-preferences`
+Retrieve user preferences with automatic defaults
+- **Parameters**: `user_id` (query parameter) - User identifier
+- **Returns**: User preferences object with defaults if none exist
+- **Features**: Automatic preference creation with sensible defaults
 
-#### `PUT /profiles`
-Update user profile
-- **Parameters**: business_name, website (request body)
-- **Access Control**: Users can only update their own profile
-- **Returns**: Updated profile object
+### Risk Assessment Functions
 
-#### `GET /user-preferences`
-Retrieve user preferences
-- **Parameters**: user_id (from authentication)
-- **Access Control**: Users can only access their own preferences
-- **Returns**: Preferences object
+#### `POST /functions/v1/risk-assessment/calculate`
+Calculate customer risk score for return requests
+- **Parameters**:
+  - `customer_email` (required) - Customer email
+  - `business_id` (required) - Business identifier
+  - `order_value` (required) - Order value
+  - `return_reason` (required) - Return reason
+- **Returns**: Risk score, factors, and recommendation
+- **Features**:
+  - Multi-factor risk calculation
+  - Customer behavior pattern analysis
+  - Return frequency tracking
+  - Fraud indicator detection
 
-#### `PUT /user-preferences`
-Update user preferences
-- **Parameters**: preferences object (request body)
-- **Access Control**: Users can only update their own preferences
-- **Returns**: Updated preferences object
+#### `POST /functions/v1/risk-assessment/update`
+Update customer risk profile
+- **Parameters**:
+  - `customer_email` (required) - Customer email
+  - `business_id` (required) - Business identifier
+  - `fraud_indicator` (optional) - Fraud detection flag
+  - `behavior_data` (optional) - Behavior pattern data
+- **Returns**: Updated customer profile
+- **Features**: Profile creation/update with fraud tracking
+
+#### `GET /functions/v1/risk-assessment/profile`
+Retrieve customer risk profile
+- **Parameters**: 
+  - `customer_email` (query parameter) - Customer email
+  - `business_id` (query parameter) - Business identifier
+- **Returns**: Customer risk profile or null
+- **Features**: Complete risk assessment history
 
 ## Authentication & Authorization
 
@@ -309,8 +377,48 @@ Update user preferences
 - API keys stored in provider_configs table
 - User preferences encrypted in jsonb format
 - Conversation logs sanitized before storage
+- OpenAI API integration for AI-powered decisions
 
 #### Audit Trail
 - All policy changes tracked with timestamps
 - Return request status changes logged
-- Chat session activity monitored 
+- Chat session activity monitored
+- Risk assessment calculations recorded
+
+## Environment Configuration
+
+### Required Environment Variables
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role key for edge functions
+- `SUPABASE_ANON_KEY` - Anonymous key for client access
+- `OPENAI_API_KEY` - OpenAI API key for AI decision making
+- `SITE_URL` - Frontend application URL
+- `VOICE_VIDEO_ENABLED` - Feature flag for voice/video calling
+
+### Provider Integration Status
+- **ElevenLabs**: Placeholder implementation (dormant)
+- **Tavus**: Placeholder implementation (dormant)
+- **OpenAI**: Active integration for return request triage
+- **Mock Orders**: Active for testing and demonstration
+
+## Error Handling
+
+### Standard Error Responses
+All edge functions return consistent error responses:
+```json
+{
+  "error": "Error message description",
+  "success": false
+}
+```
+
+### CORS Support
+All functions include CORS headers for cross-origin requests:
+- `Access-Control-Allow-Origin: *`
+- `Access-Control-Allow-Headers: authorization, x-client-info, apikey, content-type`
+
+### Validation
+- Required field validation on all endpoints
+- Business access control verification
+- Data integrity checks
+- Graceful fallbacks for missing data 

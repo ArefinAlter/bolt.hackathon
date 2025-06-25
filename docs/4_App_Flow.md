@@ -1,90 +1,267 @@
 # App Flow: Dokani Platform
 
 ## 1. Overview
-This document outlines the primary user flows for the Dokani platform.
+This document outlines the primary user flows for the Dokani platform, designed as a proof-of-concept demo that allows users to experience both business and customer perspectives with a single login.
 
 ---
 
-## Flow 1: New Merchant Onboarding
+## Flow 1: Landing Page & Initial Access
 
-**Persona**: Merchant
-**Goal**: To sign up, set up their business profile, and configure their return policies.
+**Persona**: Prospective User (Business Owner or Customer)
+**Goal**: To discover the platform and access the demo
 
-1.  **Landing Page**: Merchant arrives at the main landing page.
-2.  **Sign Up**: Merchant clicks "Sign Up" and registers for a new account.
-3.  **First Login & Welcome**: Upon first login, the user is guided to set up their business profile.
-4.  **Profile Setup**: Merchant enters their "Business Name" and "Website" into a simple form.
-5.  **Policy Configuration**: The merchant is then directed to the "Policy Management" dashboard.
-6.  **Define Rules**: Using the visual policy editor, the merchant defines their return rules across multiple dimensions:
-    - **General Rules**: Return window, required evidence, etc.
-    - **Category Rules**: Specific rules for different product categories.
-    - **Auto-Approval**: Thresholds for order value, risk scores, etc.
-7.  **Save and Version Policy**: The merchant saves the policy, creating `v1.0.0`. They can test it in a simulation environment before activating it. Once activated, the system is ready to process returns against these rules.
+1. **Landing Page**: User arrives at the main landing page featuring:
+   - Modern SaaS landing page components (hero section, features, pricing, etc.)
+   - Prominent "Try a Demo of Our Product" button in the hero section
+   - Standard marketing content explaining the return/refund automation platform
+
+2. **Demo Access**: User clicks the "Try a Demo" button and is redirected to the login/signup page
 
 ---
 
-## Flow 2: Instant Approval Flow
+## Flow 2: Authentication & Role Selection
 
-**Persona**: End-Customer
-**Business Triggers**: Low-value order, within policy, valid reason, evidence provided.
-**Goal**: To have a simple return request approved and refunded automatically.
+**Persona**: Demo User
+**Goal**: To create an account and choose how to experience the platform
 
-1.  **Initiation**: Customer is on a social media channel (e.g., Facebook Messenger) and clicks a "Start a Return" button in the chat with the business.
-2.  **Redirection to Portal**: A Supabase Edge Function generates a unique, secure link that is sent to the customer. Clicking it opens the **Return/Refund Portal**.
-3.  **Information Collection**: The AI Customer Service Agent greets the customer and collects the necessary information (e.g., order number, reason for return). The portal's visual timeline shows the current status.
-4.  **Evidence Upload**: The agent prompts the customer to upload a photo of the defective item. The file is saved to Supabase Storage.
-5.  **Triage System (Automated)**: The collected data is sent to the Triage System. A Supabase Edge Function fetches the merchant's active policy and evaluates the request.
-6.  **Risk Assessment**: The system determines the request is low-risk and compliant with all auto-approval rules.
-7.  **Auto-Approval & Refund**:
-    - The Triage System marks the `return_requests` status as `approved`.
-    - It triggers another function to process the refund immediately via the Stripe API.
-8.  **Customer Notification**: The agent informs the customer: "Your return has been approved and your refund has been processed. You will see it in your account within 3-5 business days." The timeline is updated to "Completed". -> **[End Flow]**
+1. **Login/Signup Page**: User can either:
+   - Sign up with email/password for a new demo account
+   - Log in with existing credentials
+
+2. **Role Selection**: After successful authentication, user is presented with two options:
+   - **"Try out our Product as a Business"** - Access business dashboard and tools
+   - **"Try out our Product as a Customer"** - Access customer chat interface
+
+3. **Single Profile Access**: Both options use the same user profile, allowing seamless switching between roles
 
 ---
 
-## Flow 3: Automatic Denial Flow
+## Flow 3: Business Experience
 
-**Persona**: End-Customer
-**Business Triggers**: Clear policy violation (e.g., return window expired, final sale item).
-**Goal**: To receive a clear, immediate explanation for a denied return request.
+**Persona**: Business Owner (Demo User)
+**Goal**: To explore business dashboard, policy management, and persona builder
 
-1.  **Steps 1-5**: Same as Flow 2.
-2.  **Risk Assessment**: The Triage System determines the request is a clear policy violation (e.g., the order is 90 days old, but the return window is 30 days).
-3.  **Auto-Denial**: The Triage System marks the `return_requests` status as `denied`.
-4.  **Customer Communication**: The AI agent provides a clear, empathetic explanation: "I'm sorry, but this request cannot be approved because the item was purchased more than 30 days ago, which is outside our return window." It also provides a link to the policy and an option to appeal to a human. The timeline is updated to "Denied". -> **[End Flow]**
+### 3.1 Business Dashboard
+1. **Dashboard Overview**: User sees a comprehensive business dashboard with:
+   - Return request monitoring
+   - Policy management interface
+   - Analytics and insights
+   - Support persona builder access
+
+2. **Policy Management**: User can:
+   - View existing demo policies
+   - Create new policy versions
+   - Configure return rules and thresholds
+   - Activate/deactivate policies
+   - Test policies in simulation mode
+
+### 3.2 Support Persona Builder
+1. **Voice Persona Creation (ElevenLabs)**:
+   - Upload voice samples
+   - Configure voice characteristics
+   - Test voice generation
+   - Save voice personas for use in customer interactions
+
+2. **Video Persona Creation (Tavus)**:
+   - Upload video samples of themselves
+   - Configure avatar settings
+   - Test video avatar generation
+   - Save video personas for customer interactions
+
+3. **Persona Management**:
+   - View all created personas
+   - Edit existing personas
+   - Set default personas for different scenarios
+   - Test personas in preview mode
+
+### 3.3 Return Request Management
+1. **Request Monitoring**: View all return requests with:
+   - Real-time status updates
+   - Customer information
+   - AI recommendations
+   - Evidence files
+
+2. **Manual Review**: For requests flagged for human review:
+   - Review AI recommendations and confidence scores
+   - View customer chat history and evidence
+   - Make approve/deny decisions
+   - Add internal notes
+
+3. **Analytics**: Access business insights including:
+   - Return request trends
+   - AI decision accuracy
+   - Customer satisfaction metrics
+   - Policy effectiveness
 
 ---
 
-## Flow 4: Human Review Flow
+## Flow 4: Customer Experience
 
-**Persona**: End-Customer
-**Business Triggers**: High-value order, complex case, conflicting evidence.
-**Goal**: To have a complex case reviewed by the business.
+**Persona**: Customer (Demo User)
+**Goal**: To experience the AI-powered return process through chat, voice, and video
 
-1.  **Steps 1-5**: Same as Flow 2.
-2.  **Risk Assessment**: The Triage System determines the request requires human judgment (e.g., a very expensive item with a non-standard return reason).
-3.  **Flag for Review**:
-    - The Triage System provides a recommendation (e.g., "Approve") and a confidence score.
-    - It updates the `return_requests` status to `pending_review` and flags it for the merchant.
-4.  **Customer Notification**: The AI agent informs the customer: "Thank you for the information. Your request requires a closer look by our team. We will review it and notify you of the decision within 1-2 business days." The timeline is updated to "Under Review". -> **[End Flow]**
+### 4.1 Chat Interface
+1. **Chat Initiation**: User enters the customer chat interface where they can:
+   - Start a new conversation
+   - View chat history
+   - Access help and support
+
+2. **AI Interaction**: The AI agent:
+   - Greets the customer warmly
+   - Asks about their return request
+   - Guides them through the process
+   - Automatically detects return-related conversations
+
+3. **Return Request Process**:
+   - Customer mentions their order (e.g., "I want to return ORDER-12345")
+   - AI automatically looks up the order
+   - AI creates a return request
+   - AI guides customer through evidence upload
+   - AI provides real-time status updates
+
+### 4.2 Voice Calling
+1. **Voice Call Initiation**: Customer can:
+   - Click "Voice Call" button in chat
+   - Be connected to AI agent using ElevenLabs voice
+   - Experience natural voice conversation
+
+2. **Voice Interaction**:
+   - AI agent speaks using configured voice persona
+   - Customer can speak naturally
+   - AI transcribes and processes speech
+   - AI responds with appropriate voice
+
+3. **Voice Features**:
+   - Real-time transcription
+   - Natural conversation flow
+   - Voice emotion and tone matching
+   - Call recording and analytics
+
+### 4.3 Video Calling
+1. **Video Call Initiation**: Customer can:
+   - Click "Video Call" button in chat
+   - Be connected to AI agent using Tavus video avatar
+   - Experience face-to-face video conversation
+
+2. **Video Interaction**:
+   - AI agent appears as configured video avatar
+   - Customer sees realistic video representation
+   - AI responds with appropriate facial expressions
+   - Natural video conversation flow
+
+3. **Video Features**:
+   - Realistic avatar appearance
+   - Facial expression matching
+   - Lip-sync with speech
+   - Video recording and analytics
+
+### 4.4 Return Request Completion
+1. **AI Decision Making**: The system:
+   - Evaluates return request against business policies
+   - Calculates risk scores
+   - Makes automated decisions (approve/deny/review)
+   - Provides instant feedback to customer
+
+2. **Customer Notification**: Customer receives:
+   - Immediate decision notification
+   - Clear explanation of decision
+   - Next steps and timeline
+   - Access to return portal if needed
 
 ---
 
-## Flow 5: Merchant Manages a Human Review Case
+## Flow 5: Role Switching
 
-**Persona**: Merchant
-**Goal**: To review a flagged case and make a final decision.
+**Persona**: Demo User
+**Goal**: To seamlessly switch between business and customer experiences
 
-1.  **Notification**: The merchant logs into the Business Dashboard and sees a new item in their "Review Queue".
-2.  **Review Case**: The merchant opens the case details page. They can see all collected information: customer chat history, uploaded evidence, order details, and the AI's recommendation ("Approve") and confidence score (e.g., 85%).
-3.  **Decision**: The merchant reviews the information and makes a judgment. They can add internal notes. They then click either **"Approve"** or **"Deny"**.
-4.  **System Action**:
-    - **If Approved**: The system updates the status to `approved` and initiates the refund via Stripe.
-    - **If Denied**: The system updates the status to `denied`.
-5.  **Final Notification**: A notification is automatically sent to the customer informing them of the final decision. -> **[End Flow]**
+1. **Navigation**: User can:
+   - Access a "Switch Role" option from any page
+   - Return to the role selection screen
+   - Choose the other role without re-authentication
+
+2. **Data Persistence**: All data persists across role switches:
+   - Business policies remain configured
+   - Chat history is preserved
+   - Persona settings are maintained
+   - Return requests continue processing
+
+3. **Seamless Experience**: User can:
+   - Configure policies as business owner
+   - Switch to customer role to test the experience
+   - Switch back to business role to see results
+   - Iterate and refine the setup
 
 ---
 
-## Future Enhancements: Multimodal Communication
+## Flow 6: Demo Data & Testing
 
-The flows described above can be enhanced in the future with voice and video capabilities. For example, in the **Instant Approval Flow**, a customer could initiate the return by sending a voice note. The AI Customer Service Agent would transcribe the audio, process the request, and could respond with a generated voice message from ElevenLabs confirming the refund, creating a more natural and accessible interaction.
+**Persona**: Demo User
+**Goal**: To test the platform with realistic data
+
+1. **Mock Orders**: System provides:
+   - Sample orders (ORDER-12345, ORDER-12346, etc.)
+   - Realistic product data
+   - Various order scenarios for testing
+
+2. **Test Scenarios**: Users can test:
+   - Low-value auto-approval returns
+   - High-value manual review cases
+   - Policy violation denials
+   - Complex edge cases
+
+3. **Real-time Testing**: Users can:
+   - Create policies and immediately test them
+   - See AI decisions in real-time
+   - Experience the full customer journey
+   - Monitor business dashboard updates
+
+---
+
+## Technical Implementation Notes
+
+### Authentication & Authorization
+- Single Supabase user account for demo purposes
+- Role-based access control handled at frontend level
+- Business and customer data linked to same user profile
+- Seamless switching between interfaces
+
+### Data Management
+- Demo data pre-populated for testing
+- Real-time updates across all interfaces
+- Persistent session management
+- Cross-role data sharing
+
+### AI Integration
+- OpenAI GPT-4 for intelligent decision making
+- ElevenLabs for voice generation and conversation
+- Tavus for video avatar creation and interaction
+- Real-time policy evaluation and risk assessment
+
+### Provider Integration Status
+- **ElevenLabs**: Placeholder implementation (dormant but ready)
+- **Tavus**: Placeholder implementation (dormant but ready)
+- **OpenAI**: Active integration for chat and decision making
+- **Mock Data**: Active for comprehensive testing
+
+---
+
+## Future Enhancements
+
+### Advanced Persona Builder
+- Drag-and-drop voice sample organization
+- Advanced video avatar customization
+- Persona performance analytics
+- Multi-language support
+
+### Enhanced Customer Experience
+- Multi-channel integration (WhatsApp, Facebook Messenger)
+- Advanced voice emotion detection
+- Real-time video avatar improvements
+- Personalized conversation flows
+
+### Business Intelligence
+- Advanced analytics dashboard
+- Predictive return analysis
+- Customer behavior insights
+- Policy optimization recommendations 
