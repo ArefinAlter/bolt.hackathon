@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 interface UserState {
   user: {
     id: string;
-    email: string;
+    email: string | undefined;
   } | null;
   profile: UserProfile | null;
   preferences: UserPreferences | null;
@@ -54,7 +54,10 @@ export const useUserStore = create<UserState>((set, get) => ({
       const preferences = await getUserPreferences(session.user.id);
       
       set({
-        user: session.user,
+        user: {
+          id: session.user.id,
+          email: session.user.email
+        },
         profile,
         preferences,
         isLoading: false

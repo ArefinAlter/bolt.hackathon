@@ -257,20 +257,21 @@ export async function processReturnRequest(
   conversationLog: any[] = []
 ): Promise<any> {
   try {
-    // Call the triage-return function
+    // Use the consolidated returns API
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
       throw new Error('No active session');
     }
     
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/triage-return`, {
+    const response = await fetch('/api/returns', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${session.access_token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
+        action: 'triage',
         public_id: publicId,
         reason_for_return: reason,
         evidence_urls: evidenceUrls,
@@ -287,6 +288,119 @@ export async function processReturnRequest(
     return data;
   } catch (error) {
     console.error('Error processing return request:', error);
+    throw error;
+  }
+}
+
+// Create a return request using the consolidated API
+export async function createReturnRequestWithAPI(
+  businessId: string,
+  customerEmail: string,
+  orderNumber: string,
+  productName: string,
+  returnReason: string,
+  evidenceFiles: string[] = []
+): Promise<ReturnRequest> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('No active session');
+    }
+    
+    const response = await fetch('/api/returns', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'create',
+        business_id: businessId,
+        customer_email: customerEmail,
+        order_number: orderNumber,
+        product_name: productName,
+        return_reason: returnReason,
+        evidence_files: evidenceFiles
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create return request');
+    }
+    
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error creating return request:', error);
+    throw error;
+  }
+}
+
+// Update a return request using the consolidated API
+export async function updateReturnRequestWithAPI(
+  publicId: string,
+  updateData: ReturnRequestUpdateData
+): Promise<ReturnRequest> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('No active session');
+    }
+    
+    const response = await fetch('/api/returns', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        public_id: publicId,
+        ...updateData
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update return request');
+    }
+    
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error updating return request:', error);
+    throw error;
+  }
+}
+
+// Fetch a return request using the consolidated API
+export async function fetchReturnRequestByAPI(publicId: string): Promise<ReturnRequest> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('No active session');
+    }
+    
+    const response = await fetch(`/api/returns?public_id=${publicId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch return request');
+    }
+    
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching return request:', error);
     throw error;
   }
 }

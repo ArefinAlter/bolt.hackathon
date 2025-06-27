@@ -20,7 +20,7 @@ export interface UserProfile {
 export interface UserSession {
   user: {
     id: string;
-    email: string;
+    email: string | undefined;
   } | null;
   profile?: UserProfile;
   isLoading: boolean;

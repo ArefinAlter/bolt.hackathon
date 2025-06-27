@@ -7,6 +7,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Helper function to validate UUID format
+function isValidUUID(uuid: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  return uuidRegex.test(uuid)
+}
+
+// Helper function to validate required UUID fields
+function validateUUIDFields(fields: Record<string, string | undefined>): { valid: boolean; errors: string[] } {
+  const errors: string[] = []
+  
+  for (const [fieldName, value] of Object.entries(fields)) {
+    if (value && !isValidUUID(value)) {
+      errors.push(`${fieldName} must be a valid UUID format`)
+    }
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -24,6 +46,21 @@ serve(async (req) => {
     if (!chat_session_id || !call_type || !provider) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields: chat_session_id, call_type, provider' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    // Validate UUID fields
+    const uuidValidation = validateUUIDFields({
+      chat_session_id,
+      ...(config_override?.elevenlabs_agent_id && { elevenlabs_agent_id: config_override.elevenlabs_agent_id }),
+      ...(config_override?.tavus_replica_id && { tavus_replica_id: config_override.tavus_replica_id }),
+      ...(config_override?.persona_config_id && { persona_config_id: config_override.persona_config_id })
+    })
+
+    if (!uuidValidation.valid) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid UUID format', details: uuidValidation.errors }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }

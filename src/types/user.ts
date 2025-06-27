@@ -32,7 +32,7 @@ export interface UserPreferences {
 export interface UserSession {
   user: {
     id: string;
-    email: string;
+    email: string | undefined;
   } | null;
   profile?: UserProfile;
   preferences?: UserPreferences;

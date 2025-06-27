@@ -51,14 +51,16 @@ export interface AgentConfig {
   }
   
   // Security validation functions
-  export function validateAgentAccess(agentType: string, context: AgentContext): boolean {
-    const allowedRoles = {
-      'customer-service': ['customer', 'business'],
-      'triage': ['system'],
-      'policy': ['system', 'business']
-    }
-    
-    return allowedRoles[agentType]?.includes(context.userRole) || false
+  const allowedRoles: Record<string, string[]> = {
+    'customer-service': ['customer', 'business'],
+    triage: ['customer', 'business'],
+    policy: ['business']
+  };
+  
+  type UserRole = 'customer' | 'business';
+  
+  export function isRoleAllowed(agentType: string, context: { userRole: UserRole }): boolean {
+    return allowedRoles[agentType]?.includes(context.userRole) || false;
   }
   
   export function sanitizeInput(input: string): string {
