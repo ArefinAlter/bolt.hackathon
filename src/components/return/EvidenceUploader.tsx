@@ -7,10 +7,12 @@ import {
   Image as ImageIcon, 
   File, 
   Trash2, 
-  Loader2 
+  Loader2,
+  Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { EvidenceFile } from '@/types/return';
 
 interface EvidenceUploaderProps {
@@ -62,8 +64,29 @@ export function EvidenceUploader({
   };
 
   const addFiles = (files: File[]) => {
-    // Create evidence files
-    const newEvidenceFiles: EvidenceFile[] = files.map(file => ({
+    // Validate file size
+    const validFiles = files.filter(file => file.size <= 10 * 1024 * 1024); // 10MB limit
+    
+    if (validFiles.length !== files.length) {
+      // Show error for files that are too large
+      const oversizedFiles = files.filter(file => file.size > 10 * 1024 * 1024);
+      oversizedFiles.forEach(file => {
+        setEvidenceFiles(prev => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            file,
+            preview_url: URL.createObjectURL(file),
+            upload_progress: 0,
+            status: 'error',
+            error: 'File size exceeds 10MB limit'
+          }
+        ]);
+      });
+    }
+    
+    // Create evidence files for valid files
+    const newEvidenceFiles: EvidenceFile[] = validFiles.map(file => ({
       id: crypto.randomUUID(),
       file,
       preview_url: URL.createObjectURL(file),
@@ -76,6 +99,11 @@ export function EvidenceUploader({
 
   const handleRemoveFile = (id: string) => {
     setEvidenceFiles(prev => {
+      const fileToRemove = prev.find(file => file.id === id);
+      if (fileToRemove && fileToRemove.preview_url) {
+        URL.revokeObjectURL(fileToRemove.preview_url);
+      }
+      
       const updatedFiles = prev.filter(file => file.id !== id);
       return updatedFiles;
     });
@@ -100,7 +128,7 @@ export function EvidenceUploader({
         
         <div 
           className={`mt-4 border-2 border-dashed rounded-lg p-6 text-center ${
-            dragActive ? 'border-primary bg-primary/5' : 'border-gray-300'
+            dragActive ? 'border-primary bg-primary/5' : 'border-gray-300 dark:border-gray-600'
           }`}
           onDragEnter={handleDrag}
           onDragOver={handleDrag}
@@ -116,8 +144,8 @@ export function EvidenceUploader({
             accept="image/*,.pdf,.doc,.docx"
           />
           
-          <Upload className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-700 font-medium mb-1">
+          <Upload className="h-10 w-10 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+          <p className="text-gray-700 dark:text-gray-300 font-medium mb-1">
             Drag and drop files here, or{' '}
             <button 
               type="button" 
@@ -127,7 +155,7 @@ export function EvidenceUploader({
               browse
             </button>
           </p>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
             Supported formats: JPG, PNG, PDF, DOC (max 10MB per file)
           </p>
         </div>
@@ -135,12 +163,12 @@ export function EvidenceUploader({
         {/* File preview */}
         {evidenceFiles.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Selected Files</h3>
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Selected Files</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {evidenceFiles.map(file => (
                 <div 
                   key={file.id} 
-                  className="relative border rounded-md overflow-hidden"
+                  className="relative border dark:border-gray-700 rounded-md overflow-hidden"
                 >
                   {file.file.type.startsWith('image/') ? (
                     <div className="aspect-square relative">
@@ -151,20 +179,20 @@ export function EvidenceUploader({
                       />
                     </div>
                   ) : (
-                    <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                      <File className="h-10 w-10 text-gray-400" />
+                    <div className="aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                      <File className="h-10 w-10 text-gray-400 dark:text-gray-500" />
                     </div>
                   )}
                   
-                  <div className="p-2 bg-white">
-                    <p className="text-xs text-gray-700 truncate">{file.file.name}</p>
-                    <p className="text-xs text-gray-500">
+                  <div className="p-2 bg-white dark:bg-gray-800">
+                    <p className="text-xs text-gray-700 dark:text-gray-300 truncate">{file.file.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {(file.file.size / 1024).toFixed(0)} KB
                     </p>
                   </div>
                   
                   {file.status === 'uploading' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200">
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700">
                       <div 
                         className="h-full bg-primary" 
                         style={{ width: `${file.upload_progress}%` }}
@@ -173,8 +201,18 @@ export function EvidenceUploader({
                   )}
                   
                   {file.status === 'error' && (
-                    <div className="absolute top-0 right-0 bg-red-500 text-white text-xs px-2 py-1">
-                      Error
+                    <div className="absolute top-0 right-0 left-0 bg-red-500 text-white text-xs px-2 py-1 flex items-center justify-between">
+                      <span>Error</span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="h-3 w-3" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{file.error}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   )}
                   
@@ -203,6 +241,7 @@ export function EvidenceUploader({
             variant="outline" 
             onClick={onClose}
             disabled={isUploading}
+            className="dark:border-gray-600 dark:text-gray-300"
           >
             Cancel
           </Button>

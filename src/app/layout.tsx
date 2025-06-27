@@ -1,6 +1,10 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { ThemeProvider } from '@/providers/theme-provider'
+import { Toaster } from '@/components/ui/toaster'
+import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorFallback } from '@/components/common/ErrorFallback'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,6 +24,7 @@ export const metadata: Metadata = {
     title: 'Dokani - AI-Powered Return Management Platform',
     description: 'Transform your e-commerce returns with AI-powered triage, voice & video customer service, and intelligent policy management.',
   },
+  manifest: '/manifest.json',
 }
 
 export default function RootLayout({
@@ -28,9 +33,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body className={inter.className}>
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ErrorBoundary FallbackComponent={ErrorFallback}>
+            {children}
+            <Toaster />
+          </ErrorBoundary>
+        </ThemeProvider>
       </body>
     </html>
   )

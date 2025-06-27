@@ -6,6 +6,9 @@ import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { UserRole } from '@/types/auth';
 import { supabase } from '@/lib/supabase';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { useToast } from '@/hooks/use-toast';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -13,9 +16,17 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [userRole, setUserRole] = useState<UserRole>('business');
   const [userName, setUserName] = useState('User');
   const [isLoading, setIsLoading] = useState(true);
+
+  // Register keyboard shortcuts
+  useHotkeys('g d', () => router.push('/dashboard'));
+  useHotkeys('g r', () => router.push('/dashboard/requests'));
+  useHotkeys('g p', () => router.push('/dashboard/policy'));
+  useHotkeys('g a', () => router.push('/dashboard/analytics'));
+  useHotkeys('g s', () => router.push('/settings'));
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -65,6 +76,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     localStorage.setItem('userRole', newRole);
     setUserRole(newRole);
     
+    toast({
+      title: "View switched",
+      description: `You are now viewing as a ${newRole === 'business' ? 'Business' : 'Customer'}`,
+      duration: 3000,
+    });
+    
     if (newRole === 'business') {
       router.push('/dashboard');
     } else {
@@ -80,17 +97,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <LoadingSpinner size="lg" text="Loading dashboard..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-50">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-50 dark:bg-gray-900">
       <Sidebar 
         userRole={userRole} 
         onRoleSwitch={handleRoleSwitch} 
@@ -109,8 +123,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {children}
         </main>
         
-        <footer className="py-4 px-6 border-t bg-white">
-          <div className="text-center text-sm text-gray-500">
+        <footer className="py-4 px-6 border-t bg-white dark:bg-gray-900 dark:border-gray-800">
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
             &copy; {new Date().getFullYear()} Dokani. All rights reserved.
           </div>
         </footer>

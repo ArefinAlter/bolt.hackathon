@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ReturnRequest } from '@/types/return';
 import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
+import { CheckCircle, XCircle, Clock } from 'lucide-react';
 
 interface WebSocketManagerProps {
   publicId: string;
@@ -11,6 +13,8 @@ interface WebSocketManagerProps {
 
 export function WebSocketManager({ publicId, onUpdate }: WebSocketManagerProps) {
   const channelRef = useRef<any>(null);
+  const { toast } = useToast();
+  const [previousStatus, setPreviousStatus] = useState<string | null>(null);
 
   useEffect(() => {
     // Set up real-time subscription
@@ -30,6 +34,15 @@ export function WebSocketManager({ publicId, onUpdate }: WebSocketManagerProps) 
           // Fetch the updated request
           fetchReturnRequest(publicId).then(updatedRequest => {
             if (updatedRequest) {
+              // Check if status has changed
+              if (previousStatus && previousStatus !== updatedRequest.status) {
+                showStatusChangeNotification(updatedRequest.status);
+              }
+              
+              // Update previous status
+              setPreviousStatus(updatedRequest.status);
+              
+              // Update the request in the UI
               onUpdate(updatedRequest);
             }
           });
@@ -38,6 +51,13 @@ export function WebSocketManager({ publicId, onUpdate }: WebSocketManagerProps) 
       .subscribe();
     
     channelRef.current = channel;
+    
+    // Fetch initial request to set previous status
+    fetchReturnRequest(publicId).then(request => {
+      if (request) {
+        setPreviousStatus(request.status);
+      }
+    });
     
     return () => {
       // Clean up subscription
@@ -73,6 +93,49 @@ export function WebSocketManager({ publicId, onUpdate }: WebSocketManagerProps) 
     } catch (error) {
       console.error('Error fetching return request:', error);
       return null;
+    }
+  };
+
+  const showStatusChangeNotification = (newStatus: string) => {
+    let title = 'Return Status Updated';
+    let description = 'Your return request status has changed.';
+    let icon = null;
+    
+    switch (newStatus) {
+      case 'approved':
+        title = 'Return Approved!';
+        description = 'Your return request has been approved.';
+        icon = <CheckCircle className="h-4 w-4 text-green-500" />;
+        break;
+      case 'denied':
+        title = 'Return Denied';
+        description = 'Your return request has been denied.';
+        icon = <XCircle className="h-4 w-4 text-red-500" />;
+        break;
+      case 'pending_review':
+        title = 'Under Review';
+        description = 'Your return request is now under review.';
+        icon = <Clock className="h-4 w-4 text-orange-500" />;
+        break;
+      case 'completed':
+        title = 'Return Completed';
+        description = 'Your return process has been completed.';
+        icon = <CheckCircle className="h-4 w-4 text-purple-500" />;
+        break;
+    }
+    
+    toast({
+      title,
+      description,
+      duration: 5000,
+    });
+    
+    // Show browser notification if supported and permission granted
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, {
+        body: description,
+        icon: '/favicon.ico'
+      });
     }
   };
 

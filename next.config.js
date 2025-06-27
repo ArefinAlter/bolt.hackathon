@@ -1,8 +1,18 @@
 /** @type {import('next').NextConfig} */
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+  register: true,
+  skipWaiting: true,
+});
+
 const nextConfig = {
   images: {
-    domains: ['images.pexels.com'],
+    domains: ['images.pexels.com', 'api.dicebear.com'],
+  },
+  experimental: {
+    optimizeCss: true,
   },
 }
 
-module.exports = nextConfig
+module.exports = withPWA(nextConfig);

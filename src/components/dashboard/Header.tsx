@@ -9,9 +9,23 @@ import {
   Settings, 
   HelpCircle, 
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Moon,
+  Sun,
+  Keyboard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { GlobalSearch } from '@/components/common/GlobalSearch';
+import { KeyboardShortcutsHelp } from '@/components/common/KeyboardShortcutsHelp';
+import { useTheme } from 'next-themes';
 import { UserRole } from '@/types/auth';
 
 interface HeaderProps {
@@ -24,6 +38,7 @@ interface HeaderProps {
 export function Header({ userRole, userName, onRoleSwitch, onSignOut }: HeaderProps) {
   const pathname = usePathname();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   // Get page title based on current path
   const getPageTitle = () => {
@@ -39,76 +54,98 @@ export function Header({ userRole, userName, onRoleSwitch, onSignOut }: HeaderPr
   };
 
   return (
-    <header className="bg-white border-b">
+    <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
       <div className="h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Left: Page title */}
-        <h1 className="text-xl font-semibold text-gray-900">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
           {getPageTitle()}
         </h1>
 
+        {/* Middle: Search */}
+        <div className="hidden md:block max-w-md w-full mx-4">
+          <GlobalSearch />
+        </div>
+
         {/* Right: Actions */}
         <div className="flex items-center space-x-4">
+          {/* Theme toggle */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                {theme === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTheme('light')}>
+                <Sun className="mr-2 h-4 w-4" />
+                <span>Light</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('dark')}>
+                <Moon className="mr-2 h-4 w-4" />
+                <span>Dark</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('system')}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>System</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Keyboard shortcuts */}
+          <KeyboardShortcutsHelp />
+
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700">
+          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
             <Bell className="h-5 w-5" />
           </Button>
 
           {/* Help */}
-          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700">
+          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
             <HelpCircle className="h-5 w-5" />
           </Button>
 
           {/* Profile dropdown */}
-          <div className="relative">
-            <Button
-              variant="ghost"
-              className="flex items-center space-x-2 text-gray-700"
-              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            >
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-4 w-4 text-primary" />
+          <DropdownMenu open={isProfileMenuOpen} onOpenChange={setIsProfileMenuOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="flex items-center space-x-2 text-gray-700 dark:text-gray-300"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userName}`} alt={userName} />
+                  <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <span className="hidden sm:block text-sm font-medium">
+                  {userName}
+                </span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end">
+              <div className="p-3 border-b">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{userName}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {userRole === 'business' ? 'Business Account' : 'Customer Account'}
+                </p>
               </div>
-              <span className="hidden sm:block text-sm font-medium">
-                {userName}
-              </span>
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-
-            {isProfileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg border z-10">
-                <div className="p-3 border-b">
-                  <p className="text-sm font-medium text-gray-900">{userName}</p>
-                  <p className="text-xs text-gray-500">
-                    {userRole === 'business' ? 'Business Account' : 'Customer Account'}
-                  </p>
-                </div>
-                <div className="py-1">
-                  <button
-                    onClick={onRoleSwitch}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                  >
-                    <User className="h-4 w-4 mr-3" />
-                    Switch to {userRole === 'business' ? 'Customer' : 'Business'} View
-                  </button>
-                  <Link
-                    href="/dashboard/settings"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                    onClick={() => setIsProfileMenuOpen(false)}
-                  >
-                    <Settings className="h-4 w-4 mr-3" />
-                    Settings
-                  </Link>
-                  <button
-                    onClick={onSignOut}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                  >
-                    <LogOut className="h-4 w-4 mr-3" />
-                    Sign Out
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+              <DropdownMenuItem onClick={onRoleSwitch}>
+                <User className="h-4 w-4 mr-3" />
+                Switch to {userRole === 'business' ? 'Customer' : 'Business'} View
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <Link href="/settings">
+                <DropdownMenuItem>
+                  <Settings className="h-4 w-4 mr-3" />
+                  Settings
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onSignOut}>
+                <LogOut className="h-4 w-4 mr-3" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
