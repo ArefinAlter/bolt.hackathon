@@ -414,7 +414,7 @@ export default function CustomerChatPage() {
             </div>
             
             {/* Confidence score for agent messages */}
-            {!isUser && !isSystem && confidenceScore !== undefined && (
+            {!isUser && !isSystem && typeof confidenceScore === 'number' && (
               <div className="flex items-center mt-1 space-x-2">
                 <div className="text-xs text-gray-500">
                   Confidence: {(confidenceScore * 100).toFixed(0)}%
