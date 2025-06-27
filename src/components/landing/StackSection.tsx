@@ -78,12 +78,12 @@ export function StackSection() {
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <CardContent className="p-6 text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <div className={`mx-auto mb-4 flex items-center justify-center ${integration.id === 'shopify' || integration.id === 'woocommerce' ? 'w-24 h-24' : 'w-16 h-16'}`}>
                       <Image
                         src={integration.logo}
                         alt={integration.name}
-                        width={64}
-                        height={64}
+                        width={integration.id === 'shopify' || integration.id === 'woocommerce' ? 96 : 64}
+                        height={integration.id === 'shopify' || integration.id === 'woocommerce' ? 96 : 64}
                         className="w-full h-full object-contain group-hover:scale-110 transition-transform"
                       />
                     </div>

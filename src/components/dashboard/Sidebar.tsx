@@ -169,16 +169,16 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
               <Image
                 src="/main_logo.svg"
                 alt="Dokani"
-                width={120}
-                height={32}
-                className="h-8 w-auto dark:hidden"
+                width={180}
+                height={48}
+                className="h-12 w-auto dark:hidden"
               />
               <Image
                 src="/white_logo.svg"
                 alt="Dokani"
-                width={120}
-                height={32}
-                className="h-8 w-auto hidden dark:block"
+                width={180}
+                height={48}
+                className="h-12 w-auto hidden dark:block"
               />
             </Link>
           </div>

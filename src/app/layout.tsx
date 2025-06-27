@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/providers/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { ErrorBoundary } from 'react-error-boundary'
 import { ErrorFallback } from '@/components/common/ErrorFallback'
+import { BoltBadge } from '@/components/landing/BoltBadge'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -39,6 +40,7 @@ export default function RootLayout({
           <ErrorBoundary FallbackComponent={ErrorFallback}>
             {children}
             <Toaster />
+            <BoltBadge />
           </ErrorBoundary>
         </ThemeProvider>
       </body>

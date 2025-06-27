@@ -21,8 +21,8 @@ export interface Policy {
   created_at: string;
   rules: PolicyRule;
   policy_impact_score?: number;
-  usage_statistics?: Record<string, any>;
-  compliance_metrics?: Record<string, any>;
+  usage_statistics?: Record<string, number>;
+  compliance_metrics?: PolicyComplianceMetrics;
 }
 
 export interface PolicyChangeHistory {
@@ -32,7 +32,7 @@ export interface PolicyChangeHistory {
   change_type: 'created' | 'modified' | 'activated' | 'deactivated' | 'deleted';
   previous_rules?: PolicyRule;
   new_rules?: PolicyRule;
-  impact_analysis?: Record<string, any>;
+  impact_analysis?: Record<string, unknown>;
   change_summary?: string;
   changed_by: string;
   created_at: string;

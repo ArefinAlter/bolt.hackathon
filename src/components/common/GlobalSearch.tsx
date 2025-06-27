@@ -60,28 +60,28 @@ export function GlobalSearch() {
         const mockResults: SearchResult[] = [
           {
             id: '1',
-            type: 'return',
+            type: 'return' as const,
             title: 'ORDER-12345',
             description: 'Return request for defective product',
             url: '/return/abc123'
           },
           {
             id: '2',
-            type: 'message',
+            type: 'message' as const,
             title: 'Conversation with customer',
             description: 'Last message: I need help with my return',
             url: '/customer/chat'
           },
           {
             id: '3',
-            type: 'policy',
+            type: 'policy' as const,
             title: 'Return Policy v1.2',
             description: 'Active policy for electronics category',
             url: '/dashboard/policy'
           },
           {
             id: '4',
-            type: 'customer',
+            type: 'customer' as const,
             title: 'john.smith@example.com',
             description: 'Customer profile with 3 previous returns',
             url: '/dashboard/customers/123'

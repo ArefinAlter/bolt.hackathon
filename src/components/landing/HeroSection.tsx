@@ -87,7 +87,7 @@ export function HeroSection() {
               {/* Main hero image */}
               <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-50 to-gray-100">
                 <Image
-                  src="/landing_image.jpg"
+                  src="/landing_hero.svg"
                   alt="Dokani Platform Dashboard"
                   width={600}
                   height={400}

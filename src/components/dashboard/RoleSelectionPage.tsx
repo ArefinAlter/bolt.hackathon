@@ -60,9 +60,9 @@ export function RoleSelectionPage() {
             <Image
               src="/main_logo.svg"
               alt="Dokani"
-              width={120}
-              height={32}
-              className="h-8 w-auto"
+              width={180}
+              height={48}
+              className="h-12 w-auto"
             />
           </div>
           <Button 

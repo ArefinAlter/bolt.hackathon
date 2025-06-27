@@ -49,9 +49,9 @@ export function Footer() {
               <Image
                 src="/white_logo.svg"
                 alt="Dokani"
-                width={120}
-                height={32}
-                className="h-8 w-auto"
+                width={180}
+                height={48}
+                className="h-12 w-auto"
               />
             </Link>
             <p className="text-gray-400 mb-6 max-w-md">
@@ -145,15 +145,7 @@ export function Footer() {
             © 2024 Dokani. All rights reserved.
           </p>
           <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-            <span className="text-gray-400 text-sm">Built with</span>
-            <Image
-              src="/bolt_badge.png"
-              alt="Built with Bolt"
-              width={24}
-              height={24}
-              className="w-6 h-6"
-            />
-            <span className="text-gray-400 text-sm">by Bolt</span>
+            {/* Bolt badge moved to floating component */}
           </div>
         </div>
       </div>

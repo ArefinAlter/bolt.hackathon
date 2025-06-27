@@ -217,7 +217,10 @@ export default function SettingsPage() {
                   <Label htmlFor="chat-mode">Preferred Chat Mode</Label>
                   <Select 
                     value={preferences.preferred_chat_mode} 
-                    onValueChange={(value) => setPreferences({...preferences, preferred_chat_mode: value})}
+                    onValueChange={(value) => setPreferences({
+                      ...preferences,
+                      preferred_chat_mode: value as 'normal' | 'messenger' | 'whatsapp' | 'shopify' | 'woocommerce'
+                    })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select chat mode" />

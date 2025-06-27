@@ -18,9 +18,9 @@ export default function LoginPage() {
             <Image
               src="/main_logo.svg"
               alt="Dokani"
-              width={120}
-              height={32}
-              className="h-8 w-auto"
+              width={180}
+              height={48}
+              className="h-12 w-auto mx-auto"
             />
           </Link>
           <Link href="/auth/signup" className="text-sm font-medium text-primary hover:underline">

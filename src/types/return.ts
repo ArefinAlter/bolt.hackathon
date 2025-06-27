@@ -1,5 +1,5 @@
 export interface ReturnRequest {
-  id: string;
+  id: number;
   public_id: string;
   business_id: string;
   order_id: string;
@@ -13,25 +13,37 @@ export interface ReturnRequest {
   admin_notes?: string;
   risk_score?: number;
   fraud_flags?: Record<string, boolean>;
-  policy_violations?: string[];
-  risk_factors?: string[];
-  created_at: string;
-  approved_at?: string;
-  denied_at?: string;
+  triage_agent_id?: string;
+  customer_service_agent_id?: string;
+  processing_time_ms?: number;
+  escalation_reason?: string;
+  policy_version_used?: string;
   admin_decision_at?: string;
   days_since_purchase?: number;
   order_value?: number;
   product_category?: string;
-  order_details?: OrderDetails;
+  customer_satisfaction_score?: number;
+  confidence_score?: number;
+  ai_reasoning?: string;
+  policy_violations?: string[];
+  risk_factors?: string[];
+  approved_at?: string;
+  denied_at?: string;
+  return_history?: number;
+  created_at: string;
 }
 
 export interface OrderDetails {
+  id: number;
   order_id: string;
   purchase_date: string;
   customer_email: string;
   product_name: string;
   product_category: string;
   purchase_price?: number;
+  order_status?: string;
+  quantity?: number;
+  order_value?: number;
 }
 
 export interface ConversationMessage {

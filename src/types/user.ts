@@ -10,14 +10,16 @@ export interface UserProfile {
 
 export interface UserPreferences {
   language: string;
-  theme: 'light' | 'dark' | 'system';
-  notifications_enabled: boolean;
   auto_escalate: boolean;
-  voice_enabled: boolean;
   video_enabled: boolean;
+  voice_enabled: boolean;
   auto_transcript: boolean;
-  call_history_enabled: boolean;
+  tavus_replica_id?: string | null;
+  elevenlabs_voice_id?: string | null;
   preferred_chat_mode: 'normal' | 'messenger' | 'whatsapp' | 'shopify' | 'woocommerce';
+  call_history_enabled: boolean;
+  notifications_enabled: boolean;
+  theme: 'light' | 'dark' | 'system';
   accessibility?: {
     high_contrast?: boolean;
     large_text?: boolean;
