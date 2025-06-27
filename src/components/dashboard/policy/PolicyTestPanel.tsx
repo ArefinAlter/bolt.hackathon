@@ -42,7 +42,7 @@ export function PolicyTestPanel({ policy, businessId }: PolicyTestPanelProps) {
     productCategory: 'electronics'
   });
 
-  const handleInputChange = (field: string, value: string | number) => {
+  const handleInputChange = (field: string, value: string | number | string[]) => {
     setTestCase({
       ...testCase,
       [field]: value

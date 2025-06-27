@@ -225,7 +225,7 @@ export function VideoCallInterface({
           id: Date.now().toString(),
           call_session_id: callSession.id,
           speaker: 'user',
-          message: message.text,
+          message: message.text || '',
           timestamp_seconds: Date.now() / 1000,
           created_at: new Date().toISOString()
         }

@@ -4,7 +4,13 @@ export interface ChatMessage {
   sender: 'user' | 'agent' | 'system';
   message: string;
   message_type: 'text' | 'image' | 'file' | 'audio' | 'video';
-  metadata?: Record<string, unknown>;
+  metadata?: {
+    file_urls?: string[];
+    file_names?: string[];
+    return_detected?: boolean;
+    ai_agent?: string;
+    next_action?: string;
+  };
   created_at: string;
 }
 
@@ -16,7 +22,11 @@ export interface ChatSession {
   chat_mode: 'normal' | 'messenger' | 'whatsapp' | 'shopify' | 'woocommerce';
   session_type: 'test_mode' | 'live_support';
   is_active: boolean;
-  metadata?: Record<string, unknown>;
+  metadata?: {
+    return_detected?: boolean;
+    ai_agent?: string;
+    next_action?: string;
+  };
   created_at: string;
   updated_at: string;
   customer_email: string;

@@ -54,6 +54,7 @@ export interface PolicyTestResult {
   reasoning: string;
   policy_violations: string[];
   risk_factors: string[];
+  confidence: number; // <-- Add this line
 }
 
 export interface PolicyABTest {

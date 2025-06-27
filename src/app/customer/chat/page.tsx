@@ -370,10 +370,11 @@ export default function CustomerChatPage() {
               <p className="whitespace-pre-wrap">{message.message}</p>
               
               {/* File attachments */}
-              {message.metadata && typeof message.metadata === 'object' && 'file_urls' in message.metadata && (
+              {message.metadata?.file_urls && (
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {Array.isArray((message.metadata as any).file_urls) && (message.metadata as any).file_urls.map((url: string, index: number) => {
+                  {Array.isArray(message.metadata.file_urls) && message.metadata.file_urls.map((url: string, index: number) => {
                     const isImage = url.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+                    const fileName = message.metadata?.file_names?.[index] || 'file';
                     return isImage ? (
                       <div 
                         key={index} 
@@ -381,7 +382,7 @@ export default function CustomerChatPage() {
                         onClick={() => {
                           setSelectedFile({
                             id: `file-${index}`,
-                            file: new File([], (message.metadata as any)?.file_names?.[index] || 'file'),
+                            file: new File([], fileName),
                             preview_url: url,
                             upload_progress: 100,
                             status: 'success'
@@ -404,7 +405,7 @@ export default function CustomerChatPage() {
                         className="flex items-center bg-gray-100 rounded-md px-3 py-2 text-sm text-black hover:bg-gray-200"
                       >
                         <Paperclip className="h-4 w-4 mr-2" />
-                        {(message.metadata as any)?.file_names?.[index] || 'File'}
+                        {fileName}
                       </a>
                     );
                   })}

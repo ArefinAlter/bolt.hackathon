@@ -95,7 +95,12 @@ export async function fetchReturnRequestById(id: string): Promise<ReturnRequest>
     }
     
     const data = await response.json();
-    return data.data;
+    // Runtime check: ensure order_details exists (even if undefined)
+    const result = data.data;
+    if (!('order_details' in result)) {
+      result.order_details = undefined;
+    }
+    return result as ReturnRequest;
   } catch (error) {
     console.error('Error fetching return request:', error);
     throw error;

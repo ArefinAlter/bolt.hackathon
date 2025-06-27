@@ -241,7 +241,7 @@ export function EvidenceUploader({
             variant="outline" 
             onClick={onClose}
             disabled={isUploading}
-            className="dark:border-gray-600 dark:text-black"
+            className="dark:border-gray-600 dark:text-white"
           >
             Cancel
           </Button>

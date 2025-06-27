@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Keyboard, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -85,14 +85,14 @@ export function KeyboardShortcutsHelp() {
                     <div key={index} className="flex justify-between items-center">
                       <div className="flex items-center space-x-2">
                         {shortcut.keys.map((key, keyIndex) => (
-                          <React.Fragment key={keyIndex}>
+                          <>
                             <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded">
                               {key}
                             </kbd>
                             {keyIndex < shortcut.keys.length - 1 && (
                               <span className="text-gray-500">+</span>
                             )}
-                          </React.Fragment>
+                          </>
                         ))}
                       </div>
                       <span className="text-sm text-gray-600">{shortcut.description}</span>

@@ -68,77 +68,7 @@ export function RoleSelectionPage() {
           </div>
           <Button 
             variant="ghost" 
-'use client';
-
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { 
-  Building2, 
-  User, 
-  BarChart3, 
-  FileText, 
-  Shield, 
-  Users,
-  MessageSquare,
-  Phone,
-  Video,
-  Package
-} from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { UserRole } from '@/types/auth';
-import { supabase } from '@/lib/supabase';
-
-export function RoleSelectionPage() {
-  const router = useRouter();
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleRoleSelection = async (role: UserRole) => {
-    setSelectedRole(role);
-    setIsLoading(true);
-    
-    try {
-      // Store the selected role in localStorage for persistence
-      localStorage.setItem('userRole', role);
-      
-      // Redirect based on role
-      if (role === 'business') {
-        router.push('/dashboard');
-      } else {
-        router.push('/return');
-      }
-    } catch (error) {
-      console.error('Error setting user role:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
-  };
-
-  return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <header className="py-6 px-4 sm:px-6 lg:px-8 border-b bg-white">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center">
-            <Image
-              src="/main_logo.svg"
-              alt="Dokani"
-              width={180}
-              height={48}
-              className="h-12 w-auto"
-            />
-          </div>
-          <Button 
-            variant="ghost" 
-            className="text-sm text-gray-600"
+            className="text-sm text-black"
             onClick={handleSignOut}
           >
             Sign Out

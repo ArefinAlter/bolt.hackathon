@@ -140,7 +140,7 @@ export function VoiceCallInterface({
                         id: Date.now().toString(),
                         call_session_id: callSession.id,
                         speaker: 'agent',
-                        message: result.ai_response,
+                        message: result.ai_response || '',
                         timestamp_seconds: Date.now() / 1000,
                         created_at: new Date().toISOString()
                       }
@@ -263,7 +263,7 @@ export function VoiceCallInterface({
             id: Date.now().toString(),
             call_session_id: callSession.id,
             speaker: 'agent',
-            message: message.text,
+            message: message.text || '',
             timestamp_seconds: Date.now() / 1000,
             created_at: new Date().toISOString()
           }
@@ -277,7 +277,7 @@ export function VoiceCallInterface({
           id: Date.now().toString(),
           call_session_id: callSession.id,
           speaker: 'user',
-          message: message.text,
+          message: message.text || '',
           timestamp_seconds: Date.now() / 1000,
           created_at: new Date().toISOString()
         }

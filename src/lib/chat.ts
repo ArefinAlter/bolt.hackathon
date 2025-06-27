@@ -35,12 +35,14 @@ export async function createChatSession(userId: string): Promise<ChatSession> {
     return {
       id: data.session_id,
       user_id: userId,
+      business_id: data.business_id || '',
       session_name: 'Customer Support',
       chat_mode: data.chat_mode || 'normal',
       session_type: 'test_mode',
       is_active: true,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      customer_email: data.customer_email || ''
     };
   } catch (error) {
     console.error('Error creating chat session:', error);

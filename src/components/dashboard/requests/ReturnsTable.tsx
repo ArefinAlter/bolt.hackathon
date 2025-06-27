@@ -55,7 +55,7 @@ export function ReturnsTable({
     sortDirection: 'desc',
     search: ''
   });
-  const [selectedRequests, setSelectedRequests] = useState<string[]>([]);
+  const [selectedRequests, setSelectedRequests] = useState<number[]>([]);
 
   // Register keyboard shortcuts
   useHotkeys('r', () => handleRefresh());
@@ -158,7 +158,7 @@ export function ReturnsTable({
     }
   };
 
-  const handleSelectRequest = (id: string) => {
+  const handleSelectRequest = (id: number) => {
     if (selectedRequests.includes(id)) {
       setSelectedRequests(selectedRequests.filter(r => r !== id));
     } else {
@@ -282,7 +282,6 @@ export function ReturnsTable({
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="relative flex-1">
             <SearchInput
-              id="search-input"
               placeholder="Search by order ID, customer, or reason..."
               onSearch={handleSearch}
               initialValue={filter.search || ''}
