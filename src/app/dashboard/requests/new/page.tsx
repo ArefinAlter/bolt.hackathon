@@ -4,24 +4,18 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Package, 
-  Plus,
-  RefreshCw,
+  ArrowLeft,
   AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ReturnsTable } from '@/components/dashboard/requests/ReturnsTable';
-import { ReviewQueue } from '@/components/dashboard/requests/ReviewQueue';
-import { RequestDetailModal } from '@/components/dashboard/requests/RequestDetailModal';
-import { ReturnRequest } from '@/types/return';
+import { CreateReturnForm } from '@/components/dashboard/requests/CreateReturnForm';
 import { supabase } from '@/lib/supabase';
 
-export default function RequestsPage() {
+export default function NewRequestPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectedRequest, setSelectedRequest] = useState<ReturnRequest | null>(null);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -71,17 +65,8 @@ export default function RequestsPage() {
     loadUserData();
   }, [router]);
 
-  const handleViewRequest = (request: ReturnRequest) => {
-    setSelectedRequest(request);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedRequest(null);
-  };
-
-  const handleRequestUpdated = (updatedRequest: ReturnRequest) => {
-    // Close the modal and refresh the data
-    setSelectedRequest(null);
+  const handleSuccess = () => {
+    router.push('/dashboard/requests');
   };
 
   if (isLoading) {
@@ -115,28 +100,20 @@ export default function RequestsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div className="flex items-center">
+        <Button 
+          variant="ghost" 
+          className="mr-4"
+          onClick={() => router.push('/dashboard/requests')}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Requests
+        </Button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Return Requests</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Create Manual Return</h1>
           <p className="text-gray-500">
-            Manage and process customer return requests
+            Create a return request on behalf of a customer
           </p>
-        </div>
-        <div className="mt-4 md:mt-0 flex space-x-2">
-          <Button 
-            variant="outline" 
-            onClick={() => router.reload()}
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
-          <Button 
-            className="bg-primary hover:bg-primary/90 text-black"
-            onClick={() => router.push('/dashboard/requests/new')}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create Manual Return
-          </Button>
         </div>
       </div>
       
@@ -153,26 +130,10 @@ export default function RequestsPage() {
         </div>
       )}
       
-      {/* Review Queue */}
-      <ReviewQueue 
-        businessId={businessId} 
-        onViewRequest={handleViewRequest}
-      />
-      
-      {/* All Returns Table */}
-      <ReturnsTable 
+      <CreateReturnForm 
         businessId={businessId}
-        onViewRequest={handleViewRequest}
+        onSuccess={handleSuccess}
       />
-      
-      {/* Request Detail Modal */}
-      {selectedRequest && (
-        <RequestDetailModal 
-          request={selectedRequest}
-          onClose={handleCloseModal}
-          onRequestUpdated={handleRequestUpdated}
-        />
-      )}
     </div>
   );
 }
