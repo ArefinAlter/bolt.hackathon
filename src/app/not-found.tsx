@@ -33,7 +33,7 @@ export default function NotFound() {
           <Button
             variant="outline"
             className="w-full dark:border-gray-700 dark:text-gray-300"
-            onClick={() => router.back()}
+            onClick={() => window.history.back()}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Go Back

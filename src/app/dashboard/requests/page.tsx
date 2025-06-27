@@ -125,7 +125,7 @@ export default function RequestsPage() {
         <div className="mt-4 md:mt-0 flex space-x-2">
           <Button 
             variant="outline" 
-            onClick={() => router.reload()}
+            onClick={() => window.location.reload()}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
