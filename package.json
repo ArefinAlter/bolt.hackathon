@@ -24,7 +24,10 @@
     "recharts": "^2.10.3",
     "date-fns": "^2.30.0",
     "jspdf": "^2.5.1",
-    "jspdf-autotable": "^3.8.1"
+    "jspdf-autotable": "^3.8.1",
+    "@radix-ui/react-tabs": "^1.0.4",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-slot": "^1.0.2"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
