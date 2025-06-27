@@ -8,10 +8,16 @@ export interface ChatMessage {
     ai_confidence_score?: number;
     return_detected?: boolean;
     next_action?: string;
+    // Single file properties (for backward compatibility)
     file_url?: string;
     file_type?: string;
     file_name?: string;
     file_size?: number;
+    // Multiple files properties
+    file_urls?: string[];
+    file_types?: string[];
+    file_names?: string[];
+    file_sizes?: number[];
   };
   created_at: string;
 }
