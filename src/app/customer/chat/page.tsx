@@ -28,7 +28,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ChatMessage, ChatSession, FileUpload } from '@/types/chat';
-import { createChatSession, fetchChatMessages, sendChatMessage, subscribeToChatUpdates, createLocalFileUpload, uploadFile, startVoiceCall, startVideoCall } from '@/lib/chat';
+import { CallSession } from '@/types/call';
+import { createChatSession, fetchChatMessages, sendChatMessage, subscribeToChatUpdates, createLocalFileUpload, uploadFile } from '@/lib/chat';
+import { startVoiceCall, startVideoCall } from '@/lib/call';
+import { VoiceCallInterface } from '@/components/customer/VoiceCallInterface';
+import { VideoCallInterface } from '@/components/customer/VideoCallInterface';
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -48,6 +52,7 @@ export default function CustomerChatPage() {
   const [showFeedback, setShowFeedback] = useState<string | null>(null);
   const [isCallActive, setIsCallActive] = useState(false);
   const [callType, setCallType] = useState<'voice' | 'video' | null>(null);
+  const [callSession, setCallSession] = useState<CallSession | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -245,53 +250,88 @@ export default function CustomerChatPage() {
     setFileUploads(prev => prev.filter(f => f.id !== id));
   };
   
-  const handleStartCall = async (type: 'voice' | 'video') => {
+  const handleStartVoiceCall = async () => {
     if (!session) return;
     
     try {
       setIsCallActive(true);
-      setCallType(type);
+      setCallType('voice');
       
       // Add system message
       const systemMessage: ChatMessage = {
         id: uuidv4(),
         session_id: session.id,
         sender: 'system',
-        message: `${type === 'voice' ? 'Voice' : 'Video'} call initiated. Connecting...`,
+        message: 'Voice call initiated. Connecting...',
         message_type: 'text',
         created_at: new Date().toISOString()
       };
       
       setMessages(prev => [...prev, systemMessage]);
       
-      // Start call
-      const startCallFn = type === 'voice' ? startVoiceCall : startVideoCall;
-      const { callSessionId, websocketUrl } = await startCallFn(session.id);
+      // Start voice call
+      const callSessionData = await startVoiceCall(session.id);
+      setCallSession(callSessionData);
       
-      // In a real implementation, we would connect to the WebSocket here
-      console.log('Call started:', { callSessionId, websocketUrl });
-      
-      // For demo purposes, simulate a call
-      setTimeout(() => {
-        const callEndedMessage: ChatMessage = {
-          id: uuidv4(),
-          session_id: session.id,
-          sender: 'system',
-          message: `${type === 'voice' ? 'Voice' : 'Video'} call ended.`,
-          message_type: 'text',
-          created_at: new Date().toISOString()
-        };
-        
-        setMessages(prev => [...prev, callEndedMessage]);
-        setIsCallActive(false);
-        setCallType(null);
-      }, 5000);
     } catch (error) {
-      console.error(`Error starting ${type} call:`, error);
-      setError(`Failed to start ${type} call. Please try again.`);
+      console.error('Error starting voice call:', error);
+      setError('Failed to start voice call. Please try again.');
       setIsCallActive(false);
       setCallType(null);
+      setCallSession(null);
     }
+  };
+  
+  const handleStartVideoCall = async () => {
+    if (!session) return;
+    
+    try {
+      setIsCallActive(true);
+      setCallType('video');
+      
+      // Add system message
+      const systemMessage: ChatMessage = {
+        id: uuidv4(),
+        session_id: session.id,
+        sender: 'system',
+        message: 'Video call initiated. Connecting...',
+        message_type: 'text',
+        created_at: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, systemMessage]);
+      
+      // Start video call
+      const callSessionData = await startVideoCall(session.id);
+      setCallSession(callSessionData);
+      
+    } catch (error) {
+      console.error('Error starting video call:', error);
+      setError('Failed to start video call. Please try again.');
+      setIsCallActive(false);
+      setCallType(null);
+      setCallSession(null);
+    }
+  };
+  
+  const handleEndCall = () => {
+    // Add system message
+    if (session) {
+      const systemMessage: ChatMessage = {
+        id: uuidv4(),
+        session_id: session.id,
+        sender: 'system',
+        message: `${callType === 'voice' ? 'Voice' : 'Video'} call ended.`,
+        message_type: 'text',
+        created_at: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, systemMessage]);
+    }
+    
+    setIsCallActive(false);
+    setCallType(null);
+    setCallSession(null);
   };
   
   const handleFeedback = (messageId: string, isPositive: boolean) => {
@@ -450,7 +490,7 @@ export default function CustomerChatPage() {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => handleStartCall('voice')}
+              onClick={handleStartVoiceCall}
               disabled={isCallActive}
             >
               <Phone className="h-4 w-4 mr-2" />
@@ -459,7 +499,7 @@ export default function CustomerChatPage() {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => handleStartCall('video')}
+              onClick={handleStartVideoCall}
               disabled={isCallActive}
             >
               <Video className="h-4 w-4 mr-2" />
@@ -685,6 +725,25 @@ export default function CustomerChatPage() {
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Call interfaces */}
+      {isCallActive && callSession && (
+        <>
+          {callType === 'voice' ? (
+            <VoiceCallInterface 
+              callSession={callSession}
+              onEndCall={handleEndCall}
+              onError={setError}
+            />
+          ) : callType === 'video' ? (
+            <VideoCallInterface 
+              callSession={callSession}
+              onEndCall={handleEndCall}
+              onError={setError}
+            />
+          ) : null}
+        </>
+      )}
     </div>
   );
 }
