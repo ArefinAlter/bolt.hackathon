@@ -60,15 +60,21 @@ export function AuthForm({ type }: AuthFormProps) {
     
     try {
       if (type === 'login') {
-        await signIn(data as AuthFormData);
-        router.push('/dashboard/role-selection');
+        console.log('Attempting to sign in...');
+        const result = await signIn(data as AuthFormData);
+        console.log('Sign in successful:', result);
+        console.log('Redirecting to role selection...');
+        window.location.href = '/dashboard/role-selection';
       } else {
-        await signUp(data as SignUpFormData);
-        router.push('/dashboard/role-selection');
+        console.log('Attempting to sign up...');
+        const result = await signUp(data as SignUpFormData);
+        console.log('Sign up successful:', result);
+        console.log('Redirecting to role selection...');
+        window.location.href = '/dashboard/role-selection';
       }
     } catch (err: any) {
+      console.error('Auth error details:', err);
       setError(err.message || 'An error occurred during authentication');
-      console.error('Auth error:', err);
     } finally {
       setIsLoading(false);
     }
