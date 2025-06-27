@@ -1,18 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { 
-  Phone, 
-  Mic, 
-  MicOff, 
-  PhoneOff, 
-  Volume2, 
-  VolumeX,
-  Loader2,
-  AlertTriangle,
-  MessageSquare,
-  Waveform
-} from 'lucide-react';
+import { Phone, Mic, MicOff, PhoneOff, Volume2, VolumeX, Loader2, AlertTriangle, MessageSquare, AudioWaveform as Waveform } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { CallSession, CallTranscript, AudioChunk } from '@/types/call';
