@@ -66,3 +66,12 @@ export interface ReturnRequestFilter {
   sortBy?: string;
   sortDirection?: 'asc' | 'desc';
 }
+
+export interface EvidenceFile {
+  id: string;
+  file: File;
+  preview_url: string;
+  upload_progress: number;
+  status: 'pending' | 'uploading' | 'success' | 'error';
+  error?: string;
+}

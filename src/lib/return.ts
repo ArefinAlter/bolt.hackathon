@@ -217,3 +217,71 @@ export function subscribeToReturnRequests(
     supabase.removeChannel(channel);
   };
 }
+
+// Subscribe to real-time updates for a specific return request
+export function subscribeToReturnRequest(
+  publicId: string,
+  callback: (payload: any) => void
+) {
+  const channel = supabase
+    .channel(`return_${publicId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'return_requests',
+        filter: `public_id=eq.${publicId}`
+      },
+      (payload) => {
+        callback(payload);
+      }
+    )
+    .subscribe();
+  
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
+// Process a return request with AI triage
+export async function processReturnRequest(
+  publicId: string,
+  reason: string,
+  evidenceUrls: string[] = [],
+  conversationLog: any[] = []
+): Promise<any> {
+  try {
+    // Call the triage-return function
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('No active session');
+    }
+    
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/triage-return`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        public_id: publicId,
+        reason_for_return: reason,
+        evidence_urls: evidenceUrls,
+        conversation_log: conversationLog
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to process return request');
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error processing return request:', error);
+    throw error;
+  }
+}

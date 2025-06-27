@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { 
   Package, 
@@ -9,19 +9,27 @@ import {
   Video, 
   ArrowLeft,
   Send,
-  Image,
+  Image as ImageIcon,
   AlertTriangle,
-  Loader2
+  Loader2,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Upload,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ReturnRequest } from '@/types/return';
+import { ReturnRequest, EvidenceFile } from '@/types/return';
 import { fetchReturnRequestById } from '@/lib/return';
-import { StatusTimeline } from '@/components/dashboard/requests/StatusTimeline';
-import { ConversationLog } from '@/components/dashboard/requests/ConversationLog';
-import { EvidenceGallery } from '@/components/dashboard/requests/EvidenceGallery';
+import { StatusTimeline } from '@/components/return/StatusTimeline';
+import { ConversationLog } from '@/components/return/ConversationLog';
+import { EvidenceGallery } from '@/components/return/EvidenceGallery';
+import { EvidenceUploader } from '@/components/return/EvidenceUploader';
+import { WebSocketManager } from '@/components/return/WebSocketManager';
 import { supabase } from '@/lib/supabase';
+import TextareaAutosize from 'react-textarea-autosize';
 
 export default function ReturnDetailPage() {
   const router = useRouter();
@@ -31,6 +39,12 @@ export default function ReturnDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [evidenceFiles, setEvidenceFiles] = useState<EvidenceFile[]>([]);
+  const [isUploadingEvidence, setIsUploadingEvidence] = useState(false);
+  const [showEvidenceUploader, setShowEvidenceUploader] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadRequestData = async () => {
@@ -61,15 +75,19 @@ export default function ReturnDetailPage() {
     loadRequestData();
   }, [router, params.public_id]);
 
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [request?.conversation_log]);
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !request) return;
     
     setIsSendingMessage(true);
     
     try {
-      // In a real implementation, this would call an API to send the message
-      // For demo purposes, we'll just update the local state
-      
       // Create a new message
       const newConversationMessage = {
         sender: 'customer' as const,
@@ -91,11 +109,39 @@ export default function ReturnDetailPage() {
       // Clear the input
       setNewMessage('');
       
+      // Update the request in the database
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No active session');
+      }
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/triage-return`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          public_id: request.public_id,
+          reason_for_return: request.reason_for_return || newMessage,
+          evidence_urls: request.evidence_urls || [],
+          conversation_log: updatedConversationLog
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update return request');
+      }
+      
+      const data = await response.json();
+      
       // Simulate AI response after a delay
       setTimeout(() => {
         const aiResponse = {
           sender: 'agent' as const,
-          message: getAIResponse(newMessage, request),
+          message: getAIResponse(newMessage, request, data),
           timestamp: new Date().toISOString()
         };
         
@@ -107,7 +153,8 @@ export default function ReturnDetailPage() {
             conversation_log: [
               ...(prev.conversation_log || []),
               aiResponse
-            ]
+            ],
+            status: data.status || prev.status
           };
         });
         
@@ -119,10 +166,234 @@ export default function ReturnDetailPage() {
     }
   };
 
+  const handleRefresh = async () => {
+    if (!params.public_id) return;
+    
+    setIsRefreshing(true);
+    
+    try {
+      const requestData = await fetchReturnRequestById(params.public_id as string);
+      setRequest(requestData);
+    } catch (error) {
+      console.error('Error refreshing request data:', error);
+      setError('Failed to refresh return request');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleEvidenceUpload = async (files: File[]) => {
+    if (!request) return;
+    
+    // Create evidence files
+    const newEvidenceFiles: EvidenceFile[] = files.map(file => ({
+      id: crypto.randomUUID(),
+      file,
+      preview_url: URL.createObjectURL(file),
+      upload_progress: 0,
+      status: 'pending'
+    }));
+    
+    setEvidenceFiles(prev => [...prev, ...newEvidenceFiles]);
+    setIsUploadingEvidence(true);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No active session');
+      }
+      
+      // Upload each file
+      const uploadedUrls: string[] = [];
+      
+      for (const evidenceFile of newEvidenceFiles) {
+        // Update file status
+        setEvidenceFiles(prev => 
+          prev.map(f => 
+            f.id === evidenceFile.id 
+              ? { ...f, status: 'uploading' } 
+              : f
+          )
+        );
+        
+        // Simulate upload progress
+        const progressInterval = setInterval(() => {
+          setEvidenceFiles(prev => 
+            prev.map(f => 
+              f.id === evidenceFile.id && f.status === 'uploading'
+                ? { 
+                    ...f, 
+                    upload_progress: Math.min(f.upload_progress + 10, 90) 
+                  } 
+                : f
+            )
+          );
+        }, 300);
+        
+        try {
+          // Convert file to base64
+          const base64 = await fileToBase64(evidenceFile.file);
+          
+          // Call the upload-file function
+          const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/upload-file`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              business_id: request.business_id,
+              file_type: 'evidence_photo',
+              file_name: evidenceFile.file.name,
+              file_data: base64,
+              file_metadata: {
+                size: evidenceFile.file.size,
+                type: evidenceFile.file.type,
+                last_modified: evidenceFile.file.lastModified
+              }
+            })
+          });
+          
+          clearInterval(progressInterval);
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to upload file');
+          }
+          
+          const data = await response.json();
+          uploadedUrls.push(data.file_url);
+          
+          // Update file status
+          setEvidenceFiles(prev => 
+            prev.map(f => 
+              f.id === evidenceFile.id 
+                ? { ...f, status: 'success', upload_progress: 100 } 
+                : f
+            )
+          );
+        } catch (error) {
+          clearInterval(progressInterval);
+          console.error('Error uploading file:', error);
+          
+          // Update file status
+          setEvidenceFiles(prev => 
+            prev.map(f => 
+              f.id === evidenceFile.id 
+                ? { ...f, status: 'error', error: 'Failed to upload file' } 
+                : f
+            )
+          );
+        }
+      }
+      
+      // Update the request with the new evidence URLs
+      if (uploadedUrls.length > 0) {
+        const updatedEvidenceUrls = [
+          ...(request.evidence_urls || []),
+          ...uploadedUrls
+        ];
+        
+        // Update the request in the database
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/triage-return`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            public_id: request.public_id,
+            reason_for_return: request.reason_for_return,
+            evidence_urls: updatedEvidenceUrls,
+            conversation_log: request.conversation_log
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to update return request');
+        }
+        
+        const data = await response.json();
+        
+        // Update the local request state
+        setRequest(prev => {
+          if (!prev) return prev;
+          
+          return {
+            ...prev,
+            evidence_urls: updatedEvidenceUrls,
+            status: data.status || prev.status
+          };
+        });
+        
+        // Add system message about evidence upload
+        const systemMessage = {
+          sender: 'system' as const,
+          message: `${uploadedUrls.length} evidence file(s) uploaded successfully.`,
+          timestamp: new Date().toISOString()
+        };
+        
+        setRequest(prev => {
+          if (!prev) return prev;
+          
+          return {
+            ...prev,
+            conversation_log: [
+              ...(prev.conversation_log || []),
+              systemMessage
+            ]
+          };
+        });
+        
+        // Simulate AI response after a delay
+        setTimeout(() => {
+          const aiResponse = {
+            sender: 'agent' as const,
+            message: `Thank you for providing evidence for your return request. This will help us process your request more efficiently. Is there anything else you'd like to add?`,
+            timestamp: new Date().toISOString()
+          };
+          
+          setRequest(prev => {
+            if (!prev) return prev;
+            
+            return {
+              ...prev,
+              conversation_log: [
+                ...(prev.conversation_log || []),
+                aiResponse
+              ]
+            };
+          });
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Error uploading evidence:', error);
+      setError('Failed to upload evidence files');
+    } finally {
+      setIsUploadingEvidence(false);
+      setShowEvidenceUploader(false);
+    }
+  };
+
   // Helper function to generate AI responses based on the message and request status
-  const getAIResponse = (message: string, request: ReturnRequest): string => {
+  const getAIResponse = (message: string, request: ReturnRequest, triageData: any): string => {
     const lowerMessage = message.toLowerCase();
     
+    // If we have triage data with a decision, use that
+    if (triageData && triageData.decision) {
+      switch (triageData.decision) {
+        case 'auto_approve':
+          return `Great news! Your return request for order ${request.order_id} has been automatically approved. ${triageData.reasoning}\n\nNext steps:\n${triageData.next_steps.join('\n')}`;
+        case 'auto_deny':
+          return `I'm sorry, but your return request for order ${request.order_id} has been denied. ${triageData.reasoning}\n\nIf you believe this is an error, please provide additional information or contact our support team.`;
+        case 'human_review':
+          return `Thank you for providing the details for your return request. Your case requires additional review by our team. ${triageData.reasoning}\n\nWe'll get back to you as soon as possible. You can check the status of your request anytime by returning to this page.`;
+      }
+    }
+    
+    // Default responses based on request status
     if (request.status === 'approved') {
       return "Your return has been approved! You should receive your refund within 3-5 business days. Is there anything else I can help you with?";
     } else if (request.status === 'denied') {
@@ -131,6 +402,7 @@ export default function ReturnDetailPage() {
       return "Your return request is currently under review by our team. We typically complete reviews within 24-48 hours. I'll notify you as soon as a decision is made.";
     }
     
+    // Generic responses based on message content
     if (lowerMessage.includes('status') || lowerMessage.includes('update')) {
       return `Your return request for order ${request.order_id} is currently ${request.status.replace('_', ' ')}. I'll keep you updated on any changes.`;
     } else if (lowerMessage.includes('refund') || lowerMessage.includes('money')) {
@@ -142,6 +414,21 @@ export default function ReturnDetailPage() {
     } else {
       return "Thank you for your message. I'm here to help with your return request for order " + request.order_id + ". Is there anything specific you'd like to know about your return?";
     }
+  };
+
+  // Helper function to convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        // Remove the data URL prefix (e.g., "data:image/png;base64,")
+        const base64Data = base64.split(',')[1];
+        resolve(base64Data);
+      };
+      reader.onerror = error => reject(error);
+    });
   };
 
   if (isLoading) {
@@ -184,15 +471,26 @@ export default function ReturnDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <Button 
-        variant="ghost" 
-        className="mb-4"
-        onClick={() => router.push('/return')}
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Return Portal
-      </Button>
+    <div className="space-y-6 max-w-7xl mx-auto px-4 py-8">
+      <div className="flex justify-between items-center">
+        <Button 
+          variant="ghost" 
+          className="mb-4"
+          onClick={() => router.push('/return')}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Return Portal
+        </Button>
+        
+        <Button
+          variant="outline"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      </div>
       
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -249,22 +547,30 @@ export default function ReturnDetailPage() {
                     </div>
                   </div>
                 )}
+                <div ref={messagesEndRef} />
               </div>
             </CardContent>
             <CardFooter className="p-4">
               <div className="flex w-full space-x-2">
-                <Input
+                <TextareaAutosize
                   placeholder="Type your message..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                  className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  className="flex-1 border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary resize-none max-h-32"
+                  minRows={1}
+                  maxRows={5}
                   disabled={isSendingMessage}
                 />
                 <Button 
                   className="bg-primary hover:bg-primary/90 text-black"
                   onClick={handleSendMessage}
-                  disabled={isSendingMessage}
+                  disabled={isSendingMessage || !newMessage.trim()}
                 >
                   {isSendingMessage ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -278,25 +584,36 @@ export default function ReturnDetailPage() {
           
           {/* Evidence gallery */}
           <Card className="border-0 shadow-md">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Image className="mr-2 h-5 w-5" />
-                Evidence Files
-              </CardTitle>
-              <CardDescription>
-                Photos and documents related to your return
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center">
+                  <ImageIcon className="mr-2 h-5 w-5" />
+                  Evidence Files
+                </CardTitle>
+                <CardDescription>
+                  Photos and documents related to your return
+                </CardDescription>
+              </div>
+              <Button 
+                variant="outline"
+                onClick={() => setShowEvidenceUploader(true)}
+                disabled={isUploadingEvidence}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Upload Evidence
+              </Button>
             </CardHeader>
             <CardContent>
               {request.evidence_urls && request.evidence_urls.length > 0 ? (
                 <EvidenceGallery evidenceUrls={request.evidence_urls} />
               ) : (
                 <div className="text-center py-6">
-                  <Image className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                  <ImageIcon className="h-10 w-10 text-gray-300 mx-auto mb-2" />
                   <p className="text-gray-500">No evidence files uploaded</p>
                   <Button 
                     variant="outline" 
                     className="mt-2"
+                    onClick={() => setShowEvidenceUploader(true)}
                   >
                     Upload Evidence
                   </Button>
@@ -389,14 +706,32 @@ export default function ReturnDetailPage() {
               <Button 
                 variant="outline" 
                 className="w-full flex items-center justify-center"
+                onClick={() => setShowEvidenceUploader(true)}
               >
-                <Image className="mr-2 h-4 w-4" />
+                <ImageIcon className="mr-2 h-4 w-4" />
                 Upload Evidence
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
+      
+      {/* Evidence uploader dialog */}
+      {showEvidenceUploader && (
+        <EvidenceUploader
+          onClose={() => setShowEvidenceUploader(false)}
+          onUpload={handleEvidenceUpload}
+          isUploading={isUploadingEvidence}
+          evidenceFiles={evidenceFiles}
+          setEvidenceFiles={setEvidenceFiles}
+        />
+      )}
+      
+      {/* WebSocket manager for real-time updates */}
+      <WebSocketManager 
+        publicId={request.public_id}
+        onUpdate={(updatedRequest) => setRequest(updatedRequest)}
+      />
     </div>
   );
 }
