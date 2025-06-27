@@ -1,7 +1,7 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { CustomerServiceAgent } from '../customer-service-agent/index.ts'
-import { TriageAgent } from '../triage-agent/index.ts'
-import { PolicyMCPServer } from '../policy-mcp-server/index.ts'
+import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
+import { CustomerServiceAgent } from '../customer-service-agent'
+import { TriageAgent } from '../triage-agent'
+import { PolicyMCPServer } from '../policy-mcp-server'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,7 +21,7 @@ serve(async (req) => {
     switch (testType) {
       case 'customer_service':
         const customerAgent = new CustomerServiceAgent()
-        result = await customerAgent.processMessage(
+        result = await customerAgent.processChatMessage(
           data.message,
           data.context,
           data.history || []

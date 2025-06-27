@@ -1,3 +1,5 @@
+import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
+
 Deno.serve(async (req) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -40,6 +42,9 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Start timing the test
+    const startTime = Date.now()
+
     let testResult = {}
 
     // Test based on provider type
@@ -54,11 +59,36 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Log the test results
+    const { error: logError } = await supabaseClient
+      .from('persona_test_logs')
+      .insert([
+        {
+          business_id: personaConfig.business_id,
+          config_id: config_id,
+          test_type: test_type || 'interaction',
+          test_content: test_content,
+          test_result: {
+            input: test_content,
+            response: testResult,
+            persona_config: personaConfig
+          },
+          success: true,
+          test_duration_ms: Date.now() - startTime,
+          created_at: new Date().toISOString()
+        }
+      ])
+
+    if (logError) {
+      console.error('Error logging persona test:', logError)
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true,
         test_result: testResult,
-        persona_config: personaConfig
+        persona_config: personaConfig,
+        response_time_ms: Date.now() - startTime
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

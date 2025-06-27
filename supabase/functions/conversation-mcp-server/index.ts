@@ -1,4 +1,4 @@
-import { MCPServer, MCPRequest, MCPResponse, ConversationContext } from '../mcp-base/index.ts'
+import { MCPServer, MCPRequest, MCPResponse, ConversationContext } from '../mcp-base'
 
 export class ConversationMCPServer extends MCPServer {
   private supabase: any

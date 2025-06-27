@@ -1,3 +1,5 @@
+import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
+
 Deno.serve(async (req) => {
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
@@ -10,7 +12,7 @@ Deno.serve(async (req) => {
   
     try {
       const { createClient } = await import('npm:@supabase/supabase-js@2')
-      const { TriageAgent } = await import('../triage-agent/index.ts')
+      const { TriageAgent } = await import('../triage-agent')
       
       const supabaseClient = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
@@ -82,7 +84,7 @@ Deno.serve(async (req) => {
         customerEmail: returnRequest.customer_email,
         reason: reason_for_return,
         evidenceUrls: evidence_urls || [],
-        orderValue: returnRequest.mock_orders.order_value,
+        orderValue: returnRequest.mock_orders.purchase_price,
         productCategory: returnRequest.mock_orders.product_category,
         daysSincePurchase,
         conversationLog: conversation_log || [],
@@ -103,7 +105,6 @@ Deno.serve(async (req) => {
         evidence_urls,
         conversation_log,
         ai_recommendation: triageDecision.decision,
-        ai_confidence_score: triageDecision.confidence,
         ai_reasoning: triageDecision.reasoning,
         policy_violations: triageDecision.policyViolations || [],
         risk_factors: triageDecision.riskFactors || []
@@ -146,12 +147,37 @@ Deno.serve(async (req) => {
         // await processRefund(public_id, returnRequest.mock_orders.order_value)
       }
   
+      // Check for suspicious patterns
+      if (daysSincePurchase < 1 || returnRequest.return_history > 5) {
+        // Log security event for suspicious return
+        const { error: securityError } = await supabaseClient
+          .from('security_events')
+          .insert([
+            {
+              business_id: returnRequest.business_id,
+              event_type: 'suspicious_behavior',
+              event_data: {
+                return_id: returnRequest.id,
+                customer_email: returnRequest.customer_email,
+                days_since_purchase: daysSincePurchase,
+                return_history: returnRequest.return_history,
+                reason: reason_for_return
+              },
+              severity: 'medium',
+              created_at: new Date().toISOString()
+            }
+          ])
+
+        if (securityError) {
+          console.error('Error logging security event:', securityError)
+        }
+      }
+  
       return new Response(
         JSON.stringify({ 
           success: true, 
           decision: triageDecision.decision,
           reasoning: triageDecision.reasoning,
-          confidence: triageDecision.confidence,
           status: updateData.status,
           days_since_purchase: daysSincePurchase,
           policy_violations: triageDecision.policyViolations,

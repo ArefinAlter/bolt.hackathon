@@ -1,4 +1,4 @@
-import { MCPServer, MCPRequest, MCPResponse } from '../mcp-base/index.ts'
+import { MCPServer, MCPRequest, MCPResponse } from '../mcp-base'
 
 export class PolicyMCPServer extends MCPServer {
   private supabase: any

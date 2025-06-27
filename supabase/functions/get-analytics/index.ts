@@ -1,3 +1,5 @@
+import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
+
 Deno.serve(async (req) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -70,7 +72,7 @@ Deno.serve(async (req) => {
 async function getReturnMetrics(supabase: any, businessId: string) {
   const { data: returns } = await supabase
     .from('return_requests')
-    .select('status, created_at, ai_confidence_score')
+    .select('status, created_at')
     .eq('business_id', businessId)
 
   if (!returns) return {}
@@ -79,7 +81,6 @@ async function getReturnMetrics(supabase: any, businessId: string) {
   const approved = returns.filter(r => r.status === 'approved').length
   const denied = returns.filter(r => r.status === 'denied').length
   const pending = returns.filter(r => r.status === 'pending_review').length
-  const autoApproved = returns.filter(r => r.status === 'approved' && r.ai_confidence_score > 0.8).length
 
   // Calculate trends (last 30 days vs previous 30 days)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
@@ -96,7 +97,6 @@ async function getReturnMetrics(supabase: any, businessId: string) {
     approved_returns: approved,
     denied_returns: denied,
     pending_review: pending,
-    auto_approval_rate: total > 0 ? (autoApproved / total * 100).toFixed(1) : 0,
     approval_rate: total > 0 ? (approved / total * 100).toFixed(1) : 0,
     trend: {
       recent_period: recentReturns.length,
@@ -110,7 +110,7 @@ async function getReturnMetrics(supabase: any, businessId: string) {
 async function getAIAccuracyMetrics(supabase: any, businessId: string) {
   const { data: returns } = await supabase
     .from('return_requests')
-    .select('ai_recommendation, ai_confidence_score, status, admin_notes')
+    .select('ai_recommendation, status, admin_notes')
     .eq('business_id', businessId)
     .not('ai_recommendation', 'is', null)
 
@@ -123,15 +123,10 @@ async function getAIAccuracyMetrics(supabase: any, businessId: string) {
     return false
   })
 
-  const averageConfidence = aiDecisions.length > 0 ? 
-    aiDecisions.reduce((sum, r) => sum + (r.ai_confidence_score || 0), 0) / aiDecisions.length : 0
-
   return {
     total_ai_decisions: aiDecisions.length,
     correct_decisions: correctDecisions.length,
-    accuracy_rate: aiDecisions.length > 0 ? (correctDecisions.length / aiDecisions.length * 100).toFixed(1) : 0,
-    average_confidence: averageConfidence.toFixed(2),
-    high_confidence_decisions: aiDecisions.filter(r => (r.ai_confidence_score || 0) > 0.8).length
+    accuracy_rate: aiDecisions.length > 0 ? (correctDecisions.length / aiDecisions.length * 100).toFixed(1) : 0
   }
 }
 

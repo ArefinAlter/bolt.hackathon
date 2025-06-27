@@ -1,3 +1,5 @@
+import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
+
 Deno.serve(async (req) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -26,16 +28,33 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Get user's business_id from profiles table
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('business_id')
+      .eq('id', user_id)
+      .single()
+
+    if (profileError) {
+      console.error('Error fetching profile:', profileError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch user profile' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
+    }
+
     // Create new chat session
     const { data: session, error } = await supabaseClient
       .from('chat_sessions')
       .insert([
         {
           user_id,
+          business_id: profile.business_id,
           session_name: session_name || 'Test Session',
           chat_mode: chat_mode || 'normal',
           session_type: session_type || 'test_mode',
-          is_active: true
+          is_active: true,
+          customer_email: '' // Will be set when customer provides email
         }
       ])
       .select()
@@ -61,6 +80,8 @@ Deno.serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         session_id: session.id,
+        business_id: session.business_id,
+        customer_email: session.customer_email,
         chat_mode: session.chat_mode,
         message: 'Chat session created successfully'
       }),

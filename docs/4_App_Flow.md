@@ -47,6 +47,8 @@ This document outlines the primary user flows for the Dokani platform, designed 
    - Policy management interface
    - Analytics and insights
    - Support persona builder access
+   - Risk assessment tools
+   - File management system
 
 2. **Policy Management**: User can:
    - View existing demo policies
@@ -54,6 +56,27 @@ This document outlines the primary user flows for the Dokani platform, designed 
    - Configure return rules and thresholds
    - Activate/deactivate policies
    - Test policies in simulation mode
+   - View policy performance analytics
+   - Rollback to previous policy versions
+   - A/B test different policy configurations
+
+3. **Advanced Analytics Dashboard**: User can access:
+   - Return trends and patterns visualization
+   - AI decision accuracy rates
+   - Customer satisfaction metrics
+   - Policy effectiveness analysis
+   - Business performance insights
+   - Real-time metrics and KPIs
+   - Custom date range filtering
+   - Export analytics data
+
+4. **Risk Assessment Interface**: User can:
+   - View customer risk scoring
+   - Monitor fraud detection alerts
+   - Analyze risk factors
+   - Review risk mitigation recommendations
+   - Set risk thresholds
+   - View risk assessment history
 
 ### 3.2 Support Persona Builder
 1. **Voice Persona Creation (ElevenLabs)**:
@@ -61,18 +84,21 @@ This document outlines the primary user flows for the Dokani platform, designed 
    - Configure voice characteristics
    - Test voice generation
    - Save voice personas for use in customer interactions
+   - Preview voice in real-time
 
 2. **Video Persona Creation (Tavus)**:
    - Upload video samples of themselves
    - Configure avatar settings
    - Test video avatar generation
    - Save video personas for customer interactions
+   - Preview video avatar in real-time
 
 3. **Persona Management**:
    - View all created personas
    - Edit existing personas
    - Set default personas for different scenarios
    - Test personas in preview mode
+   - Organize personas by category
 
 ### 3.3 Return Request Management
 1. **Request Monitoring**: View all return requests with:
@@ -80,18 +106,75 @@ This document outlines the primary user flows for the Dokani platform, designed 
    - Customer information
    - AI recommendations
    - Evidence files
+   - Risk scores
+   - Policy compliance status
 
 2. **Manual Review**: For requests flagged for human review:
    - Review AI recommendations and confidence scores
    - View customer chat history and evidence
    - Make approve/deny decisions
    - Add internal notes
+   - Escalate cases if needed
 
-3. **Analytics**: Access business insights including:
-   - Return request trends
-   - AI decision accuracy
-   - Customer satisfaction metrics
-   - Policy effectiveness
+3. **Return Lifecycle Management**:
+   - Create new return requests
+   - Track request status through all stages
+   - Manage escalations
+   - View complete request history
+   - Update request status manually
+
+### 3.4 File Management System
+1. **Evidence Management**:
+   - Upload and organize evidence files
+   - Tag and categorize files
+   - Set file access permissions
+   - View file usage analytics
+   - Manage file storage
+
+2. **Asset Library**:
+   - Voice sample library
+   - Video sample library
+   - Template files
+   - Brand assets
+   - Organized file structure
+
+### 3.5 Testing & Simulation Tools
+1. **AI Agent Testing**:
+   - Test AI agents with different scenarios
+   - Benchmark AI performance
+   - Compare different AI configurations
+   - View test results and analytics
+
+2. **Persona Testing**:
+   - Test voice personas
+   - Test video personas
+   - Preview personas in different contexts
+   - Performance testing
+
+3. **Policy Simulation**:
+   - Test policies with sample data
+   - Simulate different scenarios
+   - View policy impact analysis
+   - A/B test policy configurations
+
+### 3.6 Advanced Call Management
+1. **Call History**:
+   - View all call sessions
+   - Access call recordings
+   - Review call transcripts
+   - Call quality metrics
+
+2. **Call Analytics**:
+   - Call duration analysis
+   - Call success rates
+   - Voice quality metrics
+   - Customer satisfaction scores
+
+3. **Call Monitoring**:
+   - Real-time call monitoring
+   - Live call quality indicators
+   - Call performance alerts
+   - Voice input processing status
 
 ---
 
@@ -119,6 +202,12 @@ This document outlines the primary user flows for the Dokani platform, designed 
    - AI guides customer through evidence upload
    - AI provides real-time status updates
 
+4. **Real-time Streaming Features**:
+   - Live AI response streaming
+   - Real-time typing indicators
+   - Live status updates
+   - Streaming quality controls
+
 ### 4.2 Voice Calling
 1. **Voice Call Initiation**: Customer can:
    - Click "Voice Call" button in chat
@@ -136,6 +225,7 @@ This document outlines the primary user flows for the Dokani platform, designed 
    - Natural conversation flow
    - Voice emotion and tone matching
    - Call recording and analytics
+   - Voice quality monitoring
 
 ### 4.3 Video Calling
 1. **Video Call Initiation**: Customer can:
@@ -154,6 +244,7 @@ This document outlines the primary user flows for the Dokani platform, designed 
    - Facial expression matching
    - Lip-sync with speech
    - Video recording and analytics
+   - Video quality monitoring
 
 ### 4.4 Return Request Completion
 1. **AI Decision Making**: The system:
@@ -175,7 +266,29 @@ This document outlines the primary user flows for the Dokani platform, designed 
 
 ---
 
-## Flow 5: Role Switching
+## Flow 5: User Settings & Preferences
+
+**Persona**: Demo User
+**Goal**: To configure personal preferences and settings
+
+1. **User Preferences Page**: User can configure:
+   - Language preferences
+   - Auto-escalation settings
+   - Video/voice call preferences
+   - Notification settings
+   - Default persona selection
+   - Theme preferences
+   - Accessibility settings
+
+2. **Profile Management**:
+   - Update personal information
+   - Change password
+   - Manage account settings
+   - View account activity
+
+---
+
+## Flow 6: Role Switching
 
 **Persona**: Demo User
 **Goal**: To seamlessly switch between business and customer experiences
@@ -190,6 +303,7 @@ This document outlines the primary user flows for the Dokani platform, designed 
    - Chat history is preserved
    - Persona settings are maintained
    - Return requests continue processing
+   - User preferences are maintained
 
 3. **Seamless Experience**: User can:
    - Configure policies as business owner
@@ -199,7 +313,7 @@ This document outlines the primary user flows for the Dokani platform, designed 
 
 ---
 
-## Flow 6: Demo Data & Testing
+## Flow 7: Demo Data & Testing
 
 **Persona**: Demo User
 **Goal**: To test the platform with realistic data
@@ -214,12 +328,15 @@ This document outlines the primary user flows for the Dokani platform, designed 
    - High-value manual review cases
    - Policy violation denials
    - Complex edge cases
+   - Risk assessment scenarios
+   - Different persona configurations
 
 3. **Real-time Testing**: Users can:
    - Create policies and immediately test them
    - See AI decisions in real-time
    - Experience the full customer journey
    - Monitor business dashboard updates
+   - Test real-time streaming features
 
 ---
 
@@ -243,24 +360,14 @@ This document outlines the primary user flows for the Dokani platform, designed 
 - Tavus for video avatar creation and interaction
 - Real-time policy evaluation and risk assessment
 
+### Real-time Features
+- WebSocket connections for live updates
+- Server-Sent Events for streaming responses
+- Real-time analytics and monitoring
+- Live collaboration features
+
 ### Provider Integration Status
 - **ElevenLabs**: Active integration for voice generation
 - **Tavus**: Active integration for video avatar creation
 - **OpenAI**: Active integration for chat and decision making
-- **Mock Data**: Active for comprehensive testing
-
----
-
-## Demo-Specific Features
-
-### Simulation Components
-- **Mock Payment Processing**: Simulated refund workflow for demo purposes
-- **Direct Portal Access**: Return process initiated through direct portal access
-- **Demo Data**: Pre-populated with realistic test scenarios
-- **Role Switching**: Seamless experience between business and customer perspectives
-
-### Hackathon Optimizations
-- **Rapid Development**: Focus on core AI functionality and user experience
-- **Real-time Interaction**: Live AI conversations and decision making
-- **Compelling Demo**: Complete workflow demonstration without external dependencies
-- **Voice/Video Ready**: Full multimodal communication capabilities 
+- **Mock Data**: Active for comprehensive testing 

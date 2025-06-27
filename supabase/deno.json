@@ -1,0 +1,57 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowImportingTsExtensions": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "downlevelIteration": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowJs": true,
+    "declaration": false,
+    "outDir": "./dist",
+    "rootDir": "./functions"
+  },
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
+    "std/": "https://deno.land/std@0.220.0/"
+  },
+  "tasks": {
+    "dev": "deno run --allow-net --allow-env --allow-read --allow-write functions/**/index.ts",
+    "check": "deno check functions/**/*.ts",
+    "fmt": "deno fmt functions/",
+    "lint": "deno lint functions/"
+  },
+  "fmt": {
+    "files": {
+      "include": ["functions/"]
+    },
+    "options": {
+      "useTabs": false,
+      "lineWidth": 80,
+      "indentWidth": 2,
+      "semiColons": true,
+      "singleQuote": true,
+      "proseWrap": "preserve"
+    }
+  },
+  "lint": {
+    "files": {
+      "include": ["functions/"]
+    },
+    "rules": {
+      "tags": ["recommended"]
+    }
+  }
+} 

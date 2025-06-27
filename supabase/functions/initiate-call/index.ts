@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { CustomerServiceAgent } from '../customer-service-agent/index.ts'
 
@@ -31,7 +31,7 @@ serve(async (req) => {
     // Verify chat session exists and get business context
     const { data: session, error: sessionError } = await supabaseClient
       .from('chat_sessions')
-      .select('*, businesses(*)')
+      .select('*, profiles!business_id(*)')
       .eq('id', chat_session_id)
       .single()
 
@@ -149,20 +149,41 @@ serve(async (req) => {
 
 async function initializeStreamingInfrastructure(callSessionId: string, callType: string, provider: string): Promise<void> {
   try {
-    // Initialize stream processors based on call type
-    if (callType === 'voice') {
+    // Initialize audio streaming if needed
+    if (callType === 'voice' || callType === 'video') {
       await initializeAudioStreamProcessor(callSessionId, provider)
-    } else if (callType === 'video') {
+    }
+    
+    // Initialize video streaming if needed
+    if (callType === 'video') {
       await initializeVideoStreamProcessor(callSessionId, provider)
     }
 
-    // Set up WebSocket connection monitoring
-    await setupWebSocketMonitoring(callSessionId, callType)
+    // Log streaming session
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    const { error: streamingError } = await supabaseClient
+      .from('streaming_sessions')
+      .insert([
+        {
+          session_id: callSessionId,
+          stream_type: callType,
+          provider,
+          status: 'initialized',
+          created_at: new Date().toISOString()
+        }
+      ])
+
+    if (streamingError) {
+      console.error('Error logging streaming session:', streamingError)
+    }
 
     console.log(`Streaming infrastructure initialized for call session ${callSessionId}`)
   } catch (error) {
     console.error('Error initializing streaming infrastructure:', error)
-    // Don't fail the call initiation if streaming setup fails
   }
 }
 
@@ -268,7 +289,7 @@ async function initializeElevenLabsCall(callSessionId: string, session: any, con
     }
 
     // Generate initial greeting using AI agent
-    const aiResponse = await customerServiceAgent.processMessage(
+    const aiResponse = await customerServiceAgent.processChatMessage(
       "Hello, I'm starting a voice call. Please greet the customer warmly and explain that you're here to help with their return or refund request.",
       agentContext,
       conversationHistory || []
@@ -332,7 +353,7 @@ async function initializeElevenLabsCall(callSessionId: string, session: any, con
       ai_context: {
         agent_initialized: true,
         conversation_history: conversationHistory?.length || 0,
-        business_context: session.businesses
+        business_context: session.profiles
       },
       streaming_config: enableStreaming ? {
         enabled: true,

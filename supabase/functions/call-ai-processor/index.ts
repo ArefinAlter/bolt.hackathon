@@ -1,7 +1,7 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { CustomerServiceAgent } from '../customer-service-agent/index.ts'
-import { TriageAgent } from '../triage-agent/index.ts'
+import { CustomerServiceAgent } from '../customer-service-agent'
+import { TriageAgent } from '../triage-agent'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -37,7 +37,7 @@ serve(async (req) => {
     // Get call session with full context
     const { data: callSession, error: sessionError } = await supabaseClient
       .from('call_sessions')
-      .select('*, chat_sessions(*, businesses(*))')
+      .select('*, chat_sessions(*, profiles!business_id(*))')
       .eq('id', call_session_id)
       .single()
 
@@ -139,7 +139,7 @@ serve(async (req) => {
         }))
       ]
 
-      aiResponse = await customerServiceAgent.processMessage(
+      aiResponse = await customerServiceAgent.processChatMessage(
         user_message,
         agentContext,
         combinedHistory
@@ -156,7 +156,6 @@ serve(async (req) => {
             speaker: 'agent',
             message: aiResponse.message,
             timestamp_seconds: Date.now() / 1000,
-            confidence_score: aiResponse.data?.confidence || 1.0,
             metadata: {
               ai_agent: message_type === 'return_request' ? 'triage_agent' : 'customer_service_agent',
               next_action: aiResponse.data?.nextAction,
@@ -182,7 +181,6 @@ serve(async (req) => {
         ai_response: aiResponse.message,
         media_response: mediaResponse,
         next_action: aiResponse.data?.nextAction,
-        confidence: aiResponse.data?.confidence,
         return_detected: !!aiResponse.data?.returnRequest,
         triage_decision: aiResponse.data?.triageDecision
       }),
