@@ -12,7 +12,7 @@ export function BoltBadge() {
         className="w-16 h-16 drop-shadow-lg"
         priority
       />
-      <span className="mt-2 text-xs text-gray-700 bg-white/80 rounded px-2 py-1 shadow">Built with Bolt</span>
+      <span className="mt-2 text-xs text-black bg-white/80 rounded px-2 py-1 shadow">Built with Bolt</span>
     </div>
   )
 } 

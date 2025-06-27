@@ -28,14 +28,14 @@ export function StatCard({
       <CardContent className="p-6">
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-sm font-medium text-gray-500">{title}</p>
+            <p className="text-sm font-medium text-black">{title}</p>
             {isLoading ? (
               <div className="h-8 w-24 bg-gray-200 animate-pulse rounded mt-1"></div>
             ) : (
               <p className="text-2xl font-bold mt-1">{value}</p>
             )}
             {description && (
-              <p className="text-sm text-gray-500 mt-1">{description}</p>
+              <p className="text-sm text-black mt-1">{description}</p>
             )}
             {trend && !isLoading && (
               <div className="flex items-center mt-2">

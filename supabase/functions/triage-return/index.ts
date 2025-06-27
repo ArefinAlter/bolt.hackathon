@@ -105,7 +105,6 @@ Deno.serve(async (req) => {
         evidence_urls,
         conversation_log,
         ai_recommendation: triageDecision.decision,
-        ai_confidence_score: triageDecision.confidence,
         ai_reasoning: triageDecision.reasoning,
         policy_violations: triageDecision.policyViolations || [],
         risk_factors: triageDecision.riskFactors || []
@@ -179,7 +178,6 @@ Deno.serve(async (req) => {
           success: true, 
           decision: triageDecision.decision,
           reasoning: triageDecision.reasoning,
-          confidence: triageDecision.confidence,
           status: updateData.status,
           days_since_purchase: daysSincePurchase,
           policy_violations: triageDecision.policyViolations,

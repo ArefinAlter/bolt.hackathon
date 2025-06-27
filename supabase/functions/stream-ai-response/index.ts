@@ -86,8 +86,7 @@ serve(async (req) => {
             call_session_id: callSession.id,
             speaker: 'user',
             message: user_message,
-            timestamp_seconds: Date.now() / 1000,
-            confidence_score: 1.0
+            timestamp_seconds: Date.now() / 1000
           }
         ]),
       supabaseClient
@@ -98,7 +97,6 @@ serve(async (req) => {
             speaker: 'agent',
             message: aiResponse.message,
             timestamp_seconds: Date.now() / 1000,
-            confidence_score: aiResponse.data?.confidence || 1.0,
             metadata: {
               ai_agent: 'customer_service_agent',
               next_action: aiResponse.data?.nextAction,
@@ -121,7 +119,6 @@ serve(async (req) => {
           response_type: 'text',
           text_response: aiResponse.message,
           next_action: aiResponse.data?.nextAction,
-          confidence: aiResponse.data?.confidence,
           return_detected: !!aiResponse.data?.returnRequest
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

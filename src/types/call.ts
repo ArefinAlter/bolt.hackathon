@@ -30,7 +30,6 @@ export interface CallTranscript {
   speaker: 'user' | 'agent' | 'system';
   message: string;
   timestamp_seconds: number;
-  confidence_score?: number;
   created_at: string;
 }
 

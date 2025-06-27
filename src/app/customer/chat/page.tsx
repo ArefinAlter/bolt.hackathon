@@ -348,15 +348,14 @@ export default function CustomerChatPage() {
     const isUser = message.sender === 'user';
     const isSystem = message.sender === 'system';
     const hasReturnDetection = message.metadata?.return_detected;
-    const confidenceScore = message.metadata?.ai_confidence_score;
-    
+
     return (
       <div 
         key={message.id} 
         className={`flex ${isUser ? 'justify-end' : isSystem ? 'justify-center' : 'justify-start'} mb-4`}
       >
         {isSystem ? (
-          <div className="bg-gray-100 text-gray-600 rounded-lg px-4 py-2 max-w-[80%] text-sm">
+          <div className="bg-gray-100 text-black rounded-lg px-4 py-2 max-w-[80%] text-sm">
             {message.message}
           </div>
         ) : (
@@ -402,7 +401,7 @@ export default function CustomerChatPage() {
                         href={url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
+                        className="flex items-center bg-gray-100 rounded-md px-3 py-2 text-sm text-black hover:bg-gray-200"
                       >
                         <Paperclip className="h-4 w-4 mr-2" />
                         {(message.metadata as any)?.file_names?.[index] || 'File'}
@@ -412,39 +411,6 @@ export default function CustomerChatPage() {
                 </div>
               )}
             </div>
-            
-            {/* Confidence score for agent messages */}
-            {!isUser && !isSystem && typeof confidenceScore === 'number' && (
-              <div className="flex items-center mt-1 space-x-2">
-                <div className="text-xs text-gray-500">
-                  Confidence: {(confidenceScore * 100).toFixed(0)}%
-                </div>
-                
-                {/* Feedback buttons */}
-                {showFeedback !== message.id && (
-                  <div className="flex space-x-1">
-                    <button 
-                      onClick={() => handleFeedback(message.id, true)}
-                      className="text-gray-400 hover:text-green-500"
-                    >
-                      <ThumbsUp className="h-3 w-3" />
-                    </button>
-                    <button 
-                      onClick={() => handleFeedback(message.id, false)}
-                      className="text-gray-400 hover:text-red-500"
-                    >
-                      <ThumbsDown className="h-3 w-3" />
-                    </button>
-                  </div>
-                )}
-                
-                {showFeedback === message.id && (
-                  <span className="text-xs text-green-500">
-                    Thank you for your feedback!
-                  </span>
-                )}
-              </div>
-            )}
             
             {/* Return detection indicator */}
             {!isUser && hasReturnDetection && (
@@ -477,8 +443,8 @@ export default function CustomerChatPage() {
               <MessageSquare className="h-5 w-5 text-primary" />
             </div>
             <div className="ml-3">
-              <h1 className="text-lg font-semibold text-gray-900">Customer Support</h1>
-              <p className="text-sm text-gray-500">
+              <h1 className="text-lg font-semibold text-black">Customer Support</h1>
+              <p className="text-sm text-black">
                 {isCallActive 
                   ? `${callType === 'voice' ? 'Voice' : 'Video'} call in progress...` 
                   : 'Chat with our AI assistant'}
@@ -539,8 +505,8 @@ export default function CustomerChatPage() {
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <MessageSquare className="h-8 w-8 text-primary" />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Welcome to Customer Support</h2>
-                <p className="text-gray-600 max-w-md mb-6">
+                <h2 className="text-xl font-semibold text-black mb-2">Welcome to Customer Support</h2>
+                <p className="text-black max-w-md mb-6">
                   Our AI assistant is here to help with your return or refund requests. How can we assist you today?
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
@@ -600,13 +566,13 @@ export default function CustomerChatPage() {
                   ) : file.status === 'error' ? (
                     <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
                   ) : (
-                    <Paperclip className="h-4 w-4 mr-2 text-gray-500" />
+                    <Paperclip className="h-4 w-4 mr-2 text-black" />
                   )}
                   
                   <span className="text-sm truncate max-w-[150px]">{file.file.name}</span>
                   
                   <button 
-                    className="ml-2 text-gray-400 hover:text-gray-600"
+                    className="ml-2 text-black hover:text-gray-600"
                     onClick={() => handleRemoveFile(file.id)}
                   >
                     <X className="h-4 w-4" />

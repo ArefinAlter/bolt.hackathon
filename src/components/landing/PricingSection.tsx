@@ -70,11 +70,11 @@ export function PricingSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4">
             Simple, Transparent{' '}
             <span className="gradient-text">Pricing</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-black max-w-3xl mx-auto">
             Choose the plan that fits your business size and needs. All plans include a 14-day free trial.
           </p>
         </div>
@@ -101,17 +101,17 @@ export function PricingSection() {
               )}
               
               <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl font-bold text-gray-900">
+                <CardTitle className="text-2xl font-bold text-black">
                   {tier.name}
                 </CardTitle>
-                <CardDescription className="text-gray-600 mt-2">
+                <CardDescription className="text-black mt-2">
                   {tier.description}
                 </CardDescription>
                 <div className="mt-6">
-                  <span className="text-4xl font-bold text-gray-900">
+                  <span className="text-4xl font-bold text-black">
                     ${tier.price}
                   </span>
-                  <span className="text-gray-600 ml-1">/{tier.period}</span>
+                  <span className="text-black ml-1">/{tier.period}</span>
                 </div>
               </CardHeader>
 
@@ -120,7 +120,7 @@ export function PricingSection() {
                   {tier.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start">
                       <Check className="w-5 h-5 text-success mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700">{feature}</span>
+                      <span className="text-black">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -146,10 +146,10 @@ export function PricingSection() {
 
         {/* Bottom note */}
         <div className="text-center mt-12">
-          <p className="text-gray-600">
+          <p className="text-black">
             All plans include 14-day free trial • No setup fees • Cancel anytime
           </p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-sm text-black mt-2">
             Need a custom plan? <Link href="/contact" className="text-primary hover:underline">Contact our sales team</Link>
           </p>
         </div>

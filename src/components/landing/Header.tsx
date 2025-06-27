@@ -28,24 +28,24 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">
+            <Link href="#features" className="text-black hover:text-gray-900 transition-colors">
               Features
             </Link>
-            <Link href="#benefits" className="text-gray-600 hover:text-gray-900 transition-colors">
+            <Link href="#benefits" className="text-black hover:text-gray-900 transition-colors">
               Benefits
             </Link>
-            <Link href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">
+            <Link href="#pricing" className="text-black hover:text-gray-900 transition-colors">
               Pricing
             </Link>
-            <Link href="#stack" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Integrations
+            <Link href="#stack" className="text-black hover:text-gray-900 transition-colors">
+              Tech Stack
             </Link>
           </nav>
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
             <Link href="/auth/login">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+              <Button variant="ghost" className="text-black hover:text-gray-900">
                 Sign In
               </Button>
             </Link>
@@ -62,7 +62,7 @@ export function Header() {
               variant="ghost"
               size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-600"
+              className="text-black"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
@@ -75,31 +75,31 @@ export function Header() {
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
               <Link
                 href="#features"
-                className="block px-3 py-2 text-gray-600 hover:text-gray-900"
+                className="block px-3 py-2 text-black hover:text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Features
               </Link>
               <Link
                 href="#benefits"
-                className="block px-3 py-2 text-gray-600 hover:text-gray-900"
+                className="block px-3 py-2 text-black hover:text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Benefits
               </Link>
               <Link
                 href="#pricing"
-                className="block px-3 py-2 text-gray-600 hover:text-gray-900"
+                className="block px-3 py-2 text-black hover:text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Pricing
               </Link>
               <Link
                 href="#stack"
-                className="block px-3 py-2 text-gray-600 hover:text-gray-900"
+                className="block px-3 py-2 text-black hover:text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Integrations
+                Tech Stack
               </Link>
               <div className="pt-4 pb-3 border-t border-gray-200">
                 <div className="flex items-center px-3 space-x-3">

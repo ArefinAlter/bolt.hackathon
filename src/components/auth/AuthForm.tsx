@@ -137,9 +137,9 @@ export function AuthForm({ type }: AuthFormProps) {
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-gray-500" />
+                        <EyeOff className="h-4 w-4 text-black" />
                       ) : (
-                        <Eye className="h-4 w-4 text-gray-500" />
+                        <Eye className="h-4 w-4 text-black" />
                       )}
                     </Button>
                   </div>
@@ -173,9 +173,9 @@ export function AuthForm({ type }: AuthFormProps) {
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         >
                           {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4 text-gray-500" />
+                            <EyeOff className="h-4 w-4 text-black" />
                           ) : (
-                            <Eye className="h-4 w-4 text-gray-500" />
+                            <Eye className="h-4 w-4 text-black" />
                           )}
                         </Button>
                       </div>
@@ -238,7 +238,7 @@ export function AuthForm({ type }: AuthFormProps) {
         )}
       </CardContent>
       <CardFooter className="flex justify-center">
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-black">
           {type === 'login' ? (
             <>
               Don't have an account?{' '}

@@ -46,7 +46,7 @@ export function ReturnStatusBadge({ status, className = '' }: ReturnStatusBadgeP
       );
     default:
       return (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 ${className}`}>
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-black ${className}`}>
           {status}
         </span>
       );

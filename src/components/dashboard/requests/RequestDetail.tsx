@@ -71,8 +71,8 @@ export function RequestDetail({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Return Request Details</h2>
-          <p className="text-gray-500">
+          <h2 className="text-2xl font-bold text-black">Return Request Details</h2>
+          <p className="text-black">
             {request.order_id} • {format(new Date(request.created_at), 'MMM d, yyyy')}
           </p>
         </div>
@@ -127,15 +127,15 @@ export function RequestDetail({
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">Order ID</p>
+                  <p className="text-sm text-black">Order ID</p>
                   <p className="font-medium">{request.order_id}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Customer</p>
+                  <p className="text-sm text-black">Customer</p>
                   <p className="font-medium">{request.customer_email}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Purchase Date</p>
+                  <p className="text-sm text-black">Purchase Date</p>
                   <p className="font-medium">
                     {request.order_details?.purchase_date 
                       ? format(new Date(request.order_details.purchase_date), 'MMM d, yyyy')
@@ -143,19 +143,19 @@ export function RequestDetail({
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Days Since Purchase</p>
+                  <p className="text-sm text-black">Days Since Purchase</p>
                   <p className="font-medium">{request.days_since_purchase || 'Unknown'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Product</p>
+                  <p className="text-sm text-black">Product</p>
                   <p className="font-medium">{request.order_details?.product_name || 'Unknown'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Category</p>
+                  <p className="text-sm text-black">Category</p>
                   <p className="font-medium">{request.order_details?.product_category || request.product_category || 'Unknown'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Order Value</p>
+                  <p className="text-sm text-black">Order Value</p>
                   <p className="font-medium">
                     ${request.order_value?.toFixed(2) || 
                        request.order_details?.purchase_price?.toFixed(2) || 
@@ -163,7 +163,7 @@ export function RequestDetail({
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Return Reason</p>
+                  <p className="text-sm text-black">Return Reason</p>
                   <p className="font-medium">{request.reason_for_return || 'Not specified'}</p>
                 </div>
               </div>
@@ -183,8 +183,8 @@ export function RequestDetail({
                 <ConversationLog messages={request.conversation_log} />
               ) : (
                 <div className="text-center py-6">
-                  <MessageSquare className="h-10 w-10 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-500">No conversation history available</p>
+                  <MessageSquare className="h-10 w-10 text-black mx-auto mb-2" />
+                  <p className="text-black">No conversation history available</p>
                 </div>
               )}
             </CardContent>
@@ -203,8 +203,8 @@ export function RequestDetail({
                 <EvidenceGallery evidenceUrls={request.evidence_urls} />
               ) : (
                 <div className="text-center py-6">
-                  <Image className="h-10 w-10 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-500">No evidence files uploaded</p>
+                  <Image className="h-10 w-10 text-black mx-auto mb-2" />
+                  <p className="text-black">No evidence files uploaded</p>
                 </div>
               )}
             </CardContent>
@@ -289,35 +289,17 @@ export function RequestDetail({
                   )}
                 </div>
                 
-                {request.ai_confidence_score !== undefined && (
-                  <div className="mb-3">
-                    <p className="text-sm font-medium mb-1">Confidence: {(request.ai_confidence_score * 100).toFixed(0)}%</p>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full ${
-                          request.ai_recommendation === 'auto_approve' 
-                            ? 'bg-green-500' 
-                            : request.ai_recommendation === 'auto_deny'
-                              ? 'bg-red-500'
-                              : 'bg-orange-500'
-                        }`}
-                        style={{ width: `${request.ai_confidence_score * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
-                
                 {request.ai_reasoning && (
                   <div className="mb-3">
                     <p className="text-sm font-medium mb-1">Reasoning:</p>
-                    <p className="text-sm text-gray-700">{request.ai_reasoning}</p>
+                    <p className="text-sm text-black">{request.ai_reasoning}</p>
                   </div>
                 )}
                 
                 {request.policy_violations && request.policy_violations.length > 0 && (
                   <div className="mb-3">
                     <p className="text-sm font-medium mb-1">Policy Violations:</p>
-                    <ul className="list-disc list-inside text-sm text-gray-700">
+                    <ul className="list-disc list-inside text-sm text-black">
                       {request.policy_violations.map((violation, index) => (
                         <li key={index}>{violation}</li>
                       ))}
@@ -328,7 +310,7 @@ export function RequestDetail({
                 {request.risk_factors && request.risk_factors.length > 0 && (
                   <div>
                     <p className="text-sm font-medium mb-1">Risk Factors:</p>
-                    <ul className="list-disc list-inside text-sm text-gray-700">
+                    <ul className="list-disc list-inside text-sm text-black">
                       {request.risk_factors.map((factor, index) => (
                         <li key={index}>{factor}</li>
                       ))}
@@ -363,7 +345,7 @@ export function RequestDetail({
                       style={{ width: `${request.risk_score * 100}%` }}
                     ></div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-black mt-1">
                     {request.risk_score < 0.3 
                       ? 'Low risk' 
                       : request.risk_score < 0.7
@@ -375,7 +357,7 @@ export function RequestDetail({
                 {request.fraud_flags && Object.keys(request.fraud_flags).length > 0 && (
                   <div>
                     <p className="text-sm font-medium mb-1">Fraud Flags:</p>
-                    <ul className="list-disc list-inside text-sm text-gray-700">
+                    <ul className="list-disc list-inside text-sm text-black">
                       {Object.entries(request.fraud_flags)
                         .filter(([_, value]) => value)
                         .map(([flag], index) => (
@@ -400,7 +382,7 @@ export function RequestDetail({
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-black mb-1">
                       Admin Notes
                     </label>
                     <Textarea
@@ -412,7 +394,7 @@ export function RequestDetail({
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-black mb-1">
                       Decision Reason (shared with customer)
                     </label>
                     <Textarea
@@ -456,7 +438,7 @@ export function RequestDetail({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-700 whitespace-pre-line">{request.admin_notes}</p>
+                <p className="text-sm text-black whitespace-pre-line">{request.admin_notes}</p>
               </CardContent>
             </Card>
           )}

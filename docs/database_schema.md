@@ -59,7 +59,6 @@ status text DEFAULT 'pending_triage'
 evidence_urls array
 conversation_log jsonb
 ai_recommendation text
-ai_confidence_score double precision
 admin_notes text
 risk_score numeric DEFAULT 0.5
 fraud_flags jsonb DEFAULT '{}'
@@ -73,7 +72,6 @@ days_since_purchase integer
 order_value numeric DEFAULT 0
 product_category text
 customer_satisfaction_score numeric
-confidence_score numeric DEFAULT 0.5
 ai_reasoning text
 policy_violations jsonb DEFAULT '[]'
 risk_factors jsonb DEFAULT '[]'
@@ -175,7 +173,6 @@ session_id uuid NOT NULL REFERENCES conversation_sessions(id)
 agent_type text NOT NULL CHECK (agent_type IN ('customer_service', 'triage', 'policy', 'conversation'))
 conversation_context jsonb DEFAULT '{}'
 current_intent text
-intent_confidence numeric DEFAULT 0.0
 conversation_flow jsonb DEFAULT '[]'
 ai_memory jsonb DEFAULT '{}'
 response_history jsonb DEFAULT '[]'
@@ -233,7 +230,6 @@ call_session_id uuid REFERENCES call_sessions(id)
 speaker text NOT NULL
 message text NOT NULL
 timestamp_seconds numeric
-confidence_score numeric
 created_at timestamp
 chunk_id uuid
 is_real_time boolean DEFAULT false
@@ -322,7 +318,6 @@ user_id uuid
 frame_sequence integer
 analysis_data jsonb NOT NULL
 timestamp timestamp NOT NULL
-confidence_score numeric DEFAULT 0.0
 analysis_type text CHECK (analysis_type IN ('emotion', 'gesture', 'content', 'quality'))
 created_at timestamp DEFAULT now()
 ```

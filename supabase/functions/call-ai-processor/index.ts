@@ -156,7 +156,6 @@ serve(async (req) => {
             speaker: 'agent',
             message: aiResponse.message,
             timestamp_seconds: Date.now() / 1000,
-            confidence_score: aiResponse.data?.confidence || 1.0,
             metadata: {
               ai_agent: message_type === 'return_request' ? 'triage_agent' : 'customer_service_agent',
               next_action: aiResponse.data?.nextAction,
@@ -182,7 +181,6 @@ serve(async (req) => {
         ai_response: aiResponse.message,
         media_response: mediaResponse,
         next_action: aiResponse.data?.nextAction,
-        confidence: aiResponse.data?.confidence,
         return_detected: !!aiResponse.data?.returnRequest,
         triage_decision: aiResponse.data?.triageDecision
       }),

@@ -122,8 +122,7 @@ Deno.serve(async (req) => {
                       timestamp: new Date().toISOString(),
                       sender: 'customer'
                     }
-                  ],
-                  ai_confidence_score: returnRequest.confidence
+                  ]
                 }
               ])
               .select()
@@ -151,7 +150,6 @@ Deno.serve(async (req) => {
               message: agentResponse,
               message_type: 'text',
               metadata: {
-                ai_confidence_score: aiResponse.confidence,
                 return_detected: !!aiResponse.data?.returnRequest,
                 next_action: aiResponse.nextAction
               }
@@ -165,7 +163,6 @@ Deno.serve(async (req) => {
             success: true,
             user_message: userMessage,
             agent_response: response,
-            ai_confidence_score: aiResponse.confidence,
             return_detected: !!aiResponse.data?.returnRequest
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

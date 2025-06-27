@@ -97,7 +97,7 @@ export function StatusTimeline({ request }: StatusTimelineProps) {
             iconColor = 'text-blue-600';
             bgColor = 'bg-blue-100';
           } else {
-            iconColor = 'text-gray-400';
+            iconColor = 'text-black';
             bgColor = 'bg-gray-100';
           }
           
@@ -112,10 +112,10 @@ export function StatusTimeline({ request }: StatusTimelineProps) {
               
               {/* Timeline content */}
               <div>
-                <h3 className="text-base font-medium text-gray-900">{step.title}</h3>
-                <p className="text-sm text-gray-500">{step.description}</p>
+                <h3 className="text-base font-medium text-black">{step.title}</h3>
+                <p className="text-sm text-black">{step.description}</p>
                 {step.date && (
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-black mt-1">
                     {format(new Date(step.date), 'MMM d, yyyy h:mm a')}
                   </p>
                 )}

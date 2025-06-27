@@ -111,7 +111,7 @@ export function ForgotPasswordForm() {
         )}
       </CardContent>
       <CardFooter className="flex justify-center">
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-black">
           Remember your password?{' '}
           <Link href="/auth/login" className="text-primary hover:underline font-medium">
             Sign in

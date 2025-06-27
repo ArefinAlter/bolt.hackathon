@@ -114,8 +114,7 @@ async function handleStreamingRequest(req: Request, callSession: any, supabaseCl
           call_session_id: callSession.id,
           speaker: 'agent',
           message: text,
-          timestamp_seconds: Date.now() / 1000,
-          confidence_score: 1.0
+          timestamp_seconds: Date.now() / 1000
         }
       ])
 
@@ -157,8 +156,7 @@ async function handleVoiceInput(req: Request, callSession: any, supabaseClient: 
           call_session_id: callSession.id,
           speaker: 'user',
           message: user_message || 'Voice input received',
-          timestamp_seconds: Date.now() / 1000,
-          confidence_score: 1.0
+          timestamp_seconds: Date.now() / 1000
         }
       ])
 
@@ -226,8 +224,7 @@ async function handleVoiceInput(req: Request, callSession: any, supabaseClient: 
                 call_session_id: callSession.id,
                 speaker: 'agent',
                 message: aiResponse.message,
-                timestamp_seconds: Date.now() / 1000,
-                confidence_score: 1.0
+                timestamp_seconds: Date.now() / 1000
               }
             ])
 
@@ -236,7 +233,6 @@ async function handleVoiceInput(req: Request, callSession: any, supabaseClient: 
               success: true,
               ai_response: aiResponse.message,
               audio_data: `data:audio/mpeg;base64,${audioBase64}`,
-              confidence: aiResponse.confidence,
               next_action: aiResponse.nextAction
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -68,6 +68,76 @@ export function RoleSelectionPage() {
           </div>
           <Button 
             variant="ghost" 
+'use client';
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { 
+  Building2, 
+  User, 
+  BarChart3, 
+  FileText, 
+  Shield, 
+  Users,
+  MessageSquare,
+  Phone,
+  Video,
+  Package
+} from 'lucide-react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { UserRole } from '@/types/auth';
+import { supabase } from '@/lib/supabase';
+
+export function RoleSelectionPage() {
+  const router = useRouter();
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleRoleSelection = async (role: UserRole) => {
+    setSelectedRole(role);
+    setIsLoading(true);
+    
+    try {
+      // Store the selected role in localStorage for persistence
+      localStorage.setItem('userRole', role);
+      
+      // Redirect based on role
+      if (role === 'business') {
+        router.push('/dashboard');
+      } else {
+        router.push('/return');
+      }
+    } catch (error) {
+      console.error('Error setting user role:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Header */}
+      <header className="py-6 px-4 sm:px-6 lg:px-8 border-b bg-white">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center">
+            <Image
+              src="/main_logo.svg"
+              alt="Dokani"
+              width={180}
+              height={48}
+              className="h-12 w-auto"
+            />
+          </div>
+          <Button 
+            variant="ghost" 
             className="text-sm text-gray-600"
             onClick={handleSignOut}
           >
@@ -80,8 +150,8 @@ export function RoleSelectionPage() {
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-6xl animate-fade-in">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Choose Your Experience</h1>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <h1 className="text-3xl font-bold text-black mb-2">Choose Your Experience</h1>
+            <p className="text-black max-w-2xl mx-auto">
               Select how you'd like to experience the Dokani platform. You can switch between views at any time.
             </p>
           </div>
@@ -111,8 +181,8 @@ export function RoleSelectionPage() {
                       <BarChart3 className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">Analytics</h3>
-                      <p className="text-xs text-gray-500">Track return metrics and performance</p>
+                      <h3 className="font-medium text-black">Analytics</h3>
+                      <p className="text-xs text-black">Track return metrics and performance</p>
                     </div>
                   </div>
                   
@@ -121,8 +191,8 @@ export function RoleSelectionPage() {
                       <FileText className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">Policy Management</h3>
-                      <p className="text-xs text-gray-500">Configure return rules and automation</p>
+                      <h3 className="font-medium text-black">Policy Management</h3>
+                      <p className="text-xs text-black">Configure return rules and automation</p>
                     </div>
                   </div>
                   
@@ -131,8 +201,8 @@ export function RoleSelectionPage() {
                       <Package className="w-4 h-4 text-purple-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">Return Monitoring</h3>
-                      <p className="text-xs text-gray-500">Review and manage return requests</p>
+                      <h3 className="font-medium text-black">Return Monitoring</h3>
+                      <p className="text-xs text-black">Review and manage return requests</p>
                     </div>
                   </div>
                   
@@ -141,8 +211,8 @@ export function RoleSelectionPage() {
                       <Users className="w-4 h-4 text-orange-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">Persona Builder</h3>
-                      <p className="text-xs text-gray-500">Create voice and video AI personas</p>
+                      <h3 className="font-medium text-black">Persona Builder</h3>
+                      <p className="text-xs text-black">Create voice and video AI personas</p>
                     </div>
                   </div>
                 </div>
@@ -183,8 +253,8 @@ export function RoleSelectionPage() {
                       <MessageSquare className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">Chat Interface</h3>
-                      <p className="text-xs text-gray-500">Interact with AI customer service</p>
+                      <h3 className="font-medium text-black">Chat Interface</h3>
+                      <p className="text-xs text-black">Interact with AI customer service</p>
                     </div>
                   </div>
                   
@@ -193,8 +263,8 @@ export function RoleSelectionPage() {
                       <Phone className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">Voice Calls</h3>
-                      <p className="text-xs text-gray-500">Speak with AI voice assistant</p>
+                      <h3 className="font-medium text-black">Voice Calls</h3>
+                      <p className="text-xs text-black">Speak with AI voice assistant</p>
                     </div>
                   </div>
                   
@@ -203,8 +273,8 @@ export function RoleSelectionPage() {
                       <Video className="w-4 h-4 text-purple-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">Video Calls</h3>
-                      <p className="text-xs text-gray-500">Face-to-face with AI video agent</p>
+                      <h3 className="font-medium text-black">Video Calls</h3>
+                      <p className="text-xs text-black">Face-to-face with AI video agent</p>
                     </div>
                   </div>
                   
@@ -213,8 +283,8 @@ export function RoleSelectionPage() {
                       <Package className="w-4 h-4 text-orange-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">Return Tracking</h3>
-                      <p className="text-xs text-gray-500">Monitor return status and updates</p>
+                      <h3 className="font-medium text-black">Return Tracking</h3>
+                      <p className="text-xs text-black">Monitor return status and updates</p>
                     </div>
                   </div>
                 </div>
@@ -232,7 +302,7 @@ export function RoleSelectionPage() {
             </Card>
           </div>
           
-          <div className="text-center mt-8 text-sm text-gray-500">
+          <div className="text-center mt-8 text-sm text-black">
             <p>
               This demo allows you to experience both sides of the Dokani platform.
               You can switch between views at any time.
@@ -244,14 +314,14 @@ export function RoleSelectionPage() {
       {/* Footer */}
       <footer className="py-6 px-4 sm:px-6 lg:px-8 border-t bg-white">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-black">
             &copy; {new Date().getFullYear()} Dokani. All rights reserved.
           </p>
           <div className="flex space-x-4 mt-4 sm:mt-0">
-            <Link href="/privacy" className="text-sm text-gray-500 hover:text-gray-900">
+            <Link href="/privacy" className="text-sm text-black hover:text-gray-900">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="text-sm text-gray-500 hover:text-gray-900">
+            <Link href="/terms" className="text-sm text-black hover:text-gray-900">
               Terms of Service
             </Link>
           </div>

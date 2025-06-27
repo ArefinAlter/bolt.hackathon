@@ -9,7 +9,6 @@ export interface ReturnRequest {
   evidence_urls?: string[];
   conversation_log?: ConversationMessage[];
   ai_recommendation?: string;
-  ai_confidence_score?: number;
   admin_notes?: string;
   risk_score?: number;
   fraud_flags?: Record<string, boolean>;
@@ -23,7 +22,6 @@ export interface ReturnRequest {
   order_value?: number;
   product_category?: string;
   customer_satisfaction_score?: number;
-  confidence_score?: number;
   ai_reasoning?: string;
   policy_violations?: string[];
   risk_factors?: string[];

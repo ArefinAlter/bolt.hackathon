@@ -39,14 +39,14 @@ export default function SignUpPage() {
       {/* Footer */}
       <footer className="py-6 px-4 sm:px-6 lg:px-8 border-t bg-white">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-black">
             &copy; {new Date().getFullYear()} Dokani. All rights reserved.
           </p>
           <div className="flex space-x-4 mt-4 sm:mt-0">
-            <Link href="/privacy" className="text-sm text-gray-500 hover:text-gray-900">
+            <Link href="/privacy" className="text-sm text-black hover:text-gray-900">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="text-sm text-gray-500 hover:text-gray-900">
+            <Link href="/terms" className="text-sm text-black hover:text-gray-900">
               Terms of Service
             </Link>
           </div>

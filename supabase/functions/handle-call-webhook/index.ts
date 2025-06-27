@@ -124,8 +124,7 @@ async function processCallWebhook(supabase: any, callSession: any, provider: str
             call_session_id: callSession.id,
             speaker: data.speaker || 'user',
             message: data.text,
-            timestamp_seconds: data.timestamp || Date.now() / 1000,
-            confidence_score: data.confidence || 1.0
+            timestamp_seconds: data.timestamp || Date.now() / 1000
           }
         ])
 

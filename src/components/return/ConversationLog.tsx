@@ -16,26 +16,26 @@ export function ConversationLog({ messages }: ConversationLogProps) {
           className={`flex ${message.sender === 'customer' ? 'justify-end' : message.sender === 'system' ? 'justify-center' : 'justify-start'}`}
         >
           {message.sender === 'system' ? (
-            <div className="bg-gray-100 text-gray-600 rounded-lg px-4 py-2 max-w-[80%] text-sm">
+            <div className="bg-gray-100 text-black rounded-lg px-4 py-2 max-w-[80%] text-sm">
               {message.message}
             </div>
           ) : (
             <div 
               className={`max-w-[80%] rounded-lg p-3 ${
                 message.sender === 'customer' 
-                  ? 'bg-blue-50 text-gray-800' 
-                  : 'bg-gray-100 text-gray-800'
+                  ? 'bg-blue-50 text-black' 
+                  : 'bg-gray-100 text-black'
               }`}
             >
               <div className="flex justify-between items-start mb-1">
-                <span className="text-xs font-medium text-gray-500">
+                <span className="text-xs font-medium text-black">
                   {message.sender === 'customer' 
                     ? 'You' 
                     : message.sender === 'agent'
                       ? 'AI Agent'
                       : 'System'}
                 </span>
-                <span className="text-xs text-gray-400 ml-2">
+                <span className="text-xs text-black ml-2">
                   {format(new Date(message.timestamp), 'MMM d, h:mm a')}
                 </span>
               </div>
@@ -47,7 +47,7 @@ export function ConversationLog({ messages }: ConversationLogProps) {
       
       {messages.length === 0 && (
         <div className="text-center py-4">
-          <p className="text-gray-500">No messages in this conversation</p>
+          <p className="text-black">No messages in this conversation</p>
         </div>
       )}
     </div>

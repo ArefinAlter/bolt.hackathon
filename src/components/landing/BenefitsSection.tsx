@@ -50,11 +50,11 @@ export function BenefitsSection() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left column - Content */}
           <div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+            <h2 className="text-3xl sm:text-4xl font-bold text-black mb-6">
               Transform Your Business with{' '}
               <span className="gradient-text">Measurable Results</span>
             </h2>
-            <p className="text-xl text-gray-600 mb-8">
+            <p className="text-xl text-black mb-8">
               Join hundreds of e-commerce businesses that have revolutionized their return management and seen immediate impact on their bottom line.
             </p>
 
@@ -77,10 +77,10 @@ export function BenefitsSection() {
                           <div className={`text-2xl font-bold ${benefit.color} mb-1`}>
                             {benefit.metric}
                           </div>
-                          <h3 className="font-semibold text-gray-900 mb-2">
+                          <h3 className="font-semibold text-black mb-2">
                             {benefit.title}
                           </h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-black">
                             {benefit.description}
                           </p>
                         </div>

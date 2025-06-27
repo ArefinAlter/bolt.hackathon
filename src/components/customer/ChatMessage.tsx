@@ -29,14 +29,13 @@ export function ChatMessage({
   const isUser = message.sender === 'user';
   const isSystem = message.sender === 'system';
   const hasReturnDetection = message.metadata?.return_detected;
-  const confidenceScore = message.metadata?.ai_confidence_score;
   
   return (
     <div 
       className={`flex ${isUser ? 'justify-end' : isSystem ? 'justify-center' : 'justify-start'} mb-4`}
     >
       {isSystem ? (
-        <div className="bg-gray-100 text-gray-600 rounded-lg px-4 py-2 max-w-[80%] text-sm">
+        <div className="bg-gray-100 text-black rounded-lg px-4 py-2 max-w-[80%] text-sm">
           {message.message}
         </div>
       ) : (
@@ -75,7 +74,7 @@ export function ChatMessage({
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
+                      className="flex items-center bg-gray-100 rounded-md px-3 py-2 text-sm text-black hover:bg-gray-200"
                     >
                       <Paperclip className="h-4 w-4 mr-2" />
                       {fileName}
@@ -85,43 +84,10 @@ export function ChatMessage({
               </div>
             )}
             
-            <div className="mt-1 text-xs text-gray-400">
+            <div className="mt-1 text-xs text-black">
               {format(new Date(message.created_at), 'h:mm a')}
             </div>
           </div>
-          
-          {/* Confidence score for agent messages */}
-          {!isUser && !isSystem && confidenceScore !== undefined && (
-            <div className="flex items-center mt-1 space-x-2">
-              <div className="text-xs text-gray-500">
-                Confidence: {(confidenceScore * 100).toFixed(0)}%
-              </div>
-              
-              {/* Feedback buttons */}
-              {showFeedback !== message.id && (
-                <div className="flex space-x-1">
-                  <button 
-                    onClick={() => onFeedback(message.id, true)}
-                    className="text-gray-400 hover:text-green-500"
-                  >
-                    <ThumbsUp className="h-3 w-3" />
-                  </button>
-                  <button 
-                    onClick={() => onFeedback(message.id, false)}
-                    className="text-gray-400 hover:text-red-500"
-                  >
-                    <ThumbsDown className="h-3 w-3" />
-                  </button>
-                </div>
-              )}
-              
-              {showFeedback === message.id && (
-                <span className="text-xs text-green-500">
-                  Thank you for your feedback!
-                </span>
-              )}
-            </div>
-          )}
           
           {/* Return detection indicator */}
           {!isUser && hasReturnDetection && (

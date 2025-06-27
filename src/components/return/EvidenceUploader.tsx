@@ -144,8 +144,8 @@ export function EvidenceUploader({
             accept="image/*,.pdf,.doc,.docx"
           />
           
-          <Upload className="h-10 w-10 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
-          <p className="text-gray-700 dark:text-gray-300 font-medium mb-1">
+          <Upload className="h-10 w-10 text-black dark:text-gray-500 mx-auto mb-3" />
+          <p className="text-black dark:text-gray-300 font-medium mb-1">
             Drag and drop files here, or{' '}
             <button 
               type="button" 
@@ -155,7 +155,7 @@ export function EvidenceUploader({
               browse
             </button>
           </p>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
+          <p className="text-black dark:text-gray-400 text-sm">
             Supported formats: JPG, PNG, PDF, DOC (max 10MB per file)
           </p>
         </div>
@@ -163,7 +163,7 @@ export function EvidenceUploader({
         {/* File preview */}
         {evidenceFiles.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Selected Files</h3>
+            <h3 className="text-sm font-medium text-black dark:text-gray-300 mb-2">Selected Files</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {evidenceFiles.map(file => (
                 <div 
@@ -180,13 +180,13 @@ export function EvidenceUploader({
                     </div>
                   ) : (
                     <div className="aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                      <File className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+                      <File className="h-10 w-10 text-black dark:text-gray-500" />
                     </div>
                   )}
                   
                   <div className="p-2 bg-white dark:bg-gray-800">
-                    <p className="text-xs text-gray-700 dark:text-gray-300 truncate">{file.file.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-black dark:text-gray-300 truncate">{file.file.name}</p>
+                    <p className="text-xs text-black dark:text-gray-400">
                       {(file.file.size / 1024).toFixed(0)} KB
                     </p>
                   </div>
@@ -241,7 +241,7 @@ export function EvidenceUploader({
             variant="outline" 
             onClick={onClose}
             disabled={isUploading}
-            className="dark:border-gray-600 dark:text-gray-300"
+            className="dark:border-gray-600 dark:text-black"
           >
             Cancel
           </Button>

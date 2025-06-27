@@ -51,7 +51,6 @@ export interface PolicyComplianceMetrics {
 
 export interface PolicyTestResult {
   decision: 'auto_approve' | 'auto_deny' | 'human_review';
-  confidence: number;
   reasoning: string;
   policy_violations: string[];
   risk_factors: string[];

@@ -121,18 +121,18 @@ export function ReviewQueue({ businessId, onViewRequest }: ReviewQueueProps) {
                     </div>
                     <div>
                       <div className="flex items-center">
-                        <h3 className="font-medium text-gray-900">{request.order_id}</h3>
+                        <h3 className="font-medium text-black">{request.order_id}</h3>
                         <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                           Pending Review
                         </span>
                       </div>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-black mt-1">
                         {request.customer_email}
                       </p>
-                      <p className="text-sm text-gray-700 mt-1">
+                      <p className="text-sm text-black mt-1">
                         <span className="font-medium">Reason:</span> {request.reason_for_return || 'Not specified'}
                       </p>
-                      <p className="text-sm text-gray-700">
+                      <p className="text-sm text-black">
                         <span className="font-medium">Date:</span> {format(new Date(request.created_at), 'MMM d, yyyy')}
                       </p>
                     </div>
@@ -152,18 +152,12 @@ export function ReviewQueue({ businessId, onViewRequest }: ReviewQueueProps) {
                           Deny
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-black">
                           <AlertTriangle className="w-3 h-3 mr-1" />
                           Review
                         </span>
                       )}
                     </div>
-                    
-                    {request.ai_confidence_score !== undefined && (
-                      <div className="text-xs text-gray-500 mb-3">
-                        Confidence: {(request.ai_confidence_score * 100).toFixed(0)}%
-                      </div>
-                    )}
                     
                     <Button 
                       variant="outline" 
@@ -182,8 +176,8 @@ export function ReviewQueue({ businessId, onViewRequest }: ReviewQueueProps) {
         ) : (
           <div className="text-center py-12">
             <CheckCircle className="h-12 w-12 text-green-300 mx-auto mb-3" />
-            <h3 className="text-lg font-medium text-gray-900 mb-1">No pending reviews</h3>
-            <p className="text-gray-500">
+            <h3 className="text-lg font-medium text-black mb-1">No pending reviews</h3>
+            <p className="text-black">
               All return requests have been processed
             </p>
           </div>

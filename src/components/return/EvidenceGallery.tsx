@@ -67,8 +67,8 @@ export function EvidenceGallery({ evidenceUrls }: EvidenceGalleryProps) {
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-100">
                 <div className="text-center p-2">
-                  <ImageIcon className="h-8 w-8 text-gray-400 mx-auto mb-1" />
-                  <p className="text-xs text-gray-500 truncate">File {index + 1}</p>
+                  <ImageIcon className="h-8 w-8 text-black mx-auto mb-1" />
+                  <p className="text-xs text-black truncate">File {index + 1}</p>
                 </div>
               </div>
             )}
@@ -97,8 +97,8 @@ export function EvidenceGallery({ evidenceUrls }: EvidenceGalleryProps) {
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-100">
                   <div className="text-center">
-                    <ImageIcon className="h-16 w-16 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-700">Non-image file</p>
+                    <ImageIcon className="h-16 w-16 text-black mx-auto mb-2" />
+                    <p className="text-black">Non-image file</p>
                     <div className="mt-4 flex justify-center space-x-2">
                       <Button 
                         variant="outline" 

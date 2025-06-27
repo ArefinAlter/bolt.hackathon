@@ -63,7 +63,7 @@ export function RoleSelectionCard({ onRoleSelect }: RoleSelectionCardProps) {
             </div>
             <CardTitle className="text-xl">Business</CardTitle>
           </CardHeader>
-          <CardContent className="text-center text-sm text-gray-600">
+          <CardContent className="text-center text-sm text-black">
             <p>Try out our product as a business owner managing returns</p>
           </CardContent>
           <CardFooter className="pt-0 justify-center">
@@ -90,7 +90,7 @@ export function RoleSelectionCard({ onRoleSelect }: RoleSelectionCardProps) {
             </div>
             <CardTitle className="text-xl">Customer</CardTitle>
           </CardHeader>
-          <CardContent className="text-center text-sm text-gray-600">
+          <CardContent className="text-center text-sm text-black">
             <p>Experience our product as a customer making a return request</p>
           </CardContent>
           <CardFooter className="pt-0 justify-center">
@@ -105,7 +105,7 @@ export function RoleSelectionCard({ onRoleSelect }: RoleSelectionCardProps) {
           </CardFooter>
         </Card>
       </CardContent>
-      <CardFooter className="text-center text-sm text-gray-500 pb-6">
+      <CardFooter className="text-center text-sm text-black pb-6">
         <p className="mx-auto">
           You can switch between views at any time from the dashboard
         </p>

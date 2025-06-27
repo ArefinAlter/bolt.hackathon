@@ -32,16 +32,16 @@ export function ReturnSummary({ request }: ReturnSummaryProps) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-500">Order ID</p>
+              <p className="text-sm text-black">Order ID</p>
               <p className="font-medium flex items-center">
-                <ShoppingBag className="h-4 w-4 mr-1 text-gray-400" />
+                <ShoppingBag className="h-4 w-4 mr-1 text-black" />
                 {request.order_id}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Date Requested</p>
+              <p className="text-sm text-black">Date Requested</p>
               <p className="font-medium flex items-center">
-                <Calendar className="h-4 w-4 mr-1 text-gray-400" />
+                <Calendar className="h-4 w-4 mr-1 text-black" />
                 {format(new Date(request.created_at), 'MMM d, yyyy')}
               </p>
             </div>
@@ -49,16 +49,16 @@ export function ReturnSummary({ request }: ReturnSummaryProps) {
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-500">Product</p>
+              <p className="text-sm text-black">Product</p>
               <p className="font-medium flex items-center">
-                <Tag className="h-4 w-4 mr-1 text-gray-400" />
+                <Tag className="h-4 w-4 mr-1 text-black" />
                 {request.order_details?.product_name || 'Unknown'}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Category</p>
+              <p className="text-sm text-black">Category</p>
               <p className="font-medium flex items-center">
-                <FileText className="h-4 w-4 mr-1 text-gray-400" />
+                <FileText className="h-4 w-4 mr-1 text-black" />
                 {request.order_details?.product_category || request.product_category || 'Unknown'}
               </p>
             </div>
@@ -66,18 +66,18 @@ export function ReturnSummary({ request }: ReturnSummaryProps) {
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-500">Order Value</p>
+              <p className="text-sm text-black">Order Value</p>
               <p className="font-medium flex items-center">
-                <DollarSign className="h-4 w-4 mr-1 text-gray-400" />
+                <DollarSign className="h-4 w-4 mr-1 text-black" />
                 ${request.order_value?.toFixed(2) || 
                    request.order_details?.purchase_price?.toFixed(2) || 
                    '0.00'}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Purchase Date</p>
+              <p className="text-sm text-black">Purchase Date</p>
               <p className="font-medium flex items-center">
-                <Calendar className="h-4 w-4 mr-1 text-gray-400" />
+                <Calendar className="h-4 w-4 mr-1 text-black" />
                 {request.order_details?.purchase_date 
                   ? format(new Date(request.order_details.purchase_date), 'MMM d, yyyy')
                   : 'Unknown'}
@@ -86,7 +86,7 @@ export function ReturnSummary({ request }: ReturnSummaryProps) {
           </div>
           
           <div>
-            <p className="text-sm text-gray-500">Return Reason</p>
+            <p className="text-sm text-black">Return Reason</p>
             <p className="font-medium mt-1">
               {request.reason_for_return || 'Not specified'}
             </p>

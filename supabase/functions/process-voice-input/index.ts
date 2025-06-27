@@ -62,8 +62,7 @@ serve(async (req) => {
           call_session_id: callSession.id,
           speaker: 'user',
           message: transcribedText,
-          timestamp_seconds: Date.now() / 1000,
-          confidence_score: 1.0
+          timestamp_seconds: Date.now() / 1000
         }
       ])
 
@@ -130,8 +129,7 @@ serve(async (req) => {
               call_session_id: callSession.id,
               speaker: 'agent',
               message: aiResponse.message,
-              timestamp_seconds: Date.now() / 1000,
-              confidence_score: 1.0
+              timestamp_seconds: Date.now() / 1000
             }
           ])
 
@@ -141,7 +139,6 @@ serve(async (req) => {
             user_input: transcribedText,
             ai_response: aiResponse.message,
             audio_data: `data:audio/mpeg;base64,${audioBase64}`,
-            confidence: aiResponse.confidence,
             next_action: aiResponse.nextAction,
             return_detected: !!aiResponse.data?.returnRequest
           }),
