@@ -11,9 +11,6 @@ const nextConfig = {
   images: {
     domains: ['images.pexels.com', 'api.dicebear.com'],
   },
-  experimental: {
-    optimizeCss: true,
-  },
 }
 
 module.exports = withPWA(nextConfig);

@@ -15,10 +15,15 @@ export async function signIn({ email, password }: AuthFormData) {
 }
 
 export async function signUp({ email, password, business_name }: SignUpFormData) {
-  // First create the user
+  // Create the user - the database trigger will automatically create the profile
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        business_name: business_name || email.split('@')[0],
+      }
+    }
   });
 
   if (authError) {
@@ -29,24 +34,8 @@ export async function signUp({ email, password, business_name }: SignUpFormData)
     throw new Error('User creation failed');
   }
 
-  // Then create the profile
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .insert([
-      {
-        id: authData.user.id,
-        business_name: business_name || email.split('@')[0],
-        subscription_plan: 'free',
-        onboarded: false,
-      },
-    ]);
-
-  if (profileError) {
-    // If profile creation fails, we should ideally delete the user
-    // but Supabase doesn't expose a direct API for this
-    throw profileError;
-  }
-
+  // The profile will be created automatically by the database trigger
+  // If you need to update the business_name later, you can do it after confirmation
   return authData;
 }
 
