@@ -1,0 +1,690 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { 
+  MessageSquare, 
+  Phone, 
+  Video, 
+  Image as ImageIcon, 
+  Send, 
+  Paperclip, 
+  X, 
+  Loader2, 
+  ThumbsUp, 
+  ThumbsDown,
+  Download,
+  Package,
+  AlertTriangle
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ChatMessage, ChatSession, FileUpload } from '@/types/chat';
+import { createChatSession, fetchChatMessages, sendChatMessage, subscribeToChatUpdates, createLocalFileUpload, uploadFile, startVoiceCall, startVideoCall } from '@/lib/chat';
+import { supabase } from '@/lib/supabase';
+import { v4 as uuidv4 } from 'uuid';
+import TextareaAutosize from 'react-textarea-autosize';
+
+export default function CustomerChatPage() {
+  const router = useRouter();
+  const [session, setSession] = useState<ChatSession | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fileUploads, setFileUploads] = useState<FileUpload[]>([]);
+  const [showFilePreview, setShowFilePreview] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<FileUpload | null>(null);
+  const [showFeedback, setShowFeedback] = useState<string | null>(null);
+  const [isCallActive, setIsCallActive] = useState(false);
+  const [callType, setCallType] = useState<'voice' | 'video' | null>(null);
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  useEffect(() => {
+    const initializeChat = async () => {
+      try {
+        // Get current session
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        
+        if (!authSession) {
+          router.push('/auth/login');
+          return;
+        }
+        
+        // Create or get chat session
+        const chatSession = await createChatSession(authSession.user.id);
+        setSession(chatSession);
+        
+        // Fetch messages
+        const chatMessages = await fetchChatMessages(chatSession.id);
+        setMessages(chatMessages);
+        
+        // Subscribe to real-time updates
+        const unsubscribe = subscribeToChatUpdates(chatSession.id, (newMessage) => {
+          setMessages(prev => {
+            // Check if message already exists
+            if (prev.some(msg => msg.id === newMessage.id)) {
+              return prev;
+            }
+            return [...prev, newMessage];
+          });
+          
+          // If agent is typing, stop typing indicator
+          if (newMessage.sender === 'agent') {
+            setIsTyping(false);
+          }
+        });
+        
+        setIsLoading(false);
+        
+        return () => {
+          unsubscribe();
+        };
+      } catch (error) {
+        console.error('Error initializing chat:', error);
+        setError('Failed to initialize chat. Please try again.');
+        setIsLoading(false);
+      }
+    };
+    
+    initializeChat();
+  }, [router]);
+  
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+  
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() && fileUploads.length === 0) return;
+    if (!session) return;
+    
+    setIsSending(true);
+    
+    try {
+      // First, upload any files
+      const fileUrls: string[] = [];
+      
+      for (const fileUpload of fileUploads) {
+        if (fileUpload.status === 'pending' || fileUpload.status === 'error') {
+          // Update file status
+          setFileUploads(prev => 
+            prev.map(f => 
+              f.id === fileUpload.id 
+                ? { ...f, status: 'uploading' } 
+                : f
+            )
+          );
+          
+          try {
+            // Upload file
+            const fileUrl = await uploadFile(
+              session.business_id || 'default',
+              fileUpload.file,
+              (progress) => {
+                setFileUploads(prev => 
+                  prev.map(f => 
+                    f.id === fileUpload.id 
+                      ? { ...f, upload_progress: progress } 
+                      : f
+                  )
+                );
+              }
+            );
+            
+            fileUrls.push(fileUrl);
+            
+            // Update file status
+            setFileUploads(prev => 
+              prev.map(f => 
+                f.id === fileUpload.id 
+                  ? { ...f, status: 'success', upload_progress: 100 } 
+                  : f
+              )
+            );
+          } catch (error) {
+            console.error('Error uploading file:', error);
+            
+            // Update file status
+            setFileUploads(prev => 
+              prev.map(f => 
+                f.id === fileUpload.id 
+                  ? { ...f, status: 'error', error: 'Failed to upload file' } 
+                  : f
+              )
+            );
+          }
+        }
+      }
+      
+      // Send message with file URLs
+      const metadata = fileUrls.length > 0 
+        ? { 
+            file_urls: fileUrls,
+            file_types: fileUploads.map(f => f.file.type),
+            file_names: fileUploads.map(f => f.file.name)
+          } 
+        : undefined;
+      
+      // Add user message to state immediately for better UX
+      const tempUserMessage: ChatMessage = {
+        id: uuidv4(),
+        session_id: session.id,
+        sender: 'user',
+        message: newMessage,
+        message_type: 'text',
+        metadata,
+        created_at: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, tempUserMessage]);
+      
+      // Show typing indicator
+      setIsTyping(true);
+      
+      // Send message to API
+      const { userMessage, agentResponse } = await sendChatMessage(
+        session.id,
+        newMessage,
+        'user',
+        'text',
+        metadata
+      );
+      
+      // Clear input and file uploads
+      setNewMessage('');
+      setFileUploads([]);
+      
+      // If agent response was returned directly, add it to messages
+      if (agentResponse) {
+        setIsTyping(false);
+        setMessages(prev => {
+          // Replace temp message with actual message
+          const filtered = prev.filter(msg => msg.id !== tempUserMessage.id);
+          return [...filtered, userMessage, agentResponse];
+        });
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setError('Failed to send message. Please try again.');
+    } finally {
+      setIsSending(false);
+    }
+  };
+  
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    // Create local file uploads
+    const newUploads = Array.from(files).map(file => createLocalFileUpload(file));
+    
+    setFileUploads(prev => [...prev, ...newUploads]);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+  
+  const handleRemoveFile = (id: string) => {
+    setFileUploads(prev => prev.filter(f => f.id !== id));
+  };
+  
+  const handleStartCall = async (type: 'voice' | 'video') => {
+    if (!session) return;
+    
+    try {
+      setIsCallActive(true);
+      setCallType(type);
+      
+      // Add system message
+      const systemMessage: ChatMessage = {
+        id: uuidv4(),
+        session_id: session.id,
+        sender: 'system',
+        message: `${type === 'voice' ? 'Voice' : 'Video'} call initiated. Connecting...`,
+        message_type: 'text',
+        created_at: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, systemMessage]);
+      
+      // Start call
+      const startCallFn = type === 'voice' ? startVoiceCall : startVideoCall;
+      const { callSessionId, websocketUrl } = await startCallFn(session.id);
+      
+      // In a real implementation, we would connect to the WebSocket here
+      console.log('Call started:', { callSessionId, websocketUrl });
+      
+      // For demo purposes, simulate a call
+      setTimeout(() => {
+        const callEndedMessage: ChatMessage = {
+          id: uuidv4(),
+          session_id: session.id,
+          sender: 'system',
+          message: `${type === 'voice' ? 'Voice' : 'Video'} call ended.`,
+          message_type: 'text',
+          created_at: new Date().toISOString()
+        };
+        
+        setMessages(prev => [...prev, callEndedMessage]);
+        setIsCallActive(false);
+        setCallType(null);
+      }, 5000);
+    } catch (error) {
+      console.error(`Error starting ${type} call:`, error);
+      setError(`Failed to start ${type} call. Please try again.`);
+      setIsCallActive(false);
+      setCallType(null);
+    }
+  };
+  
+  const handleFeedback = (messageId: string, isPositive: boolean) => {
+    // In a real implementation, we would send feedback to the API
+    setShowFeedback(messageId);
+    
+    // Show feedback message
+    setTimeout(() => {
+      setShowFeedback(null);
+    }, 3000);
+  };
+  
+  const renderMessage = (message: ChatMessage) => {
+    const isUser = message.sender === 'user';
+    const isSystem = message.sender === 'system';
+    const hasReturnDetection = message.metadata?.return_detected;
+    const confidenceScore = message.metadata?.ai_confidence_score;
+    
+    return (
+      <div 
+        key={message.id} 
+        className={`flex ${isUser ? 'justify-end' : isSystem ? 'justify-center' : 'justify-start'} mb-4`}
+      >
+        {isSystem ? (
+          <div className="bg-gray-100 text-gray-600 rounded-lg px-4 py-2 max-w-[80%] text-sm">
+            {message.message}
+          </div>
+        ) : (
+          <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+            <div 
+              className={`rounded-lg px-4 py-3 ${
+                isUser 
+                  ? 'bg-primary text-black' 
+                  : 'bg-white border border-gray-200'
+              }`}
+            >
+              <p className="whitespace-pre-wrap">{message.message}</p>
+              
+              {/* File attachments */}
+              {message.metadata?.file_urls && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {Array.isArray(message.metadata.file_urls) && message.metadata.file_urls.map((url, index) => {
+                    const isImage = url.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+                    return isImage ? (
+                      <div 
+                        key={index} 
+                        className="relative w-20 h-20 rounded overflow-hidden border cursor-pointer"
+                        onClick={() => {
+                          setSelectedFile({
+                            id: `file-${index}`,
+                            file: new File([], message.metadata?.file_names?.[index] || 'file'),
+                            preview_url: url,
+                            upload_progress: 100,
+                            status: 'success'
+                          });
+                          setShowFilePreview(true);
+                        }}
+                      >
+                        <img 
+                          src={url} 
+                          alt="Attachment" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <a 
+                        key={index}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
+                      >
+                        <Paperclip className="h-4 w-4 mr-2" />
+                        {message.metadata?.file_names?.[index] || 'File'}
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            
+            {/* Confidence score for agent messages */}
+            {!isUser && !isSystem && confidenceScore !== undefined && (
+              <div className="flex items-center mt-1 space-x-2">
+                <div className="text-xs text-gray-500">
+                  Confidence: {(confidenceScore * 100).toFixed(0)}%
+                </div>
+                
+                {/* Feedback buttons */}
+                {showFeedback !== message.id && (
+                  <div className="flex space-x-1">
+                    <button 
+                      onClick={() => handleFeedback(message.id, true)}
+                      className="text-gray-400 hover:text-green-500"
+                    >
+                      <ThumbsUp className="h-3 w-3" />
+                    </button>
+                    <button 
+                      onClick={() => handleFeedback(message.id, false)}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <ThumbsDown className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                
+                {showFeedback === message.id && (
+                  <span className="text-xs text-green-500">
+                    Thank you for your feedback!
+                  </span>
+                )}
+              </div>
+            )}
+            
+            {/* Return detection indicator */}
+            {!isUser && hasReturnDetection && (
+              <div className="mt-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <Package className="h-3 w-3 mr-1" />
+                Return request detected
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b px-4 py-3">
+        <div className="max-w-4xl mx-auto flex justify-between items-center">
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+              <MessageSquare className="h-5 w-5 text-primary" />
+            </div>
+            <div className="ml-3">
+              <h1 className="text-lg font-semibold text-gray-900">Customer Support</h1>
+              <p className="text-sm text-gray-500">
+                {isCallActive 
+                  ? `${callType === 'voice' ? 'Voice' : 'Video'} call in progress...` 
+                  : 'Chat with our AI assistant'}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => handleStartCall('voice')}
+              disabled={isCallActive}
+            >
+              <Phone className="h-4 w-4 mr-2" />
+              Voice
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => handleStartCall('video')}
+              disabled={isCallActive}
+            >
+              <Video className="h-4 w-4 mr-2" />
+              Video
+            </Button>
+          </div>
+        </div>
+      </header>
+      
+      {/* Main chat area */}
+      <main className="flex-1 overflow-hidden">
+        <div className="max-w-4xl mx-auto h-full flex flex-col">
+          {/* Error message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md m-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertTriangle className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium">{error}</p>
+                  <button 
+                    className="text-sm text-red-700 underline"
+                    onClick={() => setError(null)}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                  <MessageSquare className="h-8 w-8 text-primary" />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">Welcome to Customer Support</h2>
+                <p className="text-gray-600 max-w-md mb-6">
+                  Our AI assistant is here to help with your return or refund requests. How can we assist you today?
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center justify-center"
+                    onClick={() => setNewMessage("I need to return an item")}
+                  >
+                    <Package className="mr-2 h-4 w-4" />
+                    Return an item
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center justify-center"
+                    onClick={() => setNewMessage("I have a question about my order")}
+                  >
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Order question
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map(renderMessage)}
+                
+                {/* Typing indicator */}
+                {isTyping && (
+                  <div className="flex justify-start mb-4">
+                    <div className="bg-white border border-gray-200 rounded-lg px-4 py-3">
+                      <div className="flex space-x-2">
+                        <div className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Anchor for scrolling to bottom */}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </div>
+          
+          {/* File uploads preview */}
+          {fileUploads.length > 0 && (
+            <div className="bg-gray-50 border-t p-2 flex flex-wrap gap-2">
+              {fileUploads.map(file => (
+                <div 
+                  key={file.id} 
+                  className="relative bg-white rounded-md border p-2 flex items-center"
+                >
+                  {file.status === 'uploading' ? (
+                    <div className="w-6 h-6 mr-2 flex items-center justify-center">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    </div>
+                  ) : file.status === 'error' ? (
+                    <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
+                  ) : (
+                    <Paperclip className="h-4 w-4 mr-2 text-gray-500" />
+                  )}
+                  
+                  <span className="text-sm truncate max-w-[150px]">{file.file.name}</span>
+                  
+                  <button 
+                    className="ml-2 text-gray-400 hover:text-gray-600"
+                    onClick={() => handleRemoveFile(file.id)}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  
+                  {file.status === 'uploading' && (
+                    <div className="absolute bottom-0 left-0 h-1 bg-primary" style={{ width: `${file.upload_progress}%` }}></div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Input area */}
+          <div className="bg-white border-t p-4">
+            <div className="max-w-4xl mx-auto flex items-end space-x-2">
+              <div className="flex-1 relative">
+                <TextareaAutosize
+                  placeholder="Type your message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary resize-none max-h-32"
+                  minRows={1}
+                  maxRows={5}
+                  disabled={isSending}
+                />
+              </div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" disabled={isSending}>
+                    <Paperclip className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    <span>Upload Image</span>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      multiple
+                    />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                    <Paperclip className="h-4 w-4 mr-2" />
+                    <span>Upload File</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <Button 
+                className="bg-primary hover:bg-primary/90 text-black"
+                onClick={handleSendMessage}
+                disabled={isSending || (!newMessage.trim() && fileUploads.length === 0)}
+              >
+                {isSending ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </main>
+      
+      {/* File preview dialog */}
+      <Dialog open={showFilePreview} onOpenChange={setShowFilePreview}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>File Preview</DialogTitle>
+            <DialogDescription>
+              {selectedFile?.file.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-4 flex justify-center">
+            {selectedFile && (
+              <img 
+                src={selectedFile.preview_url} 
+                alt="Preview" 
+                className="max-h-[60vh] max-w-full object-contain rounded-md"
+              />
+            )}
+          </div>
+          
+          <div className="mt-4 flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setShowFilePreview(false)}>
+              Close
+            </Button>
+            <Button 
+              onClick={() => {
+                if (selectedFile) {
+                  const a = document.createElement('a');
+                  a.href = selectedFile.preview_url;
+                  a.download = selectedFile.file.name;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                }
+              }}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
