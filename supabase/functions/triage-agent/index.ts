@@ -258,3 +258,52 @@ export interface TriageDecision {
       }
     }
   }
+
+// Standalone Edge Function entry point
+Deno.serve(async (req) => {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  }
+
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    const { requestData, policyRules, businessId } = await req.json()
+
+    // Validate required fields
+    if (!requestData || !policyRules || !businessId) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields: requestData, policyRules, and businessId' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    // Initialize Triage Agent
+    const triageAgent = new TriageAgent()
+
+    // Evaluate return request
+    const triageDecision = await triageAgent.evaluateReturnRequest(
+      requestData,
+      policyRules,
+      businessId
+    )
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        decision: triageDecision
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+
+  } catch (error) {
+    console.error('Error in triage-agent:', error)
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    )
+  }
+})

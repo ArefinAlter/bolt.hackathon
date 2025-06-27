@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -198,14 +198,35 @@ async function createPolicy(req: Request, supabase: any, userId: string) {
       is_active: false
     })
     .select()
-    .single()
 
   if (error) {
     throw error
   }
 
+  // Log policy change
+  const { error: historyError } = await supabase
+    .from('policy_change_history')
+    .insert([
+      {
+        business_id,
+        policy_id: newPolicy[0].id,
+        change_type: 'created',
+        change_data: {
+          version,
+          rules,
+          effective_date,
+          created_by: userId
+        },
+        created_at: new Date().toISOString()
+      }
+    ])
+
+  if (historyError) {
+    console.error('Error logging policy change:', historyError)
+  }
+
   return new Response(
-    JSON.stringify({ success: true, data: newPolicy }),
+    JSON.stringify({ success: true, data: newPolicy[0] }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   )
 }
@@ -262,6 +283,28 @@ async function updatePolicy(req: Request, supabase: any, userId: string, policyI
     throw error
   }
 
+  // Log policy change
+  const { error: historyError } = await supabase
+    .from('policy_change_history')
+    .insert([
+      {
+        business_id,
+        policy_id: policyId,
+        change_type: 'updated',
+        change_data: {
+          version,
+          rules,
+          effective_date,
+          updated_by: userId
+        },
+        created_at: new Date().toISOString()
+      }
+    ])
+
+  if (historyError) {
+    console.error('Error logging policy change:', historyError)
+  }
+
   return new Response(
     JSON.stringify({ success: true, data: updatedPolicy }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -314,6 +357,26 @@ async function activatePolicy(req: Request, supabase: any, userId: string, polic
       JSON.stringify({ error: 'Policy not found' }),
       { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
+  }
+
+  // Log policy activation
+  const { error: historyError } = await supabase
+    .from('policy_change_history')
+    .insert([
+      {
+        business_id,
+        policy_id: policyId,
+        change_type: 'activated',
+        change_data: {
+          activated_by: userId,
+          effective_date: activatedPolicy.effective_date
+        },
+        created_at: new Date().toISOString()
+      }
+    ])
+
+  if (historyError) {
+    console.error('Error logging policy change:', historyError)
   }
 
   return new Response(

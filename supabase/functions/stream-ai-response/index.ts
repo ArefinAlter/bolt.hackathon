@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { CustomerServiceAgent } from '../customer-service-agent/index.ts'
 
@@ -64,7 +64,7 @@ serve(async (req) => {
     }
 
     // Get AI response
-    const aiResponse = await customerServiceAgent.processMessage(
+    const aiResponse = await customerServiceAgent.processChatMessage(
       user_message,
       agentContext,
       conversationHistory || []

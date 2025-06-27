@@ -1,132 +1,228 @@
-
-[functions.init-return]
+# Core AI Functions (Essential)
+[functions.triage-agent]
 enabled = true
 verify_jwt = true
-import_map = "./functions/init-return/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/init-return/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/init-return/*.html" ]
+import_map = "./functions/triage-agent/deno.json"
+entrypoint = "./functions/triage-agent/index.ts"
 
 [functions.triage-return]
 enabled = true
 verify_jwt = true
 import_map = "./functions/triage-return/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/triage-return/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/triage-return/*.html" ]
 
-[functions.update-return-status]
+[functions.customer-service-agent]
 enabled = true
 verify_jwt = true
-import_map = "./functions/update-return-status/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/update-return-status/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/update-return-status/*.html" ]
+import_map = "./functions/customer-service-agent/deno.json"
+entrypoint = "./functions/customer-service-agent/index.ts"
+
+[functions.call-ai-processor]
+enabled = true
+verify_jwt = true
+import_map = "./functions/call-ai-processor/deno.json"
+entrypoint = "./functions/call-ai-processor/index.ts"
+
+# Return Management Functions (Essential)
+[functions.init-return]
+enabled = true
+verify_jwt = true
+import_map = "./functions/init-return/deno.json"
+entrypoint = "./functions/init-return/index.ts"
 
 [functions.get-return-request]
 enabled = true
 verify_jwt = true
 import_map = "./functions/get-return-request/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/get-return-request/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/get-return-request/*.html" ]
 
+[functions.update-return-status]
+enabled = true
+verify_jwt = true
+import_map = "./functions/update-return-status/deno.json"
+entrypoint = "./functions/update-return-status/index.ts"
+
+# Chat System Functions (Essential)
 [functions.create-chat-session]
 enabled = true
 verify_jwt = true
 import_map = "./functions/create-chat-session/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/create-chat-session/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/create-chat-session/*.html" ]
 
 [functions.send-chat-message]
 enabled = true
 verify_jwt = true
 import_map = "./functions/send-chat-message/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/send-chat-message/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/send-chat-message/*.html" ]
 
+# Call Management Functions (Essential)
 [functions.initiate-call]
 enabled = true
 verify_jwt = true
 import_map = "./functions/initiate-call/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/initiate-call/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/initiate-call/*.html" ]
-
-[functions.get-user-preferences]
-enabled = true
-verify_jwt = true
-import_map = "./functions/get-user-preferences/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/get-user-preferences/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/get-user-preferences/*.html" ]
 
 [functions.handle-call-webhook]
 enabled = true
 verify_jwt = true
 import_map = "./functions/handle-call-webhook/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/handle-call-webhook/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/handle-call-webhook/*.html" ]
 
 [functions.get-call-session]
 enabled = true
 verify_jwt = true
 import_map = "./functions/get-call-session/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/get-call-session/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/get-call-session/*.html" ]
 
+# Streaming Functions (Essential)
+[functions.stream-voice-call]
+enabled = true
+verify_jwt = true
+import_map = "./functions/stream-voice-call/deno.json"
+entrypoint = "./functions/stream-voice-call/index.ts"
+
+[functions.stream-ai-response]
+enabled = true
+verify_jwt = true
+import_map = "./functions/stream-ai-response/deno.json"
+entrypoint = "./functions/stream-ai-response/index.ts"
+
+[functions.audio-stream-processor]
+enabled = true
+verify_jwt = true
+import_map = "./functions/audio-stream-processor/deno.json"
+entrypoint = "./functions/audio-stream-processor/index.ts"
+
+[functions.video-stream-processor]
+enabled = true
+verify_jwt = true
+import_map = "./functions/video-stream-processor/deno.json"
+entrypoint = "./functions/video-stream-processor/index.ts"
+
+[functions.websocket-manager]
+enabled = true
+verify_jwt = true
+import_map = "./functions/websocket-manager/deno.json"
+entrypoint = "./functions/websocket-manager/index.ts"
+
+# Voice/Video Processing Functions
+[functions.process-voice-input]
+enabled = true
+verify_jwt = true
+import_map = "./functions/process-voice-input/deno.json"
+entrypoint = "./functions/process-voice-input/index.ts"
+
+[functions.initiate-video-conversation]
+enabled = true
+verify_jwt = true
+import_map = "./functions/initiate-video-conversation/deno.json"
+entrypoint = "./functions/initiate-video-conversation/index.ts"
+
+# Policy Management Functions (Essential)
 [functions.policies]
 enabled = true
 verify_jwt = true
 import_map = "./functions/policies/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/policies/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/policies/*.html" ]
 
+# Risk Assessment Functions
 [functions.risk-assessment]
 enabled = true
 verify_jwt = true
 import_map = "./functions/risk-assessment/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/risk-assessment/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/risk-assessment/*.html" ]
+
+# Persona Management Functions
+[functions.create-voice-persona]
+enabled = true
+verify_jwt = true
+import_map = "./functions/create-voice-persona/deno.json"
+entrypoint = "./functions/create-voice-persona/index.ts"
+
+[functions.create-tavus-persona]
+enabled = true
+verify_jwt = true
+import_map = "./functions/create-tavus-persona/deno.json"
+entrypoint = "./functions/create-tavus-persona/index.ts"
+
+[functions.list-personas]
+enabled = true
+verify_jwt = true
+import_map = "./functions/list-personas/deno.json"
+entrypoint = "./functions/list-personas/index.ts"
+
+# MCP Server Functions (Advanced)
+[functions.mcp-base]
+enabled = true
+verify_jwt = true
+import_map = "./functions/mcp-base/deno.json"
+entrypoint = "./functions/mcp-base/index.ts"
+
+[functions.request-mcp-server]
+enabled = true
+verify_jwt = true
+import_map = "./functions/request-mcp-server/deno.json"
+entrypoint = "./functions/request-mcp-server/index.ts"
+
+[functions.policy-mcp-server]
+enabled = true
+verify_jwt = true
+import_map = "./functions/policy-mcp-server/deno.json"
+entrypoint = "./functions/policy-mcp-server/index.ts"
+
+[functions.call-mcp-server]
+enabled = true
+verify_jwt = true
+import_map = "./functions/call-mcp-server/deno.json"
+entrypoint = "./functions/call-mcp-server/index.ts"
+
+[functions.conversation-mcp-server]
+enabled = true
+verify_jwt = true
+import_map = "./functions/conversation-mcp-server/deno.json"
+entrypoint = "./functions/conversation-mcp-server/index.ts"
+
+# Advanced AI Functions
+[functions.layered-decision-engine]
+enabled = true
+verify_jwt = true
+import_map = "./functions/layered-decision-engine/deno.json"
+entrypoint = "./functions/layered-decision-engine/index.ts"
+
+[functions.agent-config]
+enabled = true
+verify_jwt = true
+import_map = "./functions/agent-config/deno.json"
+entrypoint = "./functions/agent-config/index.ts"
+
+# Utility Functions (Essential)
+[functions.upload-file]
+enabled = true
+verify_jwt = true
+import_map = "./functions/upload-file/deno.json"
+entrypoint = "./functions/upload-file/index.ts"
+
+[functions.get-analytics]
+enabled = true
+verify_jwt = true
+import_map = "./functions/get-analytics/deno.json"
+entrypoint = "./functions/get-analytics/index.ts"
+
+[functions.get-user-preferences]
+enabled = true
+verify_jwt = true
+import_map = "./functions/get-user-preferences/deno.json"
+entrypoint = "./functions/get-user-preferences/index.ts"
+
+# Testing Functions (Development)
+[functions.test-ai-agents]
+enabled = true
+verify_jwt = true
+import_map = "./functions/test-ai-agents/deno.json"
+entrypoint = "./functions/test-ai-agents/index.ts"
+
+[functions.test-persona]
+enabled = true
+verify_jwt = true
+import_map = "./functions/test-persona/deno.json"
+entrypoint = "./functions/test-persona/index.ts"

@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -29,6 +29,8 @@ serve(async (req) => {
     }
 
     // Validate order exists
+    // Note: mock_orders are shared demo data for hackathon purposes
+    // In production, this would be business-specific order data
     const { data: order, error: orderError } = await supabaseClient
       .from('mock_orders')
       .select('*')
@@ -37,7 +39,7 @@ serve(async (req) => {
 
     if (orderError || !order) {
       return new Response(
-        JSON.stringify({ error: 'Order not found' }),
+        JSON.stringify({ error: 'Order not found. Try using demo order IDs like ORDER-12345, ORDER-67890, etc.' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
       )
     }

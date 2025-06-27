@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
 
   try {
     const { createClient } = await import('npm:@supabase/supabase-js@2')
-    const { CustomerServiceAgent } = await import('../ai-core/customer-service-agent/index.ts')
+    const { CustomerServiceAgent } = await import('../customer-service-agent/index.ts')
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     // Verify session exists and get business context
     const { data: session, error: sessionError } = await supabaseClient
       .from('chat_sessions')
-      .select('*, businesses(*)')
+      .select('*, profiles!business_id(*)')
       .eq('id', session_id)
       .single()
 
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       }
 
       // Get AI response
-      const aiResponse = await customerServiceAgent.processMessage(
+      const aiResponse = await customerServiceAgent.processChatMessage(
         message,
         agentContext,
         conversationHistory || []
@@ -98,6 +98,8 @@ Deno.serve(async (req) => {
           const returnRequest = aiResponse.data.returnRequest
           
           // Check if order exists
+          // Note: mock_orders are shared demo data for hackathon purposes
+          // In production, this would be business-specific order data
           const { data: order } = await supabaseClient
             .from('mock_orders')
             .select('*')
@@ -121,7 +123,7 @@ Deno.serve(async (req) => {
                       sender: 'customer'
                     }
                   ],
-                  confidence_score: returnRequest.confidence
+                  ai_confidence_score: returnRequest.confidence
                 }
               ])
               .select()
