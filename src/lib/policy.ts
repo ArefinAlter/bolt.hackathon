@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { Policy, PolicyRule, PolicyTestResult, PolicyABTest } from '@/types/policy';
+import { Policy, PolicyRule, PolicyTestResult, PolicyABTest, PolicyComplianceMetrics } from '@/types/policy';
 
 // Fetch all policies for a business
 export async function fetchPolicies(businessId: string): Promise<Policy[]> {

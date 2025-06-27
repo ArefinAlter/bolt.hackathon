@@ -347,7 +347,7 @@ export default function CustomerChatPage() {
   const renderMessage = (message: ChatMessage) => {
     const isUser = message.sender === 'user';
     const isSystem = message.sender === 'system';
-    const hasReturnDetection = message.metadata?.return_detected;
+    const hasReturnDetection = Boolean(message.metadata?.return_detected);
 
     return (
       <div 

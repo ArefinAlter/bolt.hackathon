@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
 
   try {
     const { createClient } = await import('npm:@supabase/supabase-js@2')
-    const { CustomerServiceAgent } = await import('../customer-service-agent/index.ts')
+    const { CustomerServiceAgent } = await import('../customer-service-agent')
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',

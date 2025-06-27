@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { CustomerServiceAgent } from '../customer-service-agent/index.ts'
-import { TriageAgent } from '../triage-agent/index.ts'
+import { CustomerServiceAgent } from '../customer-service-agent'
+import { TriageAgent } from '../triage-agent'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

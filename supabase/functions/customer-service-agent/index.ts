@@ -1,4 +1,4 @@
-import { AgentConfig, AgentContext, AgentResponse, sanitizeInput } from '../agent-config/index.ts'
+import { AgentConfig, AgentContext, AgentResponse, sanitizeInput } from '../agent-config'
 import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
 
 export interface ReturnRequest {

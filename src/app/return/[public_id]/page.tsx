@@ -662,13 +662,13 @@ export default function ReturnDetailPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Product</p>
-                  <p className="font-medium">{(request as any).order_details?.product_name || 'Unknown'}</p>
+                  <p className="font-medium">{request.order_details?.product_name || 'Unknown'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Purchase Date</p>
                   <p className="font-medium">
-                    {(request as any).order_details?.purchase_date 
-                      ? new Date((request as any).order_details.purchase_date).toLocaleDateString()
+                    {request.order_details?.purchase_date 
+                      ? new Date(request.order_details.purchase_date).toLocaleDateString()
                       : 'Unknown'}
                   </p>
                 </div>

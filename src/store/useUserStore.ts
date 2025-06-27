@@ -59,7 +59,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         preferences,
         isLoading: false
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error loading user:', error);
       set({ 
         error: 'Failed to load user data', 
@@ -79,7 +79,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     try {
       await updateUserPreferences(user.id, preferences);
       set({ preferences });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error updating preferences:', error);
       set({ error: 'Failed to update preferences' });
     }
@@ -90,7 +90,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       await supabase.auth.signOut();
       localStorage.removeItem('userRole');
       set({ user: null, profile: null, preferences: null });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error signing out:', error);
       set({ error: 'Failed to sign out' });
     }

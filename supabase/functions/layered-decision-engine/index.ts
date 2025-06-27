@@ -1,9 +1,10 @@
 // Layered Decision Engine - Integrates AI Agents with MCP Servers
 // Each layer adds value and passes enriched data to the next layer
 
-import { MCPServer, MCPRequest, MCPResponse } from '../mcp-base/index.ts'
-import { TriageAgent } from '../triage-agent/index.ts'
-import { CustomerServiceAgent } from '../customer-service-agent/index.ts'
+import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
+import { MCPServer, MCPRequest, MCPResponse } from '../mcp-base'
+import { TriageAgent } from '../triage-agent'
+import { CustomerServiceAgent } from '../customer-service-agent'
 
 export interface DecisionContext {
   businessId: string
