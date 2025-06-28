@@ -68,27 +68,26 @@ export function AuthForm({ type }: AuthFormProps) {
         console.log('User session:', result.session);
         console.log('User data:', result.user);
         
-        // Wait a moment for session to be properly established
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Wait for session to be properly established and cookies set
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         // Check if we have a session immediately after sign in
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         console.log('Immediate session check:', session);
+        console.log('Session error:', sessionError);
         
         if (!session) {
-          throw new Error('Session not established after sign in');
+          console.error('Session not established after sign in');
+          throw new Error('Session not established after sign in. Please try again.');
         }
         
-        console.log('Redirecting to role selection...');
-        try {
-          await router.push('/dashboard/role-selection');
-          console.log('Navigation successful');
-        } catch (navError) {
-          console.error('Navigation failed:', navError);
-          // Fallback: try window.location
-          window.location.href = '/dashboard/role-selection';
-        }
-        console.log('=== AUTH DEBUG END ===');
+        // Set session in localStorage as backup
+        localStorage.setItem('supabase.auth.token', session.access_token);
+        
+        // Force a full page reload to ensure cookies are set and middleware recognizes the session
+        console.log('Forcing page reload to ensure session persistence...');
+        window.location.replace('/dashboard/role-selection');
+        return; // Exit early since we're doing a full page reload
       } else {
         console.log('Attempting to sign up...');
         const result = await signUp(data as SignUpFormData);
@@ -109,16 +108,23 @@ export function AuthForm({ type }: AuthFormProps) {
           }
         }
         
-        console.log('Redirecting to role selection...');
-        try {
-          await router.push('/dashboard/role-selection');
-          console.log('Navigation successful');
-        } catch (navError) {
-          console.error('Navigation failed:', navError);
-          // Fallback: try window.location
-          window.location.href = '/dashboard/role-selection';
+        // Wait for session to be established
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Check session after signup
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        console.log('Signup session check:', session);
+        console.log('Signup session error:', sessionError);
+        
+        if (!session) {
+          console.error('Session not established after signup');
+          throw new Error('Session not established after signup. Please try again.');
         }
-        console.log('=== AUTH DEBUG END ===');
+        
+        // Force a page reload to ensure session is properly set in cookies
+        console.log('Forcing page reload to ensure session persistence...');
+        window.location.href = '/dashboard/role-selection';
+        return; // Exit early since we're doing a full page reload
       }
     } catch (err: any) {
       console.error('Auth error details:', err);

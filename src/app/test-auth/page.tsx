@@ -111,8 +111,124 @@ export default function TestAuthPage() {
     setIsLoading(false);
   };
 
+  const testSessionPersistence = async () => {
+    setIsLoading(true);
+    try {
+      // Test sign in
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: 'test@example.com',
+        password: 'password123'
+      });
+      
+      if (error) {
+        setDebugInfo((prev: any) => ({
+          ...prev,
+          signInError: error
+        }));
+        return;
+      }
+      
+      setDebugInfo((prev: any) => ({
+        ...prev,
+        signInResult: { data, error }
+      }));
+      
+      // Wait and check session
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      setDebugInfo((prev: any) => ({
+        ...prev,
+        sessionAfterSignIn: {
+          exists: !!session,
+          user: session?.user?.email,
+          error: sessionError,
+          accessToken: session?.access_token ? 'PRESENT' : 'MISSING'
+        }
+      }));
+      
+      // Test navigation
+      setTimeout(() => {
+        window.location.href = '/dashboard/role-selection';
+      }, 1000);
+      
+    } catch (error) {
+      setDebugInfo((prev: any) => ({
+        ...prev,
+        sessionTestError: error
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const testNavigation = () => {
     router.push('/dashboard/role-selection');
+  };
+
+  const testFullAuthFlow = async () => {
+    setIsLoading(true);
+    try {
+      console.log('=== FULL AUTH FLOW TEST START ===');
+      
+      // Step 1: Sign in
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: 'arefin.rajulaw@gmail.com',
+        password: 'password123'
+      });
+      
+      if (error) {
+        console.error('Sign in failed:', error);
+        setDebugInfo((prev: any) => ({
+          ...prev,
+          fullAuthFlowError: error
+        }));
+        return;
+      }
+      
+      console.log('Sign in successful:', data);
+      
+      // Step 2: Wait for session establishment
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Step 3: Check session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('Session check:', session);
+      console.log('Session error:', sessionError);
+      
+      // Step 4: Set localStorage backup
+      if (session?.access_token) {
+        localStorage.setItem('supabase.auth.token', session.access_token);
+        console.log('Token stored in localStorage');
+      }
+      
+      // Step 5: Test navigation
+      console.log('Testing navigation to role selection...');
+      window.location.replace('/dashboard/role-selection');
+      
+      setDebugInfo((prev: any) => ({
+        ...prev,
+        fullAuthFlow: {
+          signInSuccess: true,
+          sessionExists: !!session,
+          sessionUser: session?.user?.email,
+          localStorageSet: !!session?.access_token,
+          navigationAttempted: true
+        }
+      }));
+      
+      console.log('=== FULL AUTH FLOW TEST END ===');
+      
+    } catch (error) {
+      console.error('Full auth flow test failed:', error);
+      setDebugInfo((prev: any) => ({
+        ...prev,
+        fullAuthFlowError: error
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -134,8 +250,14 @@ export default function TestAuthPage() {
               <Button onClick={testSignIn} variant="outline">
                 Test Sign In
               </Button>
+              <Button onClick={testSessionPersistence} variant="outline">
+                Test Session Persistence
+              </Button>
               <Button onClick={testNavigation} variant="outline">
                 Test Navigation
+              </Button>
+              <Button onClick={testFullAuthFlow} variant="outline">
+                Test Full Auth Flow
               </Button>
             </div>
 

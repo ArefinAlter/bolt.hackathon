@@ -19,6 +19,10 @@ export async function middleware(req: NextRequest) {
     console.log('Session exists:', !!session);
     console.log('Session user:', session?.user?.email);
     console.log('Session error:', sessionError);
+    console.log('Session access token:', session?.access_token ? 'PRESENT' : 'MISSING');
+    console.log('Session expires at:', session?.expires_at);
+    console.log('Current time:', new Date().toISOString());
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
     // Define protected routes that require authentication
     const protectedRoutes = [
