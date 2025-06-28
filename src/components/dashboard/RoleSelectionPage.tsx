@@ -20,76 +20,59 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { UserRole } from '@/types/auth';
 import { supabase } from '@/lib/supabase';
-import { createProfileIfMissing } from '@/lib/auth';
 
 export function RoleSelectionPage() {
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPageLoading, setIsPageLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const getUserData = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('Role selection page - Session:', session);
-        
-        if (!session) {
-          console.log('No session found, redirecting to login');
-          router.push('/auth/login');
+        // Get current session using the same client as the rest of the app
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError) {
+          console.error('Session error:', sessionError);
           return;
         }
-        
-        setUser(session.user);
-        
-        // Check if profile exists (don't create here, let auth.ts handle it)
-        try {
+
+        if (session) {
+          setUser(session.user);
+
+          // Get profile data
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
-          
-          if (profileError) {
-            console.log('Profile not found, but continuing...');
-            // Don't create profile here, it should be handled during signup/signin
-            setProfile(null);
-          } else {
+
+          if (profileData) {
             setProfile(profileData);
           }
-        } catch (error) {
-          console.error('Error checking profile:', error);
-          // Continue anyway, profile is not critical for role selection
-          setProfile(null);
         }
-        
-        setIsPageLoading(false);
       } catch (error) {
-        console.error('Error checking auth in role selection:', error);
-        router.push('/auth/login');
+        console.error('Error getting user data:', error);
       }
     };
     
-    checkAuth();
-  }, [router]);
+    getUserData();
+  }, []);
 
   const handleRoleSelection = async (role: UserRole) => {
     setSelectedRole(role);
     setIsLoading(true);
     
     try {
-      console.log('Setting role:', role);
       // Store the selected role in localStorage for persistence
       localStorage.setItem('userRole', role);
       
       // Redirect based on role
       if (role === 'business') {
-        console.log('Redirecting to business dashboard');
         router.push('/dashboard');
       } else {
-        console.log('Redirecting to customer portal');
         router.push('/return');
       }
     } catch (error) {
@@ -103,17 +86,6 @@ export function RoleSelectionPage() {
     await supabase.auth.signOut();
     router.push('/');
   };
-
-  if (isPageLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-black">Loading...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">

@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createClient } from '@supabase/supabase-js';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 export default function TestAuthPage() {
   const router = useRouter();
@@ -168,89 +169,29 @@ export default function TestAuthPage() {
   };
 
   const testFullAuthFlow = async () => {
-    setIsLoading(true);
     try {
-      console.log('=== FULL AUTH FLOW TEST START ===');
+      console.log('=== TESTING FULL AUTH FLOW ===');
       
-      // First check if we already have a session
-      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      // Get current session from debug info
+      const currentSession = debugInfo.session;
       
-      if (existingSession) {
-        console.log('Session already exists, testing navigation directly...');
-        setDebugInfo((prev: any) => ({
-          ...prev,
-          fullAuthFlow: {
-            existingSession: true,
-            sessionUser: existingSession.user?.email,
-            testingNavigation: true
-          }
-        }));
-        
-        // Test navigation with existing session
-        setTimeout(() => {
-          console.log('Navigating to role selection with existing session...');
-          window.location.replace('/dashboard/role-selection');
-        }, 1000);
-        
-        return;
-      }
+      const flowInfo = {
+        existingSession: !!currentSession,
+        sessionUser: currentSession?.user,
+        testingNavigation: true,
+      };
       
-      // Step 1: Sign in (using your actual credentials)
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: 'arefin.rajulaw@gmail.com',
-        password: 'your_actual_password' // You'll need to replace this
-      });
-      
-      if (error) {
-        console.error('Sign in failed:', error);
-        setDebugInfo((prev: any) => ({
-          ...prev,
-          fullAuthFlowError: error
-        }));
-        return;
-      }
-      
-      console.log('Sign in successful:', data);
-      
-      // Step 2: Wait for session establishment
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Step 3: Check session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      console.log('Session check:', session);
-      console.log('Session error:', sessionError);
-      
-      // Step 4: Set localStorage backup
-      if (session?.access_token) {
-        localStorage.setItem('supabase.auth.token', session.access_token);
-        console.log('Token stored in localStorage');
-      }
-      
-      // Step 5: Test navigation
-      console.log('Testing navigation to role selection...');
-      window.location.replace('/dashboard/role-selection');
+      console.log('Full auth flow info:', flowInfo);
       
       setDebugInfo((prev: any) => ({
         ...prev,
-        fullAuthFlow: {
-          signInSuccess: true,
-          sessionExists: !!session,
-          sessionUser: session?.user?.email,
-          localStorageSet: !!session?.access_token,
-          navigationAttempted: true
-        }
+        fullAuthFlow: flowInfo
       }));
       
-      console.log('=== FULL AUTH FLOW TEST END ===');
-      
+      // Test navigation
+      await testMiddlewareWithSession();
     } catch (error) {
-      console.error('Full auth flow test failed:', error);
-      setDebugInfo((prev: any) => ({
-        ...prev,
-        fullAuthFlowError: error
-      }));
-    } finally {
-      setIsLoading(false);
+      console.error('Full auth flow test error:', error);
     }
   };
 
@@ -300,61 +241,108 @@ export default function TestAuthPage() {
   };
 
   const testMiddlewareWithSession = async () => {
-    setIsLoading(true);
     try {
       console.log('=== TESTING MIDDLEWARE WITH SESSION ===');
       
-      const { data: { session } } = await supabase.auth.getSession();
+      // Get current session from debug info
+      const currentSession = debugInfo.session;
       
-      if (!session) {
-        console.log('No session found');
-        setDebugInfo((prev: any) => ({
-          ...prev,
-          middlewareTest: {
-            sessionExists: false,
-            error: 'No session found'
-          }
-        }));
-        return;
-      }
-      
-      console.log('Session found:', session.user?.email);
-      
-      // Test if we can access a protected route
+      // Test direct navigation to protected route
       const testUrl = '/dashboard/role-selection';
-      console.log('Testing access to:', testUrl);
+      console.log('Testing navigation to:', testUrl);
       
-      // Simulate a fetch request to see if middleware blocks it
+      // Simulate a fetch request to test middleware
       const response = await fetch(testUrl, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Include cookies
       });
       
       console.log('Response status:', response.status);
       console.log('Response URL:', response.url);
+      console.log('Redirected:', response.redirected);
       
       setDebugInfo((prev: any) => ({
         ...prev,
         middlewareTest: {
-          sessionExists: true,
-          sessionUser: session.user?.email,
-          testUrl: testUrl,
+          sessionExists: !!currentSession,
+          sessionUser: currentSession?.user,
+          testUrl,
           responseStatus: response.status,
           responseUrl: response.url,
-          redirected: response.url !== window.location.origin + testUrl
+          redirected: response.redirected,
         }
       }));
-      
     } catch (error) {
-      console.error('Middleware test failed:', error);
+      console.error('Middleware test error:', error);
+    }
+  };
+
+  const testAuthGuard = async () => {
+    try {
+      console.log('=== TESTING AUTH GUARD ===');
+      
+      // Simulate what AuthGuard does
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('AuthGuard session check:', session ? 'EXISTS' : 'MISSING');
+      console.log('AuthGuard session user:', session?.user?.email);
+      console.log('AuthGuard session error:', sessionError);
+      
+      // Check localStorage token
+      const storedToken = localStorage.getItem('supabase.auth.token');
+      console.log('AuthGuard stored token:', storedToken ? 'PRESENT' : 'MISSING');
+      
       setDebugInfo((prev: any) => ({
         ...prev,
-        middlewareTestError: error
+        authGuardTest: {
+          sessionExists: !!session,
+          sessionUser: session?.user?.email,
+          storedToken: !!storedToken,
+          sessionError: sessionError?.message,
+        }
       }));
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error('AuthGuard test error:', error);
+    }
+  };
+
+  const testSupabaseClients = async () => {
+    try {
+      console.log('=== TESTING SUPABASE CLIENTS ===');
+      
+      // Test the client used by AuthGuard
+      const authGuardClient = createClientComponentClient();
+      const { data: { session: authGuardSession }, error: authGuardError } = await authGuardClient.auth.getSession();
+      console.log('AuthGuard client session:', authGuardSession ? 'EXISTS' : 'MISSING');
+      console.log('AuthGuard client user:', authGuardSession?.user?.email);
+      console.log('AuthGuard client error:', authGuardError);
+      
+      // Test the client used by test page
+      const { data: { session: testSession }, error: testError } = await supabase.auth.getSession();
+      console.log('Test client session:', testSession ? 'EXISTS' : 'MISSING');
+      console.log('Test client user:', testSession?.user?.email);
+      console.log('Test client error:', testError);
+      
+      // Compare sessions
+      const sessionsMatch = authGuardSession?.user?.id === testSession?.user?.id;
+      console.log('Sessions match:', sessionsMatch);
+      
+      setDebugInfo((prev: any) => ({
+        ...prev,
+        supabaseClientsTest: {
+          authGuardSession: !!authGuardSession,
+          authGuardUser: authGuardSession?.user?.email,
+          testSession: !!testSession,
+          testUser: testSession?.user?.email,
+          sessionsMatch,
+          authGuardError: authGuardError?.message,
+          testError: testError?.message,
+        }
+      }));
+    } catch (error) {
+      console.error('Supabase clients test error:', error);
     }
   };
 
@@ -370,27 +358,33 @@ export default function TestAuthPage() {
             <CardTitle>Authentication Debug Panel</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex space-x-4">
-              <Button onClick={checkAuthStatus} disabled={isLoading}>
-                {isLoading ? 'Checking...' : 'Check Auth Status'}
+            <div className="space-y-4">
+              <Button onClick={checkAuthStatus} className="w-full">
+                Check Auth Status
               </Button>
-              <Button onClick={testSignIn} variant="outline">
-                Test Sign In
+              
+              <Button onClick={testSignIn} className="w-full">
+                Test sign in
               </Button>
-              <Button onClick={testSessionPersistence} variant="outline">
-                Test Session Persistence
+              
+              <Button onClick={testSessionPersistence} className="w-full">
+                Test session persistance
               </Button>
-              <Button onClick={testNavigation} variant="outline">
-                Test Navigation
+              
+              <Button onClick={testFullAuthFlow} className="w-full">
+                Test full auth flow
               </Button>
-              <Button onClick={testFullAuthFlow} variant="outline">
-                Test Full Auth Flow
+              
+              <Button onClick={testMiddlewareWithSession} className="w-full">
+                Test middleware with session
               </Button>
-              <Button onClick={testNavigationWithExistingSession} variant="outline">
-                Test Navigation with Existing Session
+              
+              <Button onClick={testAuthGuard} className="w-full">
+                Test AuthGuard
               </Button>
-              <Button onClick={testMiddlewareWithSession} variant="outline">
-                Test Middleware with Session
+
+              <Button onClick={testSupabaseClients} className="w-full">
+                Test Supabase Clients
               </Button>
             </div>
 

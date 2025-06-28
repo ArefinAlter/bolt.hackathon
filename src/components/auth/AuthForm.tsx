@@ -39,10 +39,11 @@ interface AuthFormProps {
 
 export function AuthForm({ type }: AuthFormProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const schema = type === 'login' ? loginSchema : signupSchema;
   
@@ -55,82 +56,66 @@ export function AuthForm({ type }: AuthFormProps) {
     },
   });
 
-  const onSubmit = async (data: AuthFormData | SignUpFormData) => {
-    setIsLoading(true);
-    setError(null);
-    
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
     try {
-      if (type === 'login') {
-        console.log('=== AUTH DEBUG START ===');
-        console.log('Attempting to sign in with:', { email: data.email });
-        const result = await signIn(data as AuthFormData);
-        console.log('Sign in successful:', result);
-        console.log('User session:', result.session);
-        console.log('User data:', result.user);
-        
-        // Wait for session to be properly established and cookies set
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Check if we have a session immediately after sign in
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        console.log('Immediate session check:', session);
-        console.log('Session error:', sessionError);
-        
-        if (!session) {
-          console.error('Session not established after sign in');
-          throw new Error('Session not established after sign in. Please try again.');
-        }
-        
-        // Set session in localStorage as backup
-        localStorage.setItem('supabase.auth.token', session.access_token);
-        
-        // Force a full page reload to ensure cookies are set and middleware recognizes the session
-        console.log('Forcing page reload to ensure session persistence...');
-        window.location.replace('/dashboard/role-selection');
-        return; // Exit early since we're doing a full page reload
+      console.log('=== AUTH FORM DEBUG ===');
+      console.log('Form type:', type);
+      console.log('Email:', form.getValues('email'));
+      console.log('Password length:', form.getValues('password').length);
+      
+      let result;
+      
+      if (type === 'signup') {
+        result = await supabase.auth.signUp({
+          email: form.getValues('email'),
+          password: form.getValues('password'),
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/login`,
+          },
+        });
+        console.log('Signup result:', result);
       } else {
-        console.log('Attempting to sign up...');
-        const result = await signUp(data as SignUpFormData);
-        console.log('Sign up successful:', result);
-        
-        // Ensure profile exists after signup
-        if (result.user) {
-          try {
-            console.log('Ensuring profile exists...');
-            await createProfileIfMissing(
-              result.user.id,
-              (data as SignUpFormData).business_name || result.user.email?.split('@')[0]
-            );
-            console.log('Profile creation confirmed');
-          } catch (profileError) {
-            console.error('Profile creation failed:', profileError);
-            // Don't block the signup flow, profile can be created later
-          }
-        }
-        
-        // Wait for session to be established
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Check session after signup
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        console.log('Signup session check:', session);
-        console.log('Signup session error:', sessionError);
-        
-        if (!session) {
-          console.error('Session not established after signup');
-          throw new Error('Session not established after signup. Please try again.');
-        }
-        
-        // Force a page reload to ensure session is properly set in cookies
-        console.log('Forcing page reload to ensure session persistence...');
-        window.location.href = '/dashboard/role-selection';
-        return; // Exit early since we're doing a full page reload
+        result = await supabase.auth.signInWithPassword({
+          email: form.getValues('email'),
+          password: form.getValues('password'),
+        });
+        console.log('Signin result:', result);
       }
-    } catch (err: any) {
-      console.error('Auth error details:', err);
-      setError(err.message || 'An error occurred during authentication');
-    } finally {
-      setIsLoading(false);
+
+      if (result.error) {
+        console.error('Auth error:', result.error);
+        setError(result.error.message);
+        setLoading(false);
+        return;
+      }
+
+      if (result.data.user && result.data.session) {
+        console.log('Auth successful, user:', result.data.user.email);
+        console.log('Session access token:', result.data.session.access_token ? 'PRESENT' : 'MISSING');
+        
+        // Store session in localStorage as backup
+        localStorage.setItem('supabase.auth.token', result.data.session.access_token);
+        
+        // Navigate to role selection
+        console.log('Redirecting to role selection');
+        router.push('/dashboard/role-selection');
+      } else if (type === 'signup' && result.data.user && !result.data.session) {
+        // Email confirmation required
+        setMessage('Please check your email to confirm your account before signing in.');
+        setLoading(false);
+      } else {
+        console.error('Unexpected auth result:', result);
+        setError('An unexpected error occurred. Please try again.');
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Auth form error:', error);
+      setError('An error occurred during authentication. Please try again.');
+      setLoading(false);
     }
   };
 
@@ -148,7 +133,7 @@ export function AuthForm({ type }: AuthFormProps) {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <FormField
               control={form.control}
               name="email"
@@ -266,9 +251,9 @@ export function AuthForm({ type }: AuthFormProps) {
             <Button 
               type="submit" 
               className="w-full bg-primary hover:bg-primary/90 text-black font-medium"
-              disabled={isLoading}
+              disabled={loading}
             >
-              {isLoading ? (
+              {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {type === 'login' ? 'Signing in...' : 'Creating account...'}

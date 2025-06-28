@@ -44,8 +44,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         if (storedRole) {
           setUserRole(storedRole);
         } else {
-          router.push('/dashboard/role-selection');
-          return;
+          // Only redirect to role selection if not already on that page
+          const currentPath = window.location.pathname;
+          if (currentPath !== '/dashboard/role-selection') {
+            router.push('/dashboard/role-selection');
+            return;
+          }
         }
         
         // Get user profile
