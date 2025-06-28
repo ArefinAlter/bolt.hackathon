@@ -1,5 +1,6 @@
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { DashboardWrapper } from '@/components/dashboard/DashboardWrapper';
 
 export default function DashboardRootLayout({
   children,
@@ -8,9 +9,9 @@ export default function DashboardRootLayout({
 }) {
   return (
     <AuthGuard>
-      <DashboardLayout>
+      <DashboardWrapper>
         {children}
-      </DashboardLayout>
+      </DashboardWrapper>
     </AuthGuard>
   );
 }

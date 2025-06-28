@@ -8,30 +8,13 @@ export async function middleware(req: NextRequest) {
   try {
     const supabase = createMiddlewareClient({ req, res });
     
-    // Check if the user is authenticated
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
     // Get the pathname from the request
     const { pathname } = req.nextUrl;
     
     console.log('=== MIDDLEWARE DEBUG ===');
     console.log('Pathname:', pathname);
-    console.log('Session exists:', !!session);
-    console.log('Session user:', session?.user?.email);
-    console.log('Session error:', sessionError);
-    console.log('Session access token:', session?.access_token ? 'PRESENT' : 'MISSING');
-    console.log('Session expires at:', session?.expires_at);
-    console.log('Current time:', new Date().toISOString());
-    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
-    // Define protected routes that require authentication
-    const protectedRoutes = [
-      '/dashboard',
-      '/return',
-      '/dashboard/role-selection',
-    ];
-    
-    // Define auth routes
+    // Define auth routes that should redirect authenticated users
     const authRoutes = [
       '/auth/login',
       '/auth/signup',
@@ -39,29 +22,14 @@ export async function middleware(req: NextRequest) {
       '/auth/reset-password',
     ];
     
-    // Check if the current route is protected
-    const isProtectedRoute = protectedRoutes.some(route => 
-      pathname === route || pathname.startsWith(`${route}/`)
-    );
-    
     // Check if the current route is an auth route
     const isAuthRoute = authRoutes.some(route => pathname === route);
     
-    console.log('Is protected route:', isProtectedRoute);
-    console.log('Is auth route:', isAuthRoute);
-    
-    // If the route is protected and the user is not authenticated, redirect to login
-    if (isProtectedRoute && !session) {
-      console.log('Redirecting to login - no session for protected route');
-      const redirectUrl = new URL('/auth/login', req.url);
-      redirectUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(redirectUrl);
-    }
-    
-    // If the user is authenticated and trying to access an auth route, redirect to role selection
-    if (isAuthRoute && session) {
-      console.log('Redirecting to role selection - authenticated user on auth route');
-      return NextResponse.redirect(new URL('/dashboard/role-selection', req.url));
+    if (isAuthRoute) {
+      // For auth routes, let the AuthGuard handle the logic
+      // Just pass through and let client-side handle redirects
+      console.log('Auth route detected, letting AuthGuard handle');
+      return res;
     }
     
     console.log('=== MIDDLEWARE DEBUG END ===');
@@ -73,14 +41,16 @@ export async function middleware(req: NextRequest) {
   }
 }
 
-// Specify which routes this middleware should run on
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/return/:path*',
-    '/auth/login',
-    '/auth/signup',
-    '/auth/forgot-password',
-    '/auth/reset-password',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
   ],
 };
