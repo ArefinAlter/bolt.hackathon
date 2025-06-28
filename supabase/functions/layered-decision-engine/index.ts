@@ -2,9 +2,9 @@
 // Each layer adds value and passes enriched data to the next layer
 
 import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
-import { MCPServer, MCPRequest, MCPResponse } from '../mcp-base'
-import { TriageAgent } from '../triage-agent'
-import { CustomerServiceAgent } from '../customer-service-agent'
+import { MCPServer, MCPRequest, MCPResponse } from '../mcp-base/index.ts'
+import { TriageAgent } from '../triage-agent/index.ts'
+import { CustomerServiceAgent } from '../customer-service-agent/index.ts'
 
 export interface DecisionContext {
   businessId: string

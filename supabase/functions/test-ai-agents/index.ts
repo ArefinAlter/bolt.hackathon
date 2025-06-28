@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
-import { CustomerServiceAgent } from '../customer-service-agent'
-import { TriageAgent } from '../triage-agent'
-import { PolicyMCPServer } from '../policy-mcp-server'
+import { CustomerServiceAgent } from '../customer-service-agent/index.ts'
+import { TriageAgent } from '../triage-agent/index.ts'
+import { PolicyMCPServer } from '../policy-mcp-server/index.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

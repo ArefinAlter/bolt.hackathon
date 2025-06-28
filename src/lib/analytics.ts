@@ -43,7 +43,13 @@ export async function fetchAnalytics(
     }
     
     const data = await response.json();
-    return data;
+    
+    // Transform the API response to match expected AnalyticsResponse format
+    return {
+      success: data.success,
+      business_id: data.business_id,
+      analytics: data.analytics || {}
+    };
   } catch (error) {
     console.error('Error fetching analytics:', error);
     throw error;

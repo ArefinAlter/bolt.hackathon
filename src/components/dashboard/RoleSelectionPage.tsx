@@ -44,7 +44,7 @@ export function RoleSelectionPage() {
         
         setUser(session.user);
         
-        // Verify profile exists and create if missing
+        // Check if profile exists (don't create here, let auth.ts handle it)
         try {
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
@@ -53,27 +53,16 @@ export function RoleSelectionPage() {
             .single();
           
           if (profileError) {
-            console.log('Profile not found, creating...');
-            // Create profile if missing
-            await createProfileIfMissing(
-              session.user.id,
-              session.user.user_metadata?.business_name
-            );
-            
-            // Fetch the created profile
-            const { data: newProfile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            setProfile(newProfile);
+            console.log('Profile not found, but continuing...');
+            // Don't create profile here, it should be handled during signup/signin
+            setProfile(null);
           } else {
             setProfile(profileData);
           }
         } catch (error) {
-          console.error('Error handling profile:', error);
-          // Continue anyway, profile creation is not critical for role selection
+          console.error('Error checking profile:', error);
+          // Continue anyway, profile is not critical for role selection
+          setProfile(null);
         }
         
         setIsPageLoading(false);

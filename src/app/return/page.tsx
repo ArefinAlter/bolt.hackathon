@@ -139,14 +139,39 @@ export default function ReturnPage() {
         return;
       }
       
-      // Check if order exists
-      const { data: order, error: orderError } = await supabase
-        .from('mock_orders')
-        .select('*')
-        .eq('order_id', orderNumber)
+      // Get user profile to get business_id
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('business_id')
+        .eq('id', session.user.id)
         .single();
       
-      if (orderError || !order) {
+      if (profileError || !profile) {
+        console.error('Profile not found:', profileError);
+        setSearchError('Unable to load your profile. Please try logging out and back in.');
+        setIsSearching(false);
+        return;
+      }
+      
+      // Check if order exists using API function instead of direct table access
+      const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-order?order_id=${orderNumber}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!orderResponse.ok) {
+        setSearchError(`Order ${orderNumber} not found. Please check the order number and try again.`);
+        setIsSearching(false);
+        return;
+      }
+      
+      const orderData = await orderResponse.json();
+      const order = orderData.data;
+      
+      if (!order) {
         setSearchError(`Order ${orderNumber} not found. Please check the order number and try again.`);
         setIsSearching(false);
         return;
@@ -172,7 +197,7 @@ export default function ReturnPage() {
         return;
       }
       
-      // Create new return request
+      // Create new return request with actual business_id
       const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/init-return`, {
         method: 'POST',
         headers: {
@@ -180,7 +205,7 @@ export default function ReturnPage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          business_id: 'default', // This would normally be the business ID
+          business_id: profile.business_id, // Fixed: Use actual business_id from profile
           order_id: orderNumber
         })
       });

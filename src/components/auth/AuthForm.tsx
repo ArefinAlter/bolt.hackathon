@@ -68,12 +68,26 @@ export function AuthForm({ type }: AuthFormProps) {
         console.log('User session:', result.session);
         console.log('User data:', result.user);
         
+        // Wait a moment for session to be properly established
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         // Check if we have a session immediately after sign in
         const { data: { session } } = await supabase.auth.getSession();
         console.log('Immediate session check:', session);
         
+        if (!session) {
+          throw new Error('Session not established after sign in');
+        }
+        
         console.log('Redirecting to role selection...');
-        router.push('/dashboard/role-selection');
+        try {
+          await router.push('/dashboard/role-selection');
+          console.log('Navigation successful');
+        } catch (navError) {
+          console.error('Navigation failed:', navError);
+          // Fallback: try window.location
+          window.location.href = '/dashboard/role-selection';
+        }
         console.log('=== AUTH DEBUG END ===');
       } else {
         console.log('Attempting to sign up...');
@@ -96,7 +110,15 @@ export function AuthForm({ type }: AuthFormProps) {
         }
         
         console.log('Redirecting to role selection...');
-        router.push('/dashboard/role-selection');
+        try {
+          await router.push('/dashboard/role-selection');
+          console.log('Navigation successful');
+        } catch (navError) {
+          console.error('Navigation failed:', navError);
+          // Fallback: try window.location
+          window.location.href = '/dashboard/role-selection';
+        }
+        console.log('=== AUTH DEBUG END ===');
       }
     } catch (err: any) {
       console.error('Auth error details:', err);

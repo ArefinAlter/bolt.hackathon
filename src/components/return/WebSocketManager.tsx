@@ -1,71 +1,93 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ReturnRequest } from '@/types/return';
 import { supabase } from '@/lib/supabase';
+import { ReturnRequest } from '@/types/return';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle, Clock } from 'lucide-react';
 
 interface WebSocketManagerProps {
   publicId: string;
   onUpdate: (updatedRequest: ReturnRequest) => void;
+  onReturnUpdate: (updatedRequest: ReturnRequest) => void;
+  onMessageReceived: (message: any) => void;
+  onEvidenceUpdate: (evidence: any) => void;
 }
 
-export function WebSocketManager({ publicId, onUpdate }: WebSocketManagerProps) {
+export function WebSocketManager({ publicId, onUpdate, onReturnUpdate, onMessageReceived, onEvidenceUpdate }: WebSocketManagerProps) {
   const channelRef = useRef<any>(null);
   const { toast } = useToast();
   const [previousStatus, setPreviousStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    // Set up real-time subscription
-    const channel = supabase
-      .channel(`return_${publicId}`)
+    if (!publicId || !supabase) return;
+
+    // Subscribe to return request updates for this specific return
+    const returnSubscription = supabase
+      .channel(`return-${publicId}`)
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
           table: 'return_requests',
           filter: `public_id=eq.${publicId}`
         },
         (payload) => {
-          console.log('Return request updated:', payload);
-          
-          // Fetch the updated request
-          fetchReturnRequest(publicId).then(updatedRequest => {
-            if (updatedRequest) {
-              // Check if status has changed
-              if (previousStatus && previousStatus !== updatedRequest.status) {
-                showStatusChangeNotification(updatedRequest.status);
-              }
-              
-              // Update previous status
-              setPreviousStatus(updatedRequest.status);
-              
-              // Update the request in the UI
-              onUpdate(updatedRequest);
-            }
-          });
+          console.log('Return request update:', payload);
+          if (payload.eventType === 'UPDATE') {
+            onReturnUpdate(payload.new as ReturnRequest);
+          }
         }
       )
       .subscribe();
-    
-    channelRef.current = channel;
-    
-    // Fetch initial request to set previous status
-    fetchReturnRequest(publicId).then(request => {
-      if (request) {
-        setPreviousStatus(request.status);
-      }
-    });
-    
+
+    // Subscribe to conversation updates for this return
+    const conversationSubscription = supabase
+      .channel(`conversation-${publicId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'conversation_logs',
+          filter: `return_request_id=eq.${publicId}`
+        },
+        (payload) => {
+          console.log('Conversation update:', payload);
+          if (payload.eventType === 'INSERT') {
+            onMessageReceived(payload.new);
+          }
+        }
+      )
+      .subscribe();
+
+    // Subscribe to evidence updates for this return
+    const evidenceSubscription = supabase
+      .channel(`evidence-${publicId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'evidence_files',
+          filter: `return_request_id=eq.${publicId}`
+        },
+        (payload) => {
+          console.log('Evidence update:', payload);
+          if (payload.eventType === 'INSERT') {
+            onEvidenceUpdate(payload.new);
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
-      // Clean up subscription
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-      }
+      returnSubscription.unsubscribe();
+      conversationSubscription.unsubscribe();
+      evidenceSubscription.unsubscribe();
     };
-  }, [publicId, onUpdate]);
+  }, [publicId, supabase, onReturnUpdate, onMessageReceived, onEvidenceUpdate]);
 
   const fetchReturnRequest = async (publicId: string): Promise<ReturnRequest | null> => {
     try {

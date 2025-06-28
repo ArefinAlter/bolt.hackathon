@@ -6,7 +6,7 @@ export interface ReturnRequest {
   customer_email: string;
   reason_for_return?: string;
   status: 'pending_triage' | 'pending_review' | 'approved' | 'denied' | 'completed';
-  evidence_urls?: string[];
+  evidence_urls?: any[];
   conversation_log?: ConversationMessage[];
   ai_recommendation?: string;
   admin_notes?: string;

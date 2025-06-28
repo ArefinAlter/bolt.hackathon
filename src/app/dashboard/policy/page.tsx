@@ -34,103 +34,55 @@ export default function PolicyPage() {
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        // Check if user has selected a role
-        const userRole = localStorage.getItem('userRole');
-        
-        if (!userRole) {
-          router.push('/dashboard/role-selection');
-          return;
-        } else if (userRole !== 'business') {
-          router.push('/return');
-          return;
-        }
-        
-        // Get current session
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          router.push('/auth/login');
-          return;
-        }
-        
-        // Get user profile to get business_id
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('business_id')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (!profile) {
-          console.error('Profile not found');
-          setError('Unable to load profile data');
-          setIsLoading(false);
-          return;
-        }
-        
-        setBusinessId(profile.business_id);
-        
-        // Load policies
-        await loadPolicies(profile.business_id);
-      } catch (error) {
-        console.error('Error loading user data:', error);
-        setError('An error occurred while loading data');
-        setIsLoading(false);
-      }
-    };
-    
-    loadUserData();
-  }, [router]);
-
-  const loadPolicies = async (businessId: string) => {
+  const fetchPolicies = async () => {
     setIsLoading(true);
-    setError(null);
-    
     try {
-      const policiesData = await fetchPolicies(businessId);
-      setPolicies(policiesData);
+      const { data: { session } } = await supabase.auth.getSession();
       
-      // Set active policy
-      const active = policiesData.find(p => p.is_active);
-      if (active) {
-        setActivePolicy(active);
+      if (!session) {
+        router.push('/auth/login');
+        return;
       }
       
-      // If no policies exist, create a default one
-      if (policiesData.length === 0) {
-        const defaultPolicy: PolicyRule = {
-          return_window_days: 30,
-          auto_approve_threshold: 100,
-          required_evidence: ['photo'],
-          acceptable_reasons: ['defective', 'wrong_item', 'damaged', 'not_as_described'],
-          high_risk_categories: ['electronics', 'jewelry'],
-          fraud_flags: ['multiple_returns', 'high_value', 'suspicious_pattern'],
-          allow_voice_calls: true,
-          allow_video_calls: true,
-          record_calls: false,
-          max_call_duration: 1800,
-          auto_escalation_threshold: 500
-        };
-        
-        const newPolicy = await createPolicy(
-          businessId,
-          'v1.0',
-          defaultPolicy,
-          new Date().toISOString()
-        );
-        
-        setPolicies([newPolicy]);
-        setActivePolicy(newPolicy);
+      // Get user profile to get business_id
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('business_id')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (profileError || !profile) {
+        console.error('Profile not found:', profileError);
+        setError('Unable to load your profile. Please try logging out and back in.');
+        setIsLoading(false);
+        return;
       }
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/policies?business_id=${profile.business_id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch policies');
+      }
+      
+      const data = await response.json();
+      setPolicies(data.data || []);
     } catch (error) {
-      console.error('Error loading policies:', error);
+      console.error('Error fetching policies:', error);
       setError('Failed to load policies');
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchPolicies();
+  }, [router]);
 
   const handleCreateNewPolicy = () => {
     setIsCreatingNew(true);
@@ -212,7 +164,7 @@ export default function PolicyPage() {
       }
       
       // Reload policies
-      await loadPolicies(businessId);
+      await fetchPolicies();
       
       // Reset editing state
       setEditingPolicy(null);

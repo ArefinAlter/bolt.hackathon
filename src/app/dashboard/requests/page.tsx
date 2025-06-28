@@ -22,22 +22,12 @@ export default function RequestsPage() {
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<ReturnRequest | null>(null);
+  const [requests, setRequests] = useState<ReturnRequest[]>([]);
 
   useEffect(() => {
-    const loadUserData = async () => {
+    const fetchRequests = async () => {
+      setIsLoading(true);
       try {
-        // Check if user has selected a role
-        const userRole = localStorage.getItem('userRole');
-        
-        if (!userRole) {
-          router.push('/dashboard/role-selection');
-          return;
-        } else if (userRole !== 'business') {
-          router.push('/return');
-          return;
-        }
-        
-        // Get current session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
@@ -46,29 +36,42 @@ export default function RequestsPage() {
         }
         
         // Get user profile to get business_id
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('business_id')
           .eq('id', session.user.id)
           .single();
         
-        if (!profile) {
-          console.error('Profile not found');
-          setError('Unable to load profile data');
+        if (profileError || !profile) {
+          console.error('Profile not found:', profileError);
+          setError('Unable to load your profile. Please try logging out and back in.');
           setIsLoading(false);
           return;
         }
         
-        setBusinessId(profile.business_id);
-        setIsLoading(false);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-return-request?business_id=${profile.business_id}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch return requests');
+        }
+        
+        const data = await response.json();
+        setRequests(data.data || []);
       } catch (error) {
-        console.error('Error loading user data:', error);
-        setError('An error occurred while loading data');
+        console.error('Error fetching requests:', error);
+        setError('Failed to load return requests');
+      } finally {
         setIsLoading(false);
       }
     };
     
-    loadUserData();
+    fetchRequests();
   }, [router]);
 
   const handleViewRequest = (request: ReturnRequest) => {
