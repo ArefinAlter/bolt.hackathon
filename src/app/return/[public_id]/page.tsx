@@ -731,6 +731,25 @@ export default function ReturnDetailPage() {
       <WebSocketManager 
         publicId={request.public_id}
         onUpdate={(updatedRequest) => setRequest(updatedRequest)}
+        onReturnUpdate={(updatedRequest) => setRequest(updatedRequest)}
+        onMessageReceived={(message) => {
+          // Handle new message received
+          if (request.conversation_log) {
+            setRequest({
+              ...request,
+              conversation_log: [...request.conversation_log, message]
+            });
+          }
+        }}
+        onEvidenceUpdate={(evidence) => {
+          // Handle new evidence received
+          if (request.evidence_urls) {
+            setRequest({
+              ...request,
+              evidence_urls: [...request.evidence_urls, evidence]
+            });
+          }
+        }}
       />
     </div>
   );
