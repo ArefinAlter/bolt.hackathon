@@ -172,10 +172,33 @@ export default function TestAuthPage() {
     try {
       console.log('=== FULL AUTH FLOW TEST START ===');
       
-      // Step 1: Sign in
+      // First check if we already have a session
+      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      
+      if (existingSession) {
+        console.log('Session already exists, testing navigation directly...');
+        setDebugInfo((prev: any) => ({
+          ...prev,
+          fullAuthFlow: {
+            existingSession: true,
+            sessionUser: existingSession.user?.email,
+            testingNavigation: true
+          }
+        }));
+        
+        // Test navigation with existing session
+        setTimeout(() => {
+          console.log('Navigating to role selection with existing session...');
+          window.location.replace('/dashboard/role-selection');
+        }, 1000);
+        
+        return;
+      }
+      
+      // Step 1: Sign in (using your actual credentials)
       const { data, error } = await supabase.auth.signInWithPassword({
         email: 'arefin.rajulaw@gmail.com',
-        password: 'password123'
+        password: 'your_actual_password' // You'll need to replace this
       });
       
       if (error) {
@@ -231,6 +254,110 @@ export default function TestAuthPage() {
     }
   };
 
+  const testNavigationWithExistingSession = async () => {
+    setIsLoading(true);
+    try {
+      console.log('=== TESTING NAVIGATION WITH EXISTING SESSION ===');
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log('No existing session found');
+        setDebugInfo((prev: any) => ({
+          ...prev,
+          navigationTest: {
+            sessionExists: false,
+            error: 'No session found'
+          }
+        }));
+        return;
+      }
+      
+      console.log('Existing session found:', session.user?.email);
+      
+      // Test navigation
+      console.log('Attempting navigation to role selection...');
+      window.location.replace('/dashboard/role-selection');
+      
+      setDebugInfo((prev: any) => ({
+        ...prev,
+        navigationTest: {
+          sessionExists: true,
+          sessionUser: session.user?.email,
+          navigationAttempted: true
+        }
+      }));
+      
+    } catch (error) {
+      console.error('Navigation test failed:', error);
+      setDebugInfo((prev: any) => ({
+        ...prev,
+        navigationTestError: error
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const testMiddlewareWithSession = async () => {
+    setIsLoading(true);
+    try {
+      console.log('=== TESTING MIDDLEWARE WITH SESSION ===');
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log('No session found');
+        setDebugInfo((prev: any) => ({
+          ...prev,
+          middlewareTest: {
+            sessionExists: false,
+            error: 'No session found'
+          }
+        }));
+        return;
+      }
+      
+      console.log('Session found:', session.user?.email);
+      
+      // Test if we can access a protected route
+      const testUrl = '/dashboard/role-selection';
+      console.log('Testing access to:', testUrl);
+      
+      // Simulate a fetch request to see if middleware blocks it
+      const response = await fetch(testUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      
+      console.log('Response status:', response.status);
+      console.log('Response URL:', response.url);
+      
+      setDebugInfo((prev: any) => ({
+        ...prev,
+        middlewareTest: {
+          sessionExists: true,
+          sessionUser: session.user?.email,
+          testUrl: testUrl,
+          responseStatus: response.status,
+          responseUrl: response.url,
+          redirected: response.url !== window.location.origin + testUrl
+        }
+      }));
+      
+    } catch (error) {
+      console.error('Middleware test failed:', error);
+      setDebugInfo((prev: any) => ({
+        ...prev,
+        middlewareTestError: error
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     checkAuthStatus();
   }, []);
@@ -258,6 +385,12 @@ export default function TestAuthPage() {
               </Button>
               <Button onClick={testFullAuthFlow} variant="outline">
                 Test Full Auth Flow
+              </Button>
+              <Button onClick={testNavigationWithExistingSession} variant="outline">
+                Test Navigation with Existing Session
+              </Button>
+              <Button onClick={testMiddlewareWithSession} variant="outline">
+                Test Middleware with Session
               </Button>
             </div>
 

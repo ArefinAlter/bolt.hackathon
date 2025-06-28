@@ -78,6 +78,9 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/return/:path*',
-    '/auth/:path*',
+    '/auth/login',
+    '/auth/signup',
+    '/auth/forgot-password',
+    '/auth/reset-password',
   ],
 };
