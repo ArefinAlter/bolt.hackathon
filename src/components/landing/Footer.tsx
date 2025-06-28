@@ -54,7 +54,7 @@ export function Footer() {
                 className="h-12 w-auto"
               />
             </Link>
-            <p className="text-black mb-6 max-w-md">
+            <p className="text-gray-300 mb-6 max-w-md">
               Transform your e-commerce returns with AI-powered automation, voice & video customer service, and intelligent analytics.
             </p>
             <div className="flex space-x-4">
@@ -64,7 +64,7 @@ export function Footer() {
                   <Link
                     key={social.name}
                     href={social.href}
-                    className="text-black hover:text-white transition-colors"
+                    className="text-gray-300 hover:text-white transition-colors"
                   >
                     <IconComponent className="w-5 h-5" />
                   </Link>
@@ -81,7 +81,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-black hover:text-white transition-colors"
+                    className="text-gray-300 hover:text-white transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -97,7 +97,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-black hover:text-white transition-colors"
+                    className="text-gray-300 hover:text-white transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -113,7 +113,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-black hover:text-white transition-colors"
+                    className="text-gray-300 hover:text-white transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -129,7 +129,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-black hover:text-white transition-colors"
+                    className="text-gray-300 hover:text-white transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -141,7 +141,7 @@ export function Footer() {
 
         {/* Bottom section */}
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center">
-          <p className="text-black text-sm">
+          <p className="text-gray-300 text-sm">
             © 2024 Dokani. All rights reserved.
           </p>
           <div className="flex items-center space-x-4 mt-4 sm:mt-0">

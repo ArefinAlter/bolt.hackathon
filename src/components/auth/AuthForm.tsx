@@ -8,6 +8,8 @@ import * as z from 'zod';
 import Link from 'next/link';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +46,7 @@ export function AuthForm({ type }: AuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const schema = type === 'login' ? loginSchema : signupSchema;
   
@@ -60,6 +63,7 @@ export function AuthForm({ type }: AuthFormProps) {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setMessage('');
 
     try {
       console.log('=== AUTH FORM DEBUG ===');
@@ -89,6 +93,13 @@ export function AuthForm({ type }: AuthFormProps) {
       if (result.error) {
         console.error('Auth error:', result.error);
         setError(result.error.message);
+        
+        toast({
+          title: 'Authentication Error',
+          description: result.error.message,
+          variant: 'destructive',
+        });
+        
         setLoading(false);
         return;
       }
@@ -97,6 +108,15 @@ export function AuthForm({ type }: AuthFormProps) {
         console.log('Auth successful, user:', result.data.user.email);
         console.log('Session access token:', result.data.session.access_token ? 'PRESENT' : 'MISSING');
         
+        // Show success toast
+        toast({
+          title: type === 'login' ? 'Welcome back!' : 'Account created successfully!',
+          description: type === 'login' 
+            ? 'You have been signed in successfully.' 
+            : 'Your account has been created and you are now signed in.',
+          variant: 'default',
+        });
+        
         // Store session in localStorage as backup
         localStorage.setItem('supabase.auth.token', result.data.session.access_token);
         
@@ -104,9 +124,19 @@ export function AuthForm({ type }: AuthFormProps) {
         console.log('Redirecting to role selection');
         router.push('/dashboard/role-selection');
       } else if (type === 'signup' && result.data.user && !result.data.session) {
-        // Email confirmation required
-        setMessage('Please check your email to confirm your account before signing in.');
+        // Email confirmation required - show success message and toast
+        const successMessage = 'Account created successfully! Please check your email (and spam folder) to confirm your account before signing in.';
+        setMessage(successMessage);
+        
+        toast({
+          title: 'Account created!',
+          description: 'Please check your email (and spam folder) to confirm your account before signing in.',
+          variant: 'default',
+        });
+        
         setLoading(false);
+        // Clear the form
+        form.reset();
       } else {
         console.error('Unexpected auth result:', result);
         setError('An unexpected error occurred. Please try again.');
@@ -114,7 +144,15 @@ export function AuthForm({ type }: AuthFormProps) {
       }
     } catch (error) {
       console.error('Auth form error:', error);
-      setError('An error occurred during authentication. Please try again.');
+      const errorMessage = 'An error occurred during authentication. Please try again.';
+      setError(errorMessage);
+      
+      toast({
+        title: 'Authentication Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      
       setLoading(false);
     }
   };
@@ -245,6 +283,26 @@ export function AuthForm({ type }: AuthFormProps) {
             {error && (
               <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
                 {error}
+              </div>
+            )}
+            
+            {message && (
+              <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm border border-green-200">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-green-800">
+                      {message}
+                    </p>
+                    <p className="text-xs text-green-600 mt-1">
+                      💡 Tip: Don't forget to check your spam folder if you don't see the email in your inbox.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
             
