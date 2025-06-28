@@ -281,6 +281,38 @@ export interface Database {
           updated_at?: string
         }
       }
+      streaming_sessions: {
+        Row: {
+          id: string
+          session_id: string
+          stream_type: 'voice' | 'video' | 'audio'
+          provider: string
+          status: 'initialized' | 'active' | 'ended' | 'failed'
+          created_at: string
+          ended_at?: string
+          metadata?: any
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          stream_type: 'voice' | 'video' | 'audio'
+          provider: string
+          status?: 'initialized' | 'active' | 'ended' | 'failed'
+          created_at?: string
+          ended_at?: string
+          metadata?: any
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          stream_type?: 'voice' | 'video' | 'audio'
+          provider?: string
+          status?: 'initialized' | 'active' | 'ended' | 'failed'
+          created_at?: string
+          ended_at?: string
+          metadata?: any
+        }
+      }
       provider_configs: {
         Row: {
           id: string

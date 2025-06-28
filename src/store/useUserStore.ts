@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { UserPreferences, UserProfile } from '@/types/user';
 import { getUserPreferences, updateUserPreferences } from '@/lib/preferences';
 import { supabase } from '@/lib/supabase';
+import { createProfileIfMissing } from '@/lib/auth';
 
 interface UserState {
   user: {
@@ -39,19 +40,51 @@ export const useUserStore = create<UserState>((set, get) => ({
         return;
       }
       
-      // Get user profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-      
-      if (profileError) {
-        throw profileError;
+      // Get user profile with fallback creation
+      let profile: UserProfile | null = null;
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profileError) {
+          // Profile doesn't exist, create it
+          console.log('Profile not found, creating...');
+          const createdProfile = await createProfileIfMissing(
+            session.user.id, 
+            session.user.user_metadata?.business_name
+          );
+          
+          // Fetch the created profile
+          const { data: newProfile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          profile = newProfile;
+        } else {
+          profile = profileData;
+        }
+      } catch (error) {
+        console.error('Error handling profile:', error);
+        set({ 
+          error: 'Failed to load user profile', 
+          isLoading: false 
+        });
+        return;
       }
       
       // Get user preferences
-      const preferences = await getUserPreferences(session.user.id);
+      let preferences = null;
+      try {
+        preferences = await getUserPreferences(session.user.id);
+      } catch (error) {
+        console.error('Error loading preferences:', error);
+        // Don't fail the entire load for preferences
+      }
       
       set({
         user: {

@@ -15,6 +15,7 @@ export interface UserProfile {
   subscription_plan: string;
   onboarded: boolean;
   business_id: string;
+  created_at: string;
 }
 
 export interface UserSession {

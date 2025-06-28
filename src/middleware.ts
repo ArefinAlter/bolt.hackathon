@@ -12,10 +12,16 @@ export async function middleware(req: NextRequest) {
   // Get the pathname from the request
   const { pathname } = req.nextUrl;
   
+  console.log('=== MIDDLEWARE DEBUG ===');
+  console.log('Pathname:', pathname);
+  console.log('Session exists:', !!session);
+  console.log('Session user:', session?.user?.email);
+  
   // Define protected routes that require authentication
   const protectedRoutes = [
     '/dashboard',
     '/return',
+    '/dashboard/role-selection',
   ];
   
   // Define auth routes
@@ -34,18 +40,24 @@ export async function middleware(req: NextRequest) {
   // Check if the current route is an auth route
   const isAuthRoute = authRoutes.some(route => pathname === route);
   
+  console.log('Is protected route:', isProtectedRoute);
+  console.log('Is auth route:', isAuthRoute);
+  
   // If the route is protected and the user is not authenticated, redirect to login
   if (isProtectedRoute && !session) {
+    console.log('Redirecting to login - no session for protected route');
     const redirectUrl = new URL('/auth/login', req.url);
     redirectUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(redirectUrl);
   }
   
-  // If the user is authenticated and trying to access an auth route, redirect to dashboard
+  // If the user is authenticated and trying to access an auth route, redirect to role selection
   if (isAuthRoute && session) {
+    console.log('Redirecting to role selection - authenticated user on auth route');
     return NextResponse.redirect(new URL('/dashboard/role-selection', req.url));
   }
   
+  console.log('=== MIDDLEWARE DEBUG END ===');
   return res;
 }
 

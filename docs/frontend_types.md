@@ -15,6 +15,7 @@ The frontend uses **TypeScript** for type safety and better developer experience
 3. **Component Types** - React component props
 4. **State Types** - Application state management
 5. **Utility Types** - Helper and utility types
+6. **Database Types** - Centralized database schema types
 
 ---
 
@@ -25,7 +26,7 @@ The frontend uses **TypeScript** for type safety and better developer experience
 // src/types/user.ts
 export interface User {
   id: string
-  email: string
+  email: string | undefined  // Updated to match Supabase auth
   role: 'admin' | 'customer'
   business_id?: string
   created_at: string
@@ -102,63 +103,25 @@ export interface ReturnRequest {
   id: number
   public_id: string
   business_id: string
-  order_id: string
+  order_number: string  // Updated from order_id
   customer_email: string
-  reason_for_return?: string
+  product_name: string  // Added required field
+  return_reason: string  // Updated from reason_for_return
   status: 'pending_triage' | 'pending_review' | 'approved' | 'denied' | 'completed'
-  evidence_urls?: string[]
-  conversation_log?: ConversationMessage[]
-  ai_recommendation?: string
+  evidence_files?: string[]  // Updated from evidence_urls
   admin_notes?: string
-  risk_score?: number
-  fraud_flags?: Record<string, boolean>
-  triage_agent_id?: string
-  customer_service_agent_id?: string
-  processing_time_ms?: number
-  escalation_reason?: string
-  policy_version_used?: string
-  admin_decision_at?: string
-  days_since_purchase?: number
-  order_value?: number
-  product_category?: string
-  customer_satisfaction_score?: number
-  ai_reasoning?: string
-  policy_violations?: string[]
-  risk_factors?: string[]
-  approved_at?: string
-  denied_at?: string
-  return_history?: number
+  decision_reason?: string  // Added field
   created_at: string
-  order_details?: OrderDetails
+  updated_at: string  // Added field
 }
 
-export interface OrderDetails {
-  id: number
-  order_id: string
-  purchase_date: string
+export interface ReturnRequestCreateData {
+  business_id: string
   customer_email: string
+  order_number: string
   product_name: string
-  product_category: string
-  purchase_price?: number
-  order_status?: string
-  quantity?: number
-  order_value?: number
-}
-
-export interface ConversationMessage {
-  sender: 'customer' | 'agent' | 'system'
-  message: string
-  timestamp: string
-}
-
-export interface ReturnRequestsResponse {
-  success: boolean
-  data: ReturnRequest[]
-}
-
-export interface ReturnRequestResponse {
-  success: boolean
-  data: ReturnRequest
+  return_reason: string
+  evidence_files?: string[]
 }
 
 export interface ReturnRequestUpdateData {
@@ -186,6 +149,17 @@ export interface EvidenceFile {
   status: 'pending' | 'uploading' | 'success' | 'error'
   error?: string
 }
+
+// API Response Types
+export interface ReturnRequestsResponse {
+  success: boolean
+  data: ReturnRequest[]
+}
+
+export interface ReturnRequestResponse {
+  success: boolean
+  data: ReturnRequest
+}
 ```
 
 ### Chat Types
@@ -196,39 +170,40 @@ export interface ChatSession {
   user_id: string
   business_id: string
   session_name: string
-  chat_mode: 'normal' | 'return_request' | 'customer_service'
-  session_type: 'test_mode' | 'production'
+  chat_mode: 'normal' | 'messenger' | 'whatsapp' | 'shopify' | 'woocommerce'  // Updated enum
+  session_type: 'test_mode' | 'live_support'  // Updated enum
   is_active: boolean
-  metadata: Record<string, any>
+  metadata?: Record<string, any>
   created_at: string
   updated_at: string
-  customer_email?: string
+  customer_email: string
 }
 
 export interface ChatMessage {
   id: string
   session_id: string
-  sender: 'user' | 'agent' | 'system'
+  sender: 'user' | 'agent' | 'system'  // Updated enum
   message: string
-  message_type: 'text' | 'file' | 'system'
-  metadata?: {
-    file_urls?: string[]
-    file_names?: string[]
-    return_detected?: boolean
-    ai_agent?: string
-    next_action?: string
-  }
+  message_type: 'text' | 'file' | 'system'  // Updated enum
+  metadata?: Record<string, any>
   created_at: string
 }
 
-export interface ChatResponse {
-  success: boolean
-  message: ChatMessage
-  ai_response?: {
-    message: string
-    next_action?: string
-    return_detected?: boolean
-  }
+export interface ChatSessionCreateData {
+  user_id: string
+  business_id: string
+  session_name?: string
+  chat_mode?: 'normal' | 'messenger' | 'whatsapp' | 'shopify' | 'woocommerce'
+  session_type?: 'test_mode' | 'live_support'
+  customer_email: string
+}
+
+export interface ChatMessageCreateData {
+  session_id: string
+  sender: 'user' | 'agent' | 'system'
+  message: string
+  message_type?: 'text' | 'file' | 'system'
+  metadata?: Record<string, any>
 }
 ```
 
@@ -238,12 +213,12 @@ export interface ChatResponse {
 export interface CallSession {
   id: string
   chat_session_id: string
-  call_type: 'voice' | 'video' | 'test'
-  provider: 'elevenlabs' | 'tavus' | 'test'
+  call_type: 'voice' | 'video' | 'test'  // Updated enum
+  provider: 'elevenlabs' | 'tavus' | 'test'  // Updated enum
   external_session_id?: string
-  status: 'initiated' | 'connecting' | 'active' | 'ended' | 'failed'
+  status: 'initiated' | 'connecting' | 'active' | 'ended' | 'failed'  // Updated enum
   duration_seconds?: number
-  provider_data?: any
+  provider_data?: Record<string, any>
   created_at: string
   ended_at?: string
   elevenlabs_agent_id?: string
@@ -251,201 +226,185 @@ export interface CallSession {
   tavus_replica_id?: string
   tavus_conversation_id?: string
   session_url?: string
-  webhook_data?: any
+  webhook_data?: Record<string, any>
   is_active: boolean
+  persona_config_id?: string
+  call_quality_score?: number
+  customer_feedback?: Record<string, any>
   streaming_enabled?: boolean
   websocket_url?: string
   stream_processor_urls?: {
     audio?: string
     video?: string
   }
+  streaming_config?: Record<string, any>
+  real_time_events?: any[]
+  connection_count?: number
+  last_stream_activity?: string
+  stream_quality_metrics?: Record<string, any>
+  ai_conversation_state_id?: string
+  updated_at?: string
 }
 
 export interface CallTranscript {
   id: string
   call_session_id: string
-  speaker: 'user' | 'agent' | 'system'
+  speaker: 'user' | 'agent' | 'system'  // Updated enum
   message: string
   timestamp_seconds: number
   created_at: string
+  chunk_id?: string
+  is_real_time?: boolean
+  processing_status?: 'pending' | 'processing' | 'completed' | 'failed'  // Updated enum
+  ai_processed?: boolean
+  ai_response_generated?: boolean
+  stream_sequence?: number
+  audio_chunk_id?: string
+  video_frame_id?: string
+  metadata?: Record<string, any>
 }
 
-export interface CallControls {
-  isMuted: boolean
-  isVideoOff: boolean
-  isScreenSharing: boolean
-  volume: number
-}
-
-export interface AudioChunk {
-  data: string // base64 encoded audio
-  timestamp: number
-  sequence: number
-  isFinal: boolean
-}
-
-export interface VideoFrame {
-  data: string // base64 encoded video frame
-  timestamp: number
-  sequence: number
-  isKeyFrame: boolean
-  width: number
-  height: number
-}
-
-export interface CallQualityMetrics {
-  audioQuality: 'excellent' | 'good' | 'fair' | 'poor'
-  videoQuality?: 'excellent' | 'good' | 'fair' | 'poor'
-  latency: number // in milliseconds
-  packetLoss: number // percentage
-  jitter: number // in milliseconds
-  bandwidth: number // in kbps
-}
-
-export interface WebSocketMessage {
-  type: string
-  data?: any
-  timestamp: number
-}
-```
-
-### Policy Types
-```typescript
-// src/types/policy.ts
-export interface PolicyRule {
-  return_window_days: number
-  auto_approve_threshold: number
-  required_evidence: string[]
-  acceptable_reasons: string[]
-  high_risk_categories: string[]
-  fraud_flags: string[]
-  allow_voice_calls?: boolean
-  allow_video_calls?: boolean
-  record_calls?: boolean
-  max_call_duration?: number
-  auto_escalation_threshold?: number
-}
-
-export interface Policy {
-  id: number
-  business_id: string
-  version: string
-  is_active: boolean
-  effective_date: string
-  created_at: string
-  rules: PolicyRule
-  policy_impact_score?: number
-  usage_statistics?: Record<string, number>
-  compliance_metrics?: PolicyComplianceMetrics
-}
-
-export interface PolicyChangeHistory {
+// New: Streaming Sessions
+export interface StreamingSession {
   id: string
-  policy_id: number
-  business_id: string
-  change_type: 'created' | 'modified' | 'activated' | 'deactivated' | 'deleted'
-  previous_rules?: PolicyRule
-  new_rules?: PolicyRule
-  impact_analysis?: Record<string, unknown>
-  change_summary?: string
-  changed_by: string
+  session_id: string
+  stream_type: 'voice' | 'video' | 'audio'  // New enum
+  provider: string
+  status: 'initialized' | 'active' | 'ended' | 'failed'  // New enum
   created_at: string
+  ended_at?: string
+  metadata?: Record<string, any>
 }
 
-export interface PolicyComplianceMetrics {
-  total_requests: number
-  compliant_requests: number
-  compliance_rate: number
-  violations: {
-    type: string
-    count: number
-  }[]
-  top_violation_reasons: string[]
-}
-
-export interface PolicyTestResult {
-  decision: 'auto_approve' | 'auto_deny' | 'human_review'
-  reasoning: string
-  policy_violations: string[]
-  risk_factors: string[]
-}
-
-export interface PolicyABTest {
-  id: string
-  name: string
-  policy_a_id: number
-  policy_b_id: number
-  start_date: string
-  end_date?: string
-  status: 'running' | 'completed' | 'scheduled'
-  metrics: {
-    policy_a: {
-      approval_rate: number
-      auto_approval_rate: number
-      customer_satisfaction: number
-    }
-    policy_b: {
-      approval_rate: number
-      auto_approval_rate: number
-      customer_satisfaction: number
-    }
-    winner?: 'a' | 'b' | 'tie'
+export interface CallInitiateData {
+  chat_session_id: string
+  call_type: 'voice' | 'video' | 'test'
+  provider: 'elevenlabs' | 'tavus' | 'test'
+  config_override?: {
+    voice_id?: string
+    replica_id?: string
+    persona_id?: string
+    elevenlabs_agent_id?: string
+    tavus_replica_id?: string
+    persona_config_id?: string
   }
-}
-```
-
-### Analytics Types
-```typescript
-// src/types/analytics.ts
-export interface BusinessAnalytics {
-  business_id: string
-  metric_type: string
-  metric_data: Record<string, any>
-  calculated_at: string
-  period_start: string
-  period_end: string
-  created_at: string
+  enable_streaming?: boolean
 }
 
-export interface ReturnAnalytics {
-  total_returns: number
-  approved_returns: number
-  denied_returns: number
-  auto_approval_rate: string
-  approval_rate: string
-  trend: {
-    recent_period: number
-    previous_period: number
-    change_percentage: string
-  }
-}
-
-export interface AIAccuracyAnalytics {
-  total_ai_decisions: number
-  correct_decisions: number
-  accuracy_rate: string
-}
-
-export interface SatisfactionAnalytics {
-  total_interactions: number
-  satisfaction_score: string
-  response_time_avg: string
-}
-
-export interface PolicyAnalytics {
-  total_policies: number
-  active_policy: string
-  current_approval_rate: string
-}
-
-export interface AnalyticsResponse {
+export interface CallInitiateResponse {
   success: boolean
-  businessId: string
-  analytics: {
-    returns?: ReturnAnalytics
-    ai_accuracy?: AIAccuracyAnalytics
-    satisfaction?: SatisfactionAnalytics
-    policy?: PolicyAnalytics
+  call_session_id: string
+  session_url: string
+  provider: string
+  call_type: string
+  status: string
+  message: string
+  streaming_url?: string
+  ai_agent_ready: boolean
+  streaming_enabled: boolean
+  websocket_url?: string
+  stream_processor_urls?: {
+    audio: string
+    video: string
+  }
+}
+```
+
+---
+
+## Database Types
+
+### Centralized Database Schema
+All database types are now centralized in `src/lib/supabase/db.ts`:
+
+```typescript
+// src/lib/supabase/db.ts
+export interface Database {
+  public: {
+    Tables: {
+      call_sessions: {
+        Row: {
+          id: string
+          chat_session_id: string
+          call_type: 'voice' | 'video' | 'test'
+          provider: 'elevenlabs' | 'tavus' | 'test'
+          status: 'initiated' | 'connecting' | 'active' | 'ended' | 'failed'
+          // ... all other fields
+        }
+        Insert: {
+          // Insert-specific types
+        }
+        Update: {
+          // Update-specific types
+        }
+      }
+      streaming_sessions: {
+        Row: {
+          id: string
+          session_id: string
+          stream_type: 'voice' | 'video' | 'audio'
+          provider: string
+          status: 'initialized' | 'active' | 'ended' | 'failed'
+          created_at: string
+          ended_at?: string
+          metadata?: any
+        }
+        Insert: {
+          // Insert-specific types
+        }
+        Update: {
+          // Update-specific types
+        }
+      }
+      return_requests: {
+        Row: {
+          id: number
+          public_id: string
+          business_id: string
+          order_number: string
+          customer_email: string
+          product_name: string
+          return_reason: string
+          status: 'pending_triage' | 'pending_review' | 'approved' | 'denied' | 'completed'
+          evidence_files: string[]
+          admin_notes?: string
+          decision_reason?: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          // Insert-specific types
+        }
+        Update: {
+          // Update-specific types
+        }
+      }
+      // ... all other tables
+    }
+  }
+}
+```
+
+### Helper Functions
+```typescript
+// UUID validation functions
+export function isValidUUID(uuid: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  return uuidRegex.test(uuid)
+}
+
+export function validateUUIDFields(fields: Record<string, string | undefined>): { valid: boolean; errors: string[] } {
+  const errors: string[] = []
+  
+  for (const [fieldName, value] of Object.entries(fields)) {
+    if (value && !isValidUUID(value)) {
+      errors.push(`${fieldName} must be a valid UUID format`)
+    }
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors
   }
 }
 ```
@@ -454,128 +413,79 @@ export interface AnalyticsResponse {
 
 ## Component Types
 
-### Auth Component Types
+### Return Management Components
 ```typescript
-// src/components/auth/types.ts
-export interface AuthFormData {
-  email: string
-  password: string
-  confirmPassword?: string
-}
-
-export interface AuthFormProps {
-  mode: 'login' | 'signup'
-  onSubmit: (data: AuthFormData) => void
-  isLoading?: boolean
+// src/components/dashboard/requests/ReturnsTable.tsx
+export interface ReturnsTableProps {
+  returns: ReturnRequest[]
+  onStatusUpdate: (publicId: string, status: ReturnRequest['status']) => void
+  onViewDetails: (publicId: string) => void
+  loading?: boolean
   error?: string
 }
 
-export interface AuthGuardProps {
-  children: React.ReactNode
-  requiredRole?: 'admin' | 'customer'
-  fallback?: React.ReactNode
+// src/components/dashboard/requests/CreateReturnForm.tsx
+export interface CreateReturnFormProps {
+  businessId: string
+  onSubmit: (data: ReturnRequestCreateData) => Promise<void>
+  onCancel: () => void
+  loading?: boolean
 }
 
-export interface RoleSelectionCardProps {
-  role: 'admin' | 'customer'
-  title: string
-  description: string
-  icon: React.ReactNode
-  onSelect: (role: 'admin' | 'customer') => void
-  isSelected?: boolean
+// src/components/dashboard/requests/RequestDetail.tsx
+export interface RequestDetailProps {
+  returnRequest: ReturnRequest
+  onUpdate: (data: ReturnRequestUpdateData) => Promise<void>
+  onClose: () => void
 }
 ```
 
-### Customer Component Types
+### Call Management Components
 ```typescript
-// src/components/customer/types.ts
+// src/components/customer/CallInterface.tsx
+export interface CallInterfaceProps {
+  callSession: CallSession
+  onEndCall: () => void
+  onMuteToggle: () => void
+  onVideoToggle: () => void
+  streamingSession?: StreamingSession
+}
+
+// src/components/customer/VoiceCallInterface.tsx
+export interface VoiceCallInterfaceProps {
+  callSession: CallSession
+  onEndCall: () => void
+  onMuteToggle: () => void
+  audioStream?: MediaStream
+}
+
+// src/components/customer/VideoCallInterface.tsx
+export interface VideoCallInterfaceProps {
+  callSession: CallSession
+  onEndCall: () => void
+  onMuteToggle: () => void
+  onVideoToggle: () => void
+  audioStream?: MediaStream
+  videoStream?: MediaStream
+}
+```
+
+### Chat Components
+```typescript
+// src/components/customer/ChatContainer.tsx
 export interface ChatContainerProps {
   sessionId: string
-  businessId: string
-  customerEmail?: string
-  onMessageSent?: (message: ChatMessage) => void
+  messages: ChatMessage[]
+  onSendMessage: (message: string) => Promise<void>
+  onStartCall: (callType: 'voice' | 'video') => Promise<void>
+  loading?: boolean
 }
 
+// src/components/customer/ChatMessage.tsx
 export interface ChatMessageProps {
   message: ChatMessage
-  onFeedback?: (messageId: string, isPositive: boolean) => void
-  onViewFile?: (url: string, fileName: string) => void
-  showFeedback?: string | null
-}
-
-export interface VoiceCallInterfaceProps {
-  callSessionId: string
-  onCallEnd?: () => void
-  onCallStart?: () => void
-}
-
-export interface VideoCallInterfaceProps {
-  callSessionId: string
-  onCallEnd?: () => void
-  onCallStart?: () => void
-}
-
-export interface FilePreviewProps {
-  file: FileUpload
-  onClose: () => void
-  onDownload?: (file: FileUpload) => void
-}
-
-export interface FileUpload {
-  id: string
-  file: File
-  preview_url: string
-  upload_progress: number
-  status: 'pending' | 'uploading' | 'success' | 'error'
-  error?: string
-}
-```
-
-### Dashboard Component Types
-```typescript
-// src/components/dashboard/types.ts
-export interface DashboardLayoutProps {
-  children: React.ReactNode
-  title?: string
-  description?: string
-}
-
-export interface SidebarProps {
-  isOpen: boolean
-  onClose: () => void
-  user: User
-}
-
-export interface AnalyticsDashboardProps {
-  businessId: string
-  dateRange?: {
-    start: Date
-    end: Date
-  }
-}
-
-export interface ReturnsTableProps {
-  businessId: string
-  filters?: ReturnRequestFilter
-  onRequestClick?: (request: ReturnRequest) => void
-}
-
-export interface RequestDetailProps {
-  request: ReturnRequest
-  onClose: () => void
-  onRequestUpdated: (updatedRequest: ReturnRequest) => void
-}
-
-export interface PolicyEditorProps {
-  businessId: string
-  policy?: Policy
-  onSave: (policy: Policy) => void
-}
-
-export interface PersonaCreatorProps {
-  businessId: string
-  provider: 'elevenlabs' | 'tavus'
-  onSave: (config: ProviderConfig) => void
+  isOwnMessage: boolean
+  showTimestamp?: boolean
 }
 ```
 
@@ -583,85 +493,68 @@ export interface PersonaCreatorProps {
 
 ## State Types
 
-### Zustand Store Types
+### User Store
 ```typescript
-// src/store/types.ts
-export interface UserStore {
+// src/store/useUserStore.ts
+export interface UserState {
   user: User | null
+  profile: UserProfile | null
+  loading: boolean
+  error: string | null
   isAuthenticated: boolean
-  role: 'admin' | 'customer' | null
+}
+
+export interface UserActions {
   setUser: (user: User | null) => void
-  setRole: (role: 'admin' | 'customer') => void
+  setProfile: (profile: UserProfile | null) => void
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
   logout: () => void
-}
-
-export interface ChatStore {
-  messages: ChatMessage[]
-  isTyping: boolean
-  sessionId: string | null
-  addMessage: (message: ChatMessage) => void
-  setTyping: (typing: boolean) => void
-  setSessionId: (id: string) => void
-  clearMessages: () => void
-}
-
-export interface CallStore {
-  currentCall: CallSession | null
-  isInCall: boolean
-  callType: 'voice' | 'video' | null
-  setCurrentCall: (call: CallSession | null) => void
-  setIsInCall: (inCall: boolean) => void
-  setCallType: (type: 'voice' | 'video' | null) => void
-}
-
-export interface UIStore {
-  sidebarOpen: boolean
-  theme: 'light' | 'dark' | 'system'
-  setSidebarOpen: (open: boolean) => void
-  setTheme: (theme: 'light' | 'dark' | 'system') => void
-  toggleSidebar: () => void
+  updatePreferences: (preferences: Partial<UserPreferences>) => Promise<void>
 }
 ```
 
-### Form Types
+### Return Store
 ```typescript
-// src/types/forms.ts
-export interface ReturnRequestFormData {
-  orderId: string
-  reason: string
-  evidenceFiles: File[]
-  customerEmail: string
+// src/store/useReturnStore.ts
+export interface ReturnState {
+  returns: ReturnRequest[]
+  currentReturn: ReturnRequest | null
+  loading: boolean
+  error: string | null
+  filters: ReturnRequestFilter
 }
 
-export interface PolicyFormData {
-  return_window_days: number
-  auto_approve_threshold: number
-  required_evidence: string[]
-  acceptable_reasons: string[]
-  high_risk_categories: string[]
-  fraud_flags: string[]
-  allow_voice_calls: boolean
-  allow_video_calls: boolean
-  record_calls: boolean
-  max_call_duration?: number
-  auto_escalation_threshold?: number
+export interface ReturnActions {
+  fetchReturns: (filters?: ReturnRequestFilter) => Promise<void>
+  createReturn: (data: ReturnRequestCreateData) => Promise<ReturnRequest>
+  updateReturn: (publicId: string, data: ReturnRequestUpdateData) => Promise<void>
+  setCurrentReturn: (returnRequest: ReturnRequest | null) => void
+  setFilters: (filters: ReturnRequestFilter) => void
+}
+```
+
+### Call Store
+```typescript
+// src/store/useCallStore.ts
+export interface CallState {
+  currentCall: CallSession | null
+  streamingSession: StreamingSession | null
+  transcripts: CallTranscript[]
+  isConnected: boolean
+  isMuted: boolean
+  isVideoEnabled: boolean
+  loading: boolean
+  error: string | null
 }
 
-export interface PersonaFormData {
-  configName: string
-  provider: 'elevenlabs' | 'tavus'
-  voiceId?: string
-  replicaId?: string
-  voiceSettings?: {
-    stability: number
-    similarity_boost: number
-    style: number
-  }
-  personaSettings?: {
-    voice_id?: string
-    background?: string
-    quality?: string
-  }
+export interface CallActions {
+  initiateCall: (data: CallInitiateData) => Promise<CallSession>
+  endCall: () => Promise<void>
+  toggleMute: () => void
+  toggleVideo: () => void
+  sendTranscript: (transcript: Omit<CallTranscript, 'id' | 'created_at'>) => Promise<void>
+  setStreamingSession: (session: StreamingSession | null) => void
 }
 ```
 
@@ -671,7 +564,6 @@ export interface PersonaFormData {
 
 ### API Response Types
 ```typescript
-// src/types/api.ts
 export interface ApiResponse<T = any> {
   success: boolean
   data?: T
@@ -679,8 +571,7 @@ export interface ApiResponse<T = any> {
   message?: string
 }
 
-export interface PaginatedResponse<T> {
-  data: T[]
+export interface PaginatedResponse<T> extends ApiResponse<T[]> {
   pagination: {
     page: number
     limit: number
@@ -688,51 +579,45 @@ export interface PaginatedResponse<T> {
     totalPages: number
   }
 }
+```
 
-export interface ApiError {
-  message: string
-  code: string
-  details?: any
+### Form Types
+```typescript
+export interface FormField {
+  name: string
+  label: string
+  type: 'text' | 'email' | 'password' | 'select' | 'textarea' | 'file'
+  required?: boolean
+  validation?: (value: any) => string | null
+  options?: { label: string; value: any }[]
+}
+
+export interface FormState<T = any> {
+  values: T
+  errors: Record<string, string>
+  touched: Record<string, boolean>
+  isSubmitting: boolean
+  isValid: boolean
 }
 ```
 
 ### Event Types
 ```typescript
-// src/types/events.ts
 export interface WebSocketEvent {
   type: string
   data: any
-  timestamp: number
+  timestamp: string
+  sessionId?: string
 }
 
-export interface ChatEvent {
-  type: 'message' | 'typing' | 'file_upload' | 'status_change'
-  data: any
-  sessionId: string
+export interface CallEvent extends WebSocketEvent {
+  type: 'call_started' | 'call_ended' | 'user_joined' | 'user_left' | 'transcript_update'
+  callSessionId: string
 }
 
-export interface CallEvent {
-  type: 'call_started' | 'call_ended' | 'audio_data' | 'video_data'
-  data: any
-  sessionId: string
-}
-```
-
-### Navigation Types
-```typescript
-// src/types/navigation.ts
-export interface NavigationItem {
-  label: string
-  href: string
-  icon: React.ComponentType<{ className?: string }>
-  children?: NavigationItem[]
-  badge?: string | number
-}
-
-export interface BreadcrumbItem {
-  label: string
-  href?: string
-  current?: boolean
+export interface StreamEvent extends WebSocketEvent {
+  type: 'stream_started' | 'stream_ended' | 'audio_chunk' | 'video_frame' | 'ai_response'
+  streamingSessionId: string
 }
 ```
 
@@ -740,175 +625,119 @@ export interface BreadcrumbItem {
 
 ## Type Guards
 
-### Type Checking Functions
+### Validation Functions
 ```typescript
-// src/types/guards.ts
-export function isUser(obj: any): obj is User {
-  return obj && typeof obj.id === 'string' && typeof obj.email === 'string'
+// src/lib/utils.ts
+export function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
 }
 
-export function isReturnRequest(obj: any): obj is ReturnRequest {
-  return obj && typeof obj.id === 'number' && typeof obj.order_id === 'string'
+export function isValidUUID(uuid: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  return uuidRegex.test(uuid)
 }
 
-export function isChatMessage(obj: any): obj is ChatMessage {
-  return obj && typeof obj.id === 'string' && typeof obj.message === 'string'
+export function isReturnRequestStatus(status: string): status is ReturnRequest['status'] {
+  return ['pending_triage', 'pending_review', 'approved', 'denied', 'completed'].includes(status)
 }
 
-export function isCallSession(obj: any): obj is CallSession {
-  return obj && typeof obj.id === 'string' && typeof obj.call_type === 'string'
+export function isCallSessionStatus(status: string): status is CallSession['status'] {
+  return ['initiated', 'connecting', 'active', 'ended', 'failed'].includes(status)
+}
+
+export function isCallType(type: string): type is CallSession['call_type'] {
+  return ['voice', 'video', 'test'].includes(type)
+}
+
+export function isProvider(provider: string): provider is CallSession['provider'] {
+  return ['elevenlabs', 'tavus', 'test'].includes(provider)
 }
 ```
 
 ---
 
-## Generic Types
+## Recent Type Updates
 
-### Utility Types
-```typescript
-// src/types/utils.ts
-export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+### 1. Database Types Centralization
+- **New File**: `src/lib/supabase/db.ts` contains all database schema types
+- **Benefits**: Single source of truth for all database types
+- **Usage**: Import types directly from the centralized file
 
-export type Required<T, K extends keyof T> = T & Required<Pick<T, K>>
+### 2. Return Request Type Updates
+- **Field Changes**: `order_id` → `order_number`, `reason_for_return` → `return_reason`
+- **New Fields**: `product_name` (required), `decision_reason`, `updated_at`
+- **Status Enum**: Updated to match database constraints
 
-export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
-}
+### 3. Call Session Type Updates
+- **Status Enum**: Added 'connecting' status
+- **Provider Enum**: Added 'test' provider option
+- **New Fields**: Enhanced streaming and real-time features
 
-export type NonNullable<T> = T extends null | undefined ? never : T
+### 4. New Streaming Sessions Type
+- **New Interface**: `StreamingSession` for real-time call tracking
+- **Status Enum**: 'initialized', 'active', 'ended', 'failed'
+- **Stream Types**: 'voice', 'video', 'audio'
 
-export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
-  T extends (...args: any) => Promise<infer R> ? R : any
-```
-
-### Component Props Types
-```typescript
-// src/types/components.ts
-export type ComponentProps<T> = T extends React.ComponentType<infer P> ? P : never
-
-export type ForwardedRef<T> = T extends React.ForwardRefExoticComponent<infer P>
-  ? P extends { ref?: infer R }
-    ? R
-    : never
-  : never
-```
+### 5. Enhanced Type Safety
+- **UUID Validation**: Helper functions for UUID validation
+- **Type Guards**: Functions to validate enum values
+- **Error Handling**: Improved error types and handling
 
 ---
 
-## Type Exports
+## Usage Examples
 
-### Main Type Exports
+### Creating a Return Request
 ```typescript
-// src/types/index.ts
-export * from './user'
-export * from './business'
-export * from './return'
-export * from './chat'
-export * from './call'
-export * from './policy'
-export * from './analytics'
-export * from './api'
-export * from './events'
-export * from './navigation'
-export * from './guards'
-export * from './utils'
-export * from './components'
-```
+import { createReturnRequest } from '@/lib/return'
 
----
-
-## Type Usage Examples
-
-### Component Props
-```tsx
-import { User, ReturnRequest } from '@/types'
-
-interface UserProfileProps {
-  user: User
-  onUpdate: (user: User) => void
+const returnData: ReturnRequestCreateData = {
+  business_id: '123e4567-e89b-12d3-a456-426614174000',
+  customer_email: 'customer@example.com',
+  order_number: 'ORDER-12345',
+  product_name: 'Wireless Headphones',
+  return_reason: 'Defective product',
+  evidence_files: ['https://example.com/photo1.jpg']
 }
 
-interface ReturnRequestCardProps {
-  request: ReturnRequest
-  onApprove: (id: string) => void
-  onDeny: (id: string) => void
-}
+const result = await createReturnRequest(returnData)
 ```
 
-### API Functions
-```tsx
-import { ReturnRequest, ApiResponse } from '@/types'
-
-async function fetchReturnRequests(
-  businessId: string,
-  filters?: ReturnRequestFilter
-): Promise<ApiResponse<ReturnRequest[]>> {
-  // Implementation
-}
-
-async function updateReturnStatus(
-  id: string,
-  status: ReturnRequest['status']
-): Promise<ApiResponse<ReturnRequest>> {
-  // Implementation
-}
-```
-
-### State Management
-```tsx
-import { UserStore, ChatStore } from '@/store/types'
-
-const useUserStore = create<UserStore>((set) => ({
-  user: null,
-  isAuthenticated: false,
-  role: null,
-  setUser: (user) => set({ user, isAuthenticated: !!user }),
-  setRole: (role) => set({ role }),
-  logout: () => set({ user: null, isAuthenticated: false, role: null })
-}))
-```
-
----
-
-## Type Safety Best Practices
-
-### Strict Type Checking
+### Initiating a Call
 ```typescript
-// tsconfig.json
-{
-  "compilerOptions": {
-    "strict": true,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true
+import { initiateCall } from '@/lib/call'
+
+const callData: CallInitiateData = {
+  chat_session_id: '123e4567-e89b-12d3-a456-426614174000',
+  call_type: 'voice',
+  provider: 'elevenlabs',
+  enable_streaming: true,
+  config_override: {
+    voice_id: 'custom-voice-id'
   }
 }
+
+const callSession = await initiateCall(callData)
 ```
 
-### Type Assertions
+### Using Database Types
 ```typescript
-// Safe type assertion
-const user = response.data as User
+import { Database } from '@/lib/supabase/db'
 
-// Type guard usage
-if (isUser(response.data)) {
-  const user = response.data // TypeScript knows this is User
-}
-```
+type CallSessionRow = Database['public']['Tables']['call_sessions']['Row']
+type CallSessionInsert = Database['public']['Tables']['call_sessions']['Insert']
 
-### Generic Constraints
-```typescript
-function processData<T extends { id: string }>(data: T[]): T[] {
-  return data.filter(item => item.id)
+const newCall: CallSessionInsert = {
+  chat_session_id: '123e4567-e89b-12d3-a456-426614174000',
+  call_type: 'voice',
+  provider: 'elevenlabs',
+  status: 'initiated',
+  is_active: true
 }
 ```
 
 ---
 
-**See also:**
-- `frontend_overview.md` for architecture overview
-- `frontend_components.md` for component documentation
-- `frontend_integration.md` for API integration
+This documentation reflects the latest type system improvements and should be used as the authoritative reference for all frontend type definitions. 
 - `frontend_deployment.md` for deployment guidelines 

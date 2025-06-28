@@ -2,6 +2,58 @@ import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { CustomerServiceAgent } from '../customer-service-agent/index.ts'
 
+// Type definitions for provider responses
+interface ElevenLabsResponse {
+  external_session_id: string
+  session_url: string
+  streaming_url?: string
+  agent_id: string
+  conversation_id: string
+  status: string
+  ai_agent_ready: boolean
+  initial_audio?: string
+  voice_settings: {
+    model_id: string
+    stability: number
+    similarity_boost: number
+    chunk_length_schedule?: number[]
+  }
+  ai_context?: {
+    agent_initialized: boolean
+    conversation_history: number
+    business_context: any
+  }
+  streaming_config?: {
+    enabled: boolean
+    processor_url: string
+    websocket_url: string
+  }
+}
+
+interface TavusResponse {
+  external_session_id: string
+  session_url: string
+  replica_id: string
+  conversation_id: string
+  status: string
+  tavus_replica_id: string
+  tavus_conversation_id: string
+  streaming_config?: {
+    enabled: boolean
+    processor_url: string
+    websocket_url: string
+  }
+}
+
+interface ConfigOverride {
+  voice_id?: string
+  replica_id?: string
+  persona_id?: string
+  elevenlabs_agent_id?: string
+  tavus_replica_id?: string
+  persona_config_id?: string
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -99,11 +151,11 @@ serve(async (req) => {
       throw callError
     }
 
-    let providerResponse = {}
+    let providerResponse: ElevenLabsResponse | TavusResponse
 
     // Provider-specific integration with AI agent and streaming
     if (provider === 'elevenlabs') {
-      providerResponse = await initializeElevenLabsCall(callSession.id, session, config_override, enable_streaming)
+      providerResponse = await initializeElevenLabsCall(callSession.id, session, config_override, enable_streaming, supabaseClient)
     } else if (provider === 'tavus') {
       providerResponse = await initializeTavusCall(callSession.id, config_override, enable_streaming)
     } else {
@@ -115,7 +167,7 @@ serve(async (req) => {
 
     // Initialize streaming infrastructure if enabled
     if (enable_streaming) {
-      await initializeStreamingInfrastructure(callSession.id, call_type, provider)
+      await initializeStreamingInfrastructure(callSession.id, call_type, provider, supabaseClient)
     }
 
     // Update call session with provider data
@@ -126,8 +178,8 @@ serve(async (req) => {
         session_url: providerResponse.session_url,
         provider_data: providerResponse,
         status: 'connecting',
-        elevenlabs_agent_id: providerResponse.agent_id,
-        elevenlabs_conversation_id: providerResponse.conversation_id,
+        elevenlabs_agent_id: 'agent_id' in providerResponse ? providerResponse.agent_id : undefined,
+        elevenlabs_conversation_id: 'agent_id' in providerResponse ? providerResponse.conversation_id : undefined,
         streaming_enabled: enable_streaming,
         websocket_url: enable_streaming ? `${Deno.env.get('SUPABASE_URL')}/functions/v1/websocket-manager?sessionId=${callSession.id}&userId=${session.customer_email}&callType=${call_type}` : null
       })
@@ -159,8 +211,8 @@ serve(async (req) => {
         call_type: call_type,
         status: 'connecting',
         message: `${call_type === 'voice' ? 'Voice' : 'Video'} call initiated successfully`,
-        streaming_url: providerResponse.streaming_url,
-        ai_agent_ready: providerResponse.ai_agent_ready,
+        streaming_url: 'streaming_url' in providerResponse ? providerResponse.streaming_url : undefined,
+        ai_agent_ready: 'ai_agent_ready' in providerResponse ? providerResponse.ai_agent_ready : false,
         streaming_enabled: enable_streaming,
         websocket_url: enable_streaming ? `${Deno.env.get('SUPABASE_URL')}/functions/v1/websocket-manager?sessionId=${callSession.id}&userId=${session.customer_email}&callType=${call_type}` : null,
         stream_processor_urls: enable_streaming ? {
@@ -173,8 +225,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in initiate-call:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
@@ -184,7 +237,7 @@ serve(async (req) => {
 // STREAMING INFRASTRUCTURE INITIALIZATION
 // =================================================================
 
-async function initializeStreamingInfrastructure(callSessionId: string, callType: string, provider: string): Promise<void> {
+async function initializeStreamingInfrastructure(callSessionId: string, callType: string, provider: string, supabaseClient: any): Promise<void> {
   try {
     // Initialize audio streaming if needed
     if (callType === 'voice' || callType === 'video') {
@@ -197,11 +250,6 @@ async function initializeStreamingInfrastructure(callSessionId: string, callType
     }
 
     // Log streaming session
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
     const { error: streamingError } = await supabaseClient
       .from('streaming_sessions')
       .insert([
@@ -297,7 +345,7 @@ async function setupWebSocketMonitoring(callSessionId: string, callType: string)
 // PROVIDER INTEGRATION FUNCTIONS
 // =================================================================
 
-async function initializeElevenLabsCall(callSessionId: string, session: any, configOverride?: any, enableStreaming?: boolean) {
+async function initializeElevenLabsCall(callSessionId: string, session: any, configOverride?: ConfigOverride, enableStreaming?: boolean, supabaseClient: any): Promise<ElevenLabsResponse> {
   try {
     // Get default voice configuration
     const voiceId = configOverride?.voice_id || Deno.env.get('ELEVENLABS_DEFAULT_VOICE_ID')
@@ -375,7 +423,7 @@ async function initializeElevenLabsCall(callSessionId: string, session: any, con
     return {
       external_session_id: conversationId,
       session_url: `${Deno.env.get('SITE_URL')}/call/${conversationId}`,
-      streaming_url: enableStreaming ? `${Deno.env.get('SUPABASE_URL')}/functions/v1/stream-voice-call?session_id=${conversationId}` : null,
+      streaming_url: enableStreaming ? `${Deno.env.get('SUPABASE_URL')}/functions/v1/stream-voice-call?session_id=${conversationId}` : undefined,
       agent_id: voiceId,
       conversation_id: conversationId,
       status: 'active',
@@ -396,7 +444,7 @@ async function initializeElevenLabsCall(callSessionId: string, session: any, con
         enabled: true,
         processor_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/audio-stream-processor`,
         websocket_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/websocket-manager?sessionId=${callSessionId}&callType=voice`
-      } : null
+      } : undefined
     }
   } catch (error) {
     console.error('ElevenLabs initialization error:', error)
@@ -404,12 +452,12 @@ async function initializeElevenLabsCall(callSessionId: string, session: any, con
     return {
       external_session_id: `el_${callSessionId}`,
       session_url: `${Deno.env.get('SITE_URL')}/call/demo/${callSessionId}`,
-      streaming_url: enableStreaming ? `${Deno.env.get('SUPABASE_URL')}/functions/v1/stream-voice-call?session_id=demo_${callSessionId}` : null,
+      streaming_url: enableStreaming ? `${Deno.env.get('SUPABASE_URL')}/functions/v1/stream-voice-call?session_id=demo_${callSessionId}` : undefined,
       agent_id: 'demo_voice_id',
       conversation_id: `demo_${callSessionId}`,
       status: 'demo_mode',
       ai_agent_ready: true,
-      initial_audio: null,
+      initial_audio: undefined,
       voice_settings: {
         model_id: 'eleven_flash_v2.5',
         stability: 0.5,
@@ -419,12 +467,12 @@ async function initializeElevenLabsCall(callSessionId: string, session: any, con
         enabled: true,
         processor_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/audio-stream-processor`,
         websocket_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/websocket-manager?sessionId=${callSessionId}&callType=voice`
-      } : null
+      } : undefined
     }
   }
 }
 
-async function initializeTavusCall(callSessionId: string, configOverride?: any, enableStreaming?: boolean) {
+async function initializeTavusCall(callSessionId: string, configOverride?: ConfigOverride, enableStreaming?: boolean): Promise<TavusResponse> {
   try {
     // Get default replica configuration
     const replicaId = configOverride?.replica_id || Deno.env.get('TAVUS_DEFAULT_REPLICA_ID')
@@ -472,7 +520,7 @@ async function initializeTavusCall(callSessionId: string, configOverride?: any, 
         enabled: true,
         processor_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/video-stream-processor`,
         websocket_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/websocket-manager?sessionId=${callSessionId}&callType=video`
-      } : null
+      } : undefined
     }
   } catch (error) {
     console.error('Tavus initialization error:', error)
@@ -489,7 +537,7 @@ async function initializeTavusCall(callSessionId: string, configOverride?: any, 
         enabled: true,
         processor_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/video-stream-processor`,
         websocket_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/websocket-manager?sessionId=${callSessionId}&callType=video`
-      } : null
+      } : undefined
     }
   }
 }

@@ -1,68 +1,97 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 
-export default function TestAuth() {
-  const [status, setStatus] = useState<string>('Testing...');
+export default function TestAuthPage() {
   const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-  const testAuth = async () => {
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Test auth page - Session:', session);
+        setSession(session);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setLoading(false);
+      }
+    };
+
+    checkSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state change:', event, session);
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignIn = async () => {
     try {
-      setStatus('Checking session...');
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: 'test@example.com',
+        password: 'password123'
+      });
       
       if (error) {
-        setStatus(`Error: ${error.message}`);
-        return;
-      }
-      
-      if (session) {
-        setSession(session);
-        setStatus('Session found! User is authenticated.');
+        console.error('Sign in error:', error);
       } else {
-        setStatus('No session found. User is not authenticated.');
+        console.log('Sign in successful:', data);
       }
-    } catch (err: any) {
-      setStatus(`Error: ${err.message}`);
+    } catch (error) {
+      console.error('Sign in error:', error);
     }
   };
 
-  const signOut = async () => {
+  const handleSignOut = async () => {
     await supabase.auth.signOut();
-    setSession(null);
-    setStatus('Signed out');
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Auth Test</h1>
-      <div className="space-y-4">
-        <button 
-          onClick={testAuth}
-          className="px-4 py-2 bg-blue-500 text-white rounded"
-        >
-          Test Authentication
-        </button>
-        
-        <button 
-          onClick={signOut}
-          className="px-4 py-2 bg-red-500 text-white rounded ml-2"
-        >
-          Sign Out
-        </button>
-        
-        <div className="mt-4">
-          <p><strong>Status:</strong> {status}</p>
-        </div>
-        
-        {session && (
-          <div className="mt-4 p-4 bg-gray-100 rounded">
-            <h3 className="font-bold">Session Info:</h3>
-            <pre className="text-sm mt-2">
-              {JSON.stringify(session, null, 2)}
-            </pre>
-          </div>
+      <h1 className="text-2xl font-bold mb-4">Auth Test Page</h1>
+      
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold">Session Status:</h2>
+        <pre className="bg-gray-100 p-4 rounded">
+          {JSON.stringify(session, null, 2)}
+        </pre>
+      </div>
+
+      <div className="space-x-4">
+        {!session ? (
+          <button 
+            onClick={handleSignIn}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Test Sign In
+          </button>
+        ) : (
+          <>
+            <button 
+              onClick={() => router.push('/dashboard/role-selection')}
+              className="bg-green-500 text-white px-4 py-2 rounded"
+            >
+              Go to Role Selection
+            </button>
+            <button 
+              onClick={handleSignOut}
+              className="bg-red-500 text-white px-4 py-2 rounded"
+            >
+              Sign Out
+            </button>
+          </>
         )}
       </div>
     </div>

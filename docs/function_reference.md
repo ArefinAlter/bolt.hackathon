@@ -1,591 +1,644 @@
-# Dokani Platform Function Reference
+# Function Reference Documentation
 
-Complete API reference for all Supabase Edge Functions in the Dokani platform.
-
----
-
-## Overview
-
-The Dokani platform consists of **40+ serverless functions** organized into logical groups:
-
-- **AI Core Functions** - AI agents and decision engines
-- **MCP Servers** - Model Context Protocol implementations  
-- **Streaming Functions** - Real-time audio/video processing
-- **Communication Functions** - Voice/video call management
-- **Management Functions** - Chat sessions, personas, file uploads
-- **Utility Functions** - Analytics, WebSocket management, testing
+Complete reference for all Supabase Edge Functions and API endpoints in the Dokani platform.
 
 ---
 
-## Authentication
+## API Endpoints
 
-All functions require a valid Supabase JWT token in the Authorization header:
+### Return Management API
 
-```typescript
-headers: {
-  'Authorization': `Bearer ${supabase.auth.session()?.access_token}`,
-  'Content-Type': 'application/json'
-}
-```
+#### `POST /api/returns`
+**Consolidated endpoint for all return operations**
 
----
-
-## AI Core Functions
-
-### `triage-agent`
-
-**Purpose**: AI-powered return request triage and decision making
-
-**Endpoint**: `POST /functions/v1/triage-agent`
+**Description**: Single endpoint for creating, triaging, and managing return requests with action-based routing.
 
 **Request Body**:
 ```typescript
+// Create return request
 {
-  requestData: {
-    orderId: string
-    customerEmail: string
-    reason: string
-    orderValue: number
-    daysSincePurchase: number
-    evidenceUrls: string[]
-    customerRiskScore: number
-    returnHistory: number
-    productCategory: string
-  }
-  policyRules: {
-    return_window_days: number
-    auto_approve_threshold: number
-    required_evidence: string[]
-    acceptable_reasons: string[]
-    high_risk_categories: string[]
-    fraud_flags: string[]
-  }
-  businessId: string
+  "action": "create",
+  "business_id": "uuid",
+  "customer_email": "string",
+  "order_number": "string",
+  "product_name": "string",
+  "return_reason": "string",
+  "evidence_files": ["string"]
+}
+
+// Triage return request
+{
+  "action": "triage",
+  "public_id": "uuid"
+}
+
+// Update return request
+{
+  "action": "update",
+  "public_id": "uuid",
+  "status": "pending_triage" | "pending_review" | "approved" | "denied" | "completed",
+  "admin_notes": "string",
+  "decision_reason": "string"
 }
 ```
 
 **Response**:
 ```typescript
 {
-  success: boolean
-  decision: 'auto_approve' | 'auto_deny' | 'human_review'
-  reasoning: string
-  riskFactors: string[]
-  policyViolations: string[]
-  nextSteps: string[]
+  "success": boolean,
+  "data": ReturnRequest | ReturnRequest[],
+  "message": "string",
+  "error": "string"
 }
 ```
 
-**Example**:
-```typescript
-const response = await fetch('/functions/v1/triage-agent', {
-  method: 'POST',
-  headers: { 'Authorization': `Bearer ${token}` },
-  body: JSON.stringify({
-    requestData: {
-      orderId: 'ORDER-12345',
-      customerEmail: 'customer@example.com',
-      reason: 'Defective product',
-      orderValue: 99.99,
-      daysSincePurchase: 5,
-      evidenceUrls: ['https://example.com/photo.jpg'],
-      customerRiskScore: 0.3,
-      returnHistory: 1,
-      productCategory: 'electronics'
-    },
-    policyRules: {
-      return_window_days: 30,
-      auto_approve_threshold: 100,
-      required_evidence: ['photo'],
-      acceptable_reasons: ['defective', 'wrong_item'],
-      high_risk_categories: ['electronics'],
-      fraud_flags: ['multiple_returns']
-    },
-    businessId: 'business-uuid'
-  })
-})
-```
+**Features**:
+- Action-based routing for different operations
+- Comprehensive error handling
+- UUID validation for all ID fields
+- Automatic triage after creation
+- Full CRUD operations
 
----
+#### `GET /api/returns`
+**Fetch return request by public_id**
 
-### `customer-service-agent`
-
-**Purpose**: AI customer service agent for chat and call interactions
-
-**Endpoint**: `POST /functions/v1/customer-service-agent`
-
-**Request Body**:
-```typescript
-{
-  message: string
-  context: {
-    businessId: string
-    sessionId?: string
-    callSessionId?: string
-    customerEmail?: string
-    timestamp: string
-    provider?: string
-    callType?: 'voice' | 'video'
-  }
-  conversationHistory?: Array<{
-    role: 'user' | 'agent' | 'system'
-    content: string
-    timestamp: string
-  }>
-}
-```
+**Query Parameters**:
+- `public_id`: UUID of the return request
 
 **Response**:
 ```typescript
 {
-  success: boolean
-  message: string
-  data: {
-    model: string
-    usage: {
-      prompt_tokens: number
-      completion_tokens: number
-      total_tokens: number
-    }
-    returnRequest?: {
-      orderId: string
-      reason: string
-    }
-    nextAction?: string
-    callContext?: {
-      sessionId: string
-      provider: string
-      callType: string
-    }
-  }
+  "success": boolean,
+  "data": ReturnRequest
 }
 ```
 
-**Example**:
-```typescript
-const response = await fetch('/functions/v1/customer-service-agent', {
-  method: 'POST',
-  headers: { 'Authorization': `Bearer ${token}` },
-  body: JSON.stringify({
-    message: 'I need to return my order ORDER-12345',
-    context: {
-      businessId: 'business-uuid',
-      sessionId: 'session-uuid',
-      customerEmail: 'customer@example.com',
-      timestamp: new Date().toISOString()
-    },
-    conversationHistory: [
-      { role: 'user', content: 'Hello', timestamp: '2024-01-01T10:00:00Z' },
-      { role: 'agent', content: 'Hi! How can I help you today?', timestamp: '2024-01-01T10:00:01Z' }
-    ]
-  })
-})
-```
-
----
-
-### `layered-decision-engine`
-
-**Purpose**: Main decision engine integrating AI agents with MCP servers
-
-**Endpoint**: `POST /functions/v1/layered-decision-engine`
+#### `PUT /api/returns`
+**Update return request status and details**
 
 **Request Body**:
 ```typescript
 {
-  businessId: string
-  action: 'process_return_request' | 'escalate_case' | 'update_policy'
-  data: {
-    orderId?: string
-    customerEmail?: string
-    reason?: string
-    evidenceUrls?: string[]
-    policyRules?: any
-  }
-  context: {
-    userRole: 'admin' | 'agent' | 'customer'
-    sessionId?: string
-    callSessionId?: string
-  }
-}
-```
-
-**Response**:
-```typescript
-{
-  success: boolean
-  decision: {
-    action: string
-    reasoning: string
-    policyCompliance: boolean
-    auditTrail: Array<{
-      layer: string
-      decision: string
-      timestamp: string
-      metadata: any
-    }>
-  }
-  data: any
-  errors: string[]
-  warnings: string[]
+  "public_id": "uuid",
+  "status": "pending_triage" | "pending_review" | "approved" | "denied" | "completed",
+  "admin_notes": "string",
+  "decision_reason": "string"
 }
 ```
 
 ---
 
-### `risk-assessment`
+## Supabase Edge Functions
 
-**Purpose**: Customer risk assessment and fraud detection
+### Call Management Functions
 
-**Endpoint**: `POST /functions/v1/risk-assessment`
-
-**Actions**:
-- `calculate` - Calculate risk score for customer
-- `update` - Update customer risk profile
-- `profile` - Get customer risk profile
-
-**Request Body** (calculate):
-```typescript
-{
-  customer_email: string
-  business_id: string
-  order_value: number
-  reason_for_return: string
-}
-```
-
-**Response**:
-```typescript
-{
-  success: boolean
-  risk_score: number
-  risk_factors: string[]
-  fraud_indicators: string[]
-  recommendations: string[]
-}
-```
-
----
-
-## MCP Servers
-
-### `request-mcp-server`
-
-**Purpose**: MCP server for return request management
-
-**Endpoint**: `POST /functions/v1/request-mcp-server`
-
-**Available Methods**:
-- `createReturnRequest`
-- `getReturnRequest`
-- `updateReturnStatus`
-- `getCustomerHistory`
-- `initiateCall`
-- `logCallInteraction`
-- `logCallCompletion`
-
-**Example**:
-```typescript
-const response = await fetch('/functions/v1/request-mcp-server', {
-  method: 'POST',
-  headers: { 'Authorization': `Bearer ${token}` },
-  body: JSON.stringify({
-    method: 'createReturnRequest',
-    data: {
-      businessId: 'business-uuid',
-      orderId: 'ORDER-12345',
-      customerEmail: 'customer@example.com',
-      reason: 'Defective product',
-      evidenceUrls: ['https://example.com/photo.jpg']
-    }
-  })
-})
-```
-
----
-
-### `policy-mcp-server`
-
-**Purpose**: MCP server for policy management and validation
-
-**Endpoint**: `POST /functions/v1/policy-mcp-server`
-
-**Available Methods**:
-- `getActivePolicy`
-- `getPolicyRules`
-- `getCallPolicy`
-- `subscribePolicyUpdates`
-- `unsubscribePolicyUpdates`
-- `getPolicyAnalytics`
-- `getPolicyCallAnalytics`
-
-**Example**:
-```typescript
-const response = await fetch('/functions/v1/policy-mcp-server', {
-  method: 'POST',
-  headers: { 'Authorization': `Bearer ${token}` },
-  body: JSON.stringify({
-    method: 'getActivePolicy',
-    data: {
-      businessId: 'business-uuid'
-    }
-  })
-})
-```
-
----
-
-### `call-mcp-server`
-
-**Purpose**: MCP server for call session management
-
-**Endpoint**: `POST /functions/v1/call-mcp-server`
-
-**Available Methods**:
-- `createCallSession`
-- `updateCallStatus`
-- `storeTranscript`
-- `storeVideoFrame`
-- `getCallAnalytics`
-
----
-
-### `conversation-mcp-server`
-
-**Purpose**: MCP server for conversation management
-
-**Endpoint**: `POST /functions/v1/conversation-mcp-server`
-
-**Available Methods**:
-- `createConversationSession`
-- `addMessage`
-- `updateConversationState`
-- `getConversationHistory`
-
----
-
-## Streaming Functions
-
-### `stream-ai-response`
-
-**Purpose**: Stream AI responses in real-time
-
-**Endpoint**: `POST /functions/v1/stream-ai-response`
-
-**Request Body**:
-```typescript
-{
-  sessionId: string
-  message: string
-  context: {
-    businessId: string
-    customerEmail?: string
-    callType?: 'voice' | 'video'
-  }
-}
-```
-
-**Response**: Server-Sent Events (SSE) stream
-
----
-
-### `stream-voice-call`
-
-**Purpose**: Stream voice call audio in real-time
-
-**Endpoint**: `POST /functions/v1/stream-voice-call`
-
-**Request Body**:
-```typescript
-{
-  callSessionId: string
-  audioData: string // base64 encoded
-  timestamp: number
-  isFinal: boolean
-}
-```
-
----
-
-### `audio-stream-processor`
-
-**Purpose**: Process real-time audio streams
-
-**Endpoint**: `POST /functions/v1/audio-stream-processor`
-
-**Request Body**:
-```typescript
-{
-  sessionId: string
-  audioChunk: string // base64 encoded
-  sequence: number
-  timestamp: number
-  sampleRate: number
-  channels: number
-}
-```
-
----
-
-### `video-stream-processor`
-
-**Purpose**: Process real-time video streams
-
-**Endpoint**: `POST /functions/v1/video-stream-processor`
-
-**Request Body**:
-```typescript
-{
-  sessionId: string
-  videoFrame: string // base64 encoded
-  sequence: number
-  timestamp: number
-  width: number
-  height: number
-  fps: number
-}
-```
-
----
-
-## Communication Functions
-
-### `initiate-call`
-
-**Purpose**: Initiate voice or video calls
+#### `initiate-call`
+**Enhanced with UUID validation and type safety**
 
 **Endpoint**: `POST /functions/v1/initiate-call`
 
+**Description**: Initiates voice or video calls with comprehensive streaming support and AI agent integration.
+
 **Request Body**:
 ```typescript
 {
-  businessId: string
-  customerEmail: string
-  callType: 'voice' | 'video'
-  provider: 'elevenlabs' | 'tavus'
-  personaConfigId?: string
-  returnRequestId?: string
+  "chat_session_id": "uuid",  // Required, validated UUID
+  "call_type": "voice" | "video" | "test",
+  "provider": "elevenlabs" | "tavus" | "test",
+  "config_override": {
+    "voice_id": "string",           // Optional, validated UUID
+    "replica_id": "string",         // Optional, validated UUID
+    "persona_id": "string",
+    "elevenlabs_agent_id": "string", // Optional, validated UUID
+    "tavus_replica_id": "string",    // Optional, validated UUID
+    "persona_config_id": "string"    // Optional, validated UUID
+  },
+  "enable_streaming": boolean
 }
 ```
 
 **Response**:
 ```typescript
 {
-  success: boolean
-  callSessionId: string
-  sessionUrl: string
-  websocketUrl?: string
-  providerData: {
-    external_session_id: string
-    agent_id?: string
-    replica_id?: string
+  "success": boolean,
+  "call_session_id": "uuid",
+  "session_url": "string",
+  "provider": "string",
+  "call_type": "string",
+  "status": "connecting",
+  "message": "string",
+  "streaming_url": "string",
+  "ai_agent_ready": boolean,
+  "streaming_enabled": boolean,
+  "websocket_url": "string",
+  "stream_processor_urls": {
+    "audio": "string",
+    "video": "string"
   }
 }
 ```
 
----
+**Key Features**:
+- **UUID Validation**: All UUID fields are validated before database insertion
+- **Type Safety**: Proper TypeScript interfaces for all provider responses
+- **Streaming Support**: Real-time streaming infrastructure initialization
+- **AI Integration**: Customer service agent integration for intelligent responses
+- **Multi-Provider**: Support for ElevenLabs (voice) and Tavus (video)
+- **Error Handling**: Comprehensive error handling with detailed messages
 
-### `initiate-video-conversation`
+**Provider-Specific Features**:
 
-**Purpose**: Initiate video conversations with AI personas
+**ElevenLabs (Voice)**:
+- Real-time TTS with streaming
+- AI agent conversation context
+- Voice customization options
+- Audio quality optimization
 
-**Endpoint**: `POST /functions/v1/initiate-video-conversation`
+**Tavus (Video)**:
+- Video call session creation
+- Replica-based conversations
+- Background and quality settings
+- Webhook integration
+
+**Error Handling**:
+```typescript
+// Invalid UUID
+{
+  "error": "Invalid UUID format",
+  "details": ["chat_session_id must be a valid UUID format"]
+}
+
+// Missing required fields
+{
+  "error": "Missing required fields: chat_session_id, call_type, provider"
+}
+
+// Unsupported provider
+{
+  "error": "Unsupported provider: invalid_provider"
+}
+```
+
+#### `stream-voice-call`
+**Real-time voice call streaming**
+
+**Endpoint**: `POST /functions/v1/stream-voice-call`
+
+**Description**: Handles real-time voice call streaming with AI response generation.
 
 **Request Body**:
 ```typescript
 {
-  businessId: string
-  customerEmail: string
-  personaConfigId: string
-  returnRequestId?: string
-  videoSettings?: {
-    quality: 'standard' | 'high' | 'ultra'
-    background: 'transparent' | 'blur' | 'custom'
+  "session_id": "string",
+  "audio_data": "base64_encoded_audio",
+  "timestamp": "string",
+  "sequence": number
+}
+```
+
+**Response**:
+```typescript
+{
+  "success": boolean,
+  "ai_response": "string",
+  "audio_response": "base64_encoded_audio",
+  "next_action": "string"
+}
+```
+
+#### `stream-ai-response`
+**AI response streaming**
+
+**Endpoint**: `POST /functions/v1/stream-ai-response`
+
+**Description**: Streams AI-generated responses for real-time conversation.
+
+**Request Body**:
+```typescript
+{
+  "session_id": "string",
+  "message": "string",
+  "context": {
+    "business_id": "string",
+    "customer_email": "string",
+    "session_id": "string",
+    "user_role": "customer" | "business"
   }
 }
 ```
 
----
+### Chat Management Functions
 
-### `handle-call-webhook`
-
-**Purpose**: Handle webhooks from call providers
-
-**Endpoint**: `POST /functions/v1/handle-call-webhook`
-
-**Request Body**: Provider-specific webhook data
-
----
-
-### `process-voice-input`
-
-**Purpose**: Process voice input and generate AI responses
-
-**Endpoint**: `POST /functions/v1/process-voice-input`
-
-**Request Body**:
-```typescript
-{
-  sessionId: string
-  userId: string
-  audioData: string // base64 encoded
-  callType: 'voice' | 'video'
-  timestamp: number
-}
-```
-
----
-
-## Management Functions
-
-### `create-chat-session`
-
-**Purpose**: Create new chat sessions
+#### `create-chat-session`
+**Create new chat session**
 
 **Endpoint**: `POST /functions/v1/create-chat-session`
 
 **Request Body**:
 ```typescript
 {
-  businessId: string
-  customerEmail?: string
-  sessionName?: string
-  chatMode?: 'normal' | 'messenger' | 'whatsapp' | 'shopify' | 'woocommerce'
-  sessionType?: 'test_mode' | 'live_support'
+  "user_id": "uuid",
+  "business_id": "uuid",
+  "session_name": "string",
+  "chat_mode": "normal" | "messenger" | "whatsapp" | "shopify" | "woocommerce",
+  "session_type": "test_mode" | "live_support",
+  "customer_email": "string"
 }
 ```
 
 **Response**:
 ```typescript
 {
-  success: boolean
-  sessionId: string
-  sessionName: string
-  chatMode: string
-  sessionType: string
-  isActive: boolean
-  createdAt: string
+  "success": boolean,
+  "session_id": "uuid",
+  "session_url": "string"
 }
 ```
 
----
-
-### `send-chat-message`
-
-**Purpose**: Send messages in chat sessions
+#### `send-chat-message`
+**Send chat message with AI processing**
 
 **Endpoint**: `POST /functions/v1/send-chat-message`
 
 **Request Body**:
 ```typescript
 {
-  sessionId: string
-  sender: 'user' | 'agent' | 'system'
-  message: string
-  messageType?: 'text' | 'image' | 'file' | 'audio' | 'video'
-  metadata?: any
+  "session_id": "uuid",
+  "message": "string",
+  "sender": "user" | "agent" | "system",
+  "message_type": "text" | "file" | "system"
 }
 ```
 
 **Response**:
+```typescript
+{
+  "success": boolean,
+  "message_id": "uuid",
+  "ai_response": "string",
+  "next_action": "string"
+}
 ```
+
+### AI Agent Functions
+
+#### `customer-service-agent`
+**Enhanced customer service AI agent**
+
+**Endpoint**: `POST /functions/v1/customer-service-agent`
+
+**Description**: AI agent for customer service with return request detection and intelligent responses.
+
+**Request Body**:
+```typescript
+{
+  "message": "string",
+  "context": {
+    "business_id": "string",
+    "customer_email": "string",
+    "session_id": "string",
+    "user_role": "customer" | "business",
+    "call_session_id": "string",
+    "provider": "string",
+    "call_type": "string"
+  },
+  "conversation_history": ChatMessage[]
+}
+```
+
+**Response**:
+```typescript
+{
+  "success": boolean,
+  "message": "string",
+  "data": {
+    "return_request": ReturnRequest | null,
+    "next_action": "string",
+    "confidence": number
+  }
+}
+```
+
+#### `triage-agent`
+**Return request triage agent**
+
+**Endpoint**: `POST /functions/v1/triage-agent`
+
+**Description**: AI agent for automatically triaging return requests.
+
+**Request Body**:
+```typescript
+{
+  "return_request": ReturnRequest,
+  "business_context": BusinessSettings
+}
+```
+
+**Response**:
+```typescript
+{
+  "success": boolean,
+  "recommendation": "auto_approve" | "auto_deny" | "human_review",
+  "reasoning": "string",
+  "risk_score": number,
+  "fraud_flags": string[]
+}
+```
+
+### Streaming Functions
+
+#### `audio-stream-processor`
+**Real-time audio stream processing**
+
+**Endpoint**: `POST /functions/v1/audio-stream-processor`
+
+**Description**: Processes real-time audio streams for voice calls.
+
+**Request Body**:
+```typescript
+{
+  "action": "initialize" | "process" | "end",
+  "sessionId": "string",
+  "provider": "string",
+  "callType": "voice",
+  "audio_data": "base64_encoded_audio"
+}
+```
+
+#### `video-stream-processor`
+**Real-time video stream processing**
+
+**Endpoint**: `POST /functions/v1/video-stream-processor`
+
+**Description**: Processes real-time video streams for video calls.
+
+**Request Body**:
+```typescript
+{
+  "action": "initialize" | "process" | "end",
+  "sessionId": "string",
+  "provider": "string",
+  "callType": "video",
+  "video_data": "base64_encoded_video"
+}
+```
+
+#### `websocket-manager`
+**WebSocket connection management**
+
+**Endpoint**: `GET /functions/v1/websocket-manager`
+
+**Description**: Manages WebSocket connections for real-time communication.
+
+**Query Parameters**:
+- `sessionId`: Call session ID
+- `userId`: User ID
+- `callType`: Voice or video
+
+**WebSocket Events**:
+```typescript
+// Call events
+{
+  "type": "call_started" | "call_ended" | "user_joined" | "user_left" | "transcript_update",
+  "data": any,
+  "timestamp": "string",
+  "callSessionId": "string"
+}
+
+// Stream events
+{
+  "type": "stream_started" | "stream_ended" | "audio_chunk" | "video_frame" | "ai_response",
+  "data": any,
+  "timestamp": "string",
+  "streamingSessionId": "string"
+}
+```
+
+### Persona Management Functions
+
+#### `create-voice-persona`
+**Create ElevenLabs voice persona**
+
+**Endpoint**: `POST /functions/v1/create-voice-persona`
+
+**Request Body**:
+```typescript
+{
+  "business_id": "uuid",
+  "config_name": "string",
+  "voice_id": "string",
+  "voice_settings": {
+    "stability": number,
+    "similarity_boost": number,
+    "style": number
+  }
+}
+```
+
+#### `create-tavus-persona`
+**Create Tavus video persona**
+
+**Endpoint**: `POST /functions/v1/create-tavus-persona`
+
+**Request Body**:
+```typescript
+{
+  "business_id": "uuid",
+  "config_name": "string",
+  "replica_id": "string",
+  "persona_settings": {
+    "background": "string",
+    "quality": "string",
+    "auto_respond": boolean
+  }
+}
+```
+
+#### `list-personas`
+**List available personas**
+
+**Endpoint**: `GET /functions/v1/list-personas`
+
+**Query Parameters**:
+- `business_id`: UUID of the business
+- `provider`: Filter by provider (elevenlabs, tavus)
+
+**Response**:
+```typescript
+{
+  "success": boolean,
+  "personas": ProviderConfig[]
+}
+```
+
+### Analytics Functions
+
+#### `get-analytics`
+**Get business analytics**
+
+**Endpoint**: `GET /functions/v1/get-analytics`
+
+**Query Parameters**:
+- `business_id`: UUID of the business
+- `date_range`: Date range for analytics
+- `metric_type`: Type of analytics to retrieve
+
+**Response**:
+```typescript
+{
+  "success": boolean,
+  "analytics": {
+    "returns": ReturnAnalytics,
+    "ai_accuracy": AIAccuracyAnalytics,
+    "satisfaction": SatisfactionAnalytics,
+    "policy": PolicyAnalytics
+  }
+}
+```
+
+### Utility Functions
+
+#### `upload-file`
+**File upload handler**
+
+**Endpoint**: `POST /functions/v1/upload-file`
+
+**Description**: Handles file uploads for evidence and persona creation.
+
+**Request Body**: FormData with file and metadata
+
+**Response**:
+```typescript
+{
+  "success": boolean,
+  "file_url": "string",
+  "file_id": "uuid"
+}
+```
+
+#### `test-ai-agents`
+**Test AI agent functionality**
+
+**Endpoint**: `POST /functions/v1/test-ai-agents`
+
+**Description**: Test endpoint for AI agent functionality and configuration.
+
+**Request Body**:
+```typescript
+{
+  "agent_type": "customer_service" | "triage" | "policy",
+  "test_message": "string",
+  "context": AgentContext
+}
+```
+
+---
+
+## Database Integration
+
+### New Streaming Sessions Table
+```sql
+CREATE TABLE streaming_sessions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id text NOT NULL,
+  stream_type text NOT NULL CHECK (stream_type IN ('voice', 'video', 'audio')),
+  provider text NOT NULL,
+  status text NOT NULL DEFAULT 'initialized' CHECK (status IN ('initialized', 'active', 'ended', 'failed')),
+  created_at timestamp DEFAULT now(),
+  ended_at timestamp,
+  metadata jsonb DEFAULT '{}'
+);
+```
+
+### Enhanced Call Sessions
+The `call_sessions` table now includes:
+- Streaming support fields
+- Real-time event tracking
+- Quality metrics
+- AI conversation state integration
+
+### Type Safety Improvements
+- All functions now use centralized database types from `src/lib/supabase/db.ts`
+- UUID validation for all ID fields
+- Proper error handling with type guards
+- Enhanced response types
+
+---
+
+## Error Handling
+
+### Common Error Responses
+```typescript
+// Validation errors
+{
+  "error": "Validation failed",
+  "details": ["Field validation errors"]
+}
+
+// Authentication errors
+{
+  "error": "Unauthorized",
+  "status": 401
+}
+
+// Database errors
+{
+  "error": "Database operation failed",
+  "details": "Specific error message"
+}
+
+// Provider errors
+{
+  "error": "Provider API error",
+  "details": "Provider-specific error message"
+}
+```
+
+### Error Codes
+- `400`: Bad Request (validation errors)
+- `401`: Unauthorized (authentication required)
+- `403`: Forbidden (insufficient permissions)
+- `404`: Not Found (resource not found)
+- `500`: Internal Server Error (server error)
+
+---
+
+## Performance Considerations
+
+### Caching
+- Session data cached in memory
+- Provider configurations cached
+- Analytics data cached with TTL
+
+### Rate Limiting
+- Built-in rate limiting for all endpoints
+- Per-user and per-business limits
+- Exponential backoff for retries
+
+### Database Optimization
+- Indexed queries for common operations
+- Connection pooling
+- Query optimization
+
+---
+
+## Security Features
+
+### Authentication
+- Supabase Auth integration
+- JWT token validation
+- Role-based access control
+
+### Input Validation
+- UUID validation for all ID fields
+- Input sanitization
+- Type checking
+
+### Row Level Security (RLS)
+- Business data isolation
+- User-specific access control
+- Session-based permissions
+
+---
+
+This function reference reflects the latest improvements including enhanced type safety, consolidated API routes, and comprehensive streaming support.

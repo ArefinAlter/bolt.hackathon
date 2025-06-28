@@ -7,13 +7,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { signIn, signUp } from '@/lib/auth';
+import { signIn, signUp, createProfileIfMissing } from '@/lib/auth';
 import { AuthFormData, SignUpFormData } from '@/types/auth';
 
 // Form validation schemas
@@ -60,17 +61,42 @@ export function AuthForm({ type }: AuthFormProps) {
     
     try {
       if (type === 'login') {
-        console.log('Attempting to sign in...');
+        console.log('=== AUTH DEBUG START ===');
+        console.log('Attempting to sign in with:', { email: data.email });
         const result = await signIn(data as AuthFormData);
         console.log('Sign in successful:', result);
+        console.log('User session:', result.session);
+        console.log('User data:', result.user);
+        
+        // Check if we have a session immediately after sign in
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Immediate session check:', session);
+        
         console.log('Redirecting to role selection...');
-        window.location.href = '/dashboard/role-selection';
+        router.push('/dashboard/role-selection');
+        console.log('=== AUTH DEBUG END ===');
       } else {
         console.log('Attempting to sign up...');
         const result = await signUp(data as SignUpFormData);
         console.log('Sign up successful:', result);
+        
+        // Ensure profile exists after signup
+        if (result.user) {
+          try {
+            console.log('Ensuring profile exists...');
+            await createProfileIfMissing(
+              result.user.id,
+              (data as SignUpFormData).business_name || result.user.email?.split('@')[0]
+            );
+            console.log('Profile creation confirmed');
+          } catch (profileError) {
+            console.error('Profile creation failed:', profileError);
+            // Don't block the signup flow, profile can be created later
+          }
+        }
+        
         console.log('Redirecting to role selection...');
-        window.location.href = '/dashboard/role-selection';
+        router.push('/dashboard/role-selection');
       }
     } catch (err: any) {
       console.error('Auth error details:', err);

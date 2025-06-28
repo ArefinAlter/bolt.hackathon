@@ -23,6 +23,13 @@ verify_jwt = true
 import_map = "./functions/call-ai-processor/deno.json"
 entrypoint = "./functions/call-ai-processor/index.ts"
 
+# Authentication & Profile Functions (Essential)
+[functions.create-profile]
+enabled = true
+verify_jwt = true
+import_map = "./functions/create-profile/deno.json"
+entrypoint = "./functions/create-profile/index.ts"
+
 # Return Management Functions (Essential)
 [functions.init-return]
 enabled = true
