@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 import { ChatMessage, ChatSession, FileUpload } from '@/types/chat';
 
 // Create a new chat session
-export async function createChatSession(userId: string): Promise<ChatSession> {
+export async function createChatSession(userId: string, demoMode = false): Promise<ChatSession> {
   try {
     // Call the create-chat-session function
     const { data: { session } } = await supabase.auth.getSession();
@@ -22,7 +22,8 @@ export async function createChatSession(userId: string): Promise<ChatSession> {
         user_id: userId,
         session_name: 'Customer Support',
         chat_mode: 'normal',
-        session_type: 'test_mode'
+        session_type: 'test_mode',
+        demo_mode: demoMode
       })
     });
     
@@ -32,6 +33,23 @@ export async function createChatSession(userId: string): Promise<ChatSession> {
     }
     
     const data = await response.json();
+    
+    // Handle demo mode response
+    if (data.demo_mode) {
+      return {
+        id: data.data.id,
+        user_id: userId,
+        business_id: data.data.business_id || '',
+        session_name: 'Customer Support',
+        chat_mode: data.data.chat_mode || 'normal',
+        session_type: 'test_mode',
+        is_active: true,
+        created_at: data.data.created_at,
+        updated_at: data.data.updated_at,
+        customer_email: data.data.customer_email || ''
+      };
+    }
+    
     return {
       id: data.session_id,
       user_id: userId,
@@ -51,8 +69,39 @@ export async function createChatSession(userId: string): Promise<ChatSession> {
 }
 
 // Fetch chat messages for a session
-export async function fetchChatMessages(sessionId: string): Promise<ChatMessage[]> {
+export async function fetchChatMessages(sessionId: string, demoMode = false): Promise<ChatMessage[]> {
   try {
+    // If in demo mode, return mock messages
+    if (demoMode) {
+      const mockMessages: ChatMessage[] = [
+        {
+          id: 'demo-msg-1',
+          session_id: sessionId,
+          sender: 'system',
+          message: 'Welcome to Dokani Customer Support! How can I help you today?',
+          message_type: 'text',
+          created_at: new Date(Date.now() - 60000).toISOString()
+        },
+        {
+          id: 'demo-msg-2',
+          session_id: sessionId,
+          sender: 'user',
+          message: 'Hi, I need help with a return request',
+          message_type: 'text',
+          created_at: new Date(Date.now() - 30000).toISOString()
+        },
+        {
+          id: 'demo-msg-3',
+          session_id: sessionId,
+          sender: 'agent',
+          message: 'Hello! I\'d be happy to help you with your return request. Could you please provide your order ID and the reason for the return?',
+          message_type: 'text',
+          created_at: new Date(Date.now() - 15000).toISOString()
+        }
+      ];
+      return mockMessages;
+    }
+
     const { data, error } = await supabase
       .from('chat_messages')
       .select('*')
@@ -76,10 +125,11 @@ export async function sendChatMessage(
   message: string,
   sender: 'user' | 'agent' | 'system' = 'user',
   messageType: 'text' | 'image' | 'file' | 'audio' | 'video' = 'text',
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
+  demoMode = false
 ): Promise<{ userMessage: ChatMessage; agentResponse?: ChatMessage }> {
   try {
-    // Call the send-chat-message function
+    // Call the send-chat-message function (even in demo mode to use real AI)
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
@@ -91,7 +141,8 @@ export async function sendChatMessage(
       message: message.substring(0, 50) + '...',
       sender,
       messageType,
-      hasMetadata: !!metadata
+      hasMetadata: !!metadata,
+      demoMode
     });
     
     const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-chat-message`, {
@@ -105,7 +156,8 @@ export async function sendChatMessage(
         message,
         sender,
         message_type: messageType,
-        metadata
+        metadata,
+        demo_mode: demoMode
       })
     });
     
@@ -147,8 +199,14 @@ export async function sendChatMessage(
 // Subscribe to real-time chat updates
 export function subscribeToChatUpdates(
   sessionId: string,
-  onNewMessage: (message: ChatMessage) => void
+  onNewMessage: (message: ChatMessage) => void,
+  demoMode = false
 ) {
+  // If in demo mode, return a no-op function since we don't need real-time updates
+  if (demoMode) {
+    return () => {};
+  }
+
   const channel = supabase
     .channel(`chat_${sessionId}`)
     .on(

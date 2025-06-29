@@ -44,9 +44,11 @@ export function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
-              Sign In
-            </Button>
+            <Link href="/auth/login">
+              <Button variant="ghost" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
+                Sign In
+              </Button>
+            </Link>
             <Link href="/auth/signup">
               <Button className="bg-primary hover:bg-primary/90 text-gray-900 dark:text-gray-100 font-medium">
                 Get Started
@@ -101,9 +103,11 @@ export function Header() {
               </Link>
               <div className="pt-4 pb-3 border-t border-gray-200">
                 <div className="flex items-center px-3 space-x-3">
-                  <Button variant="ghost" className="w-full justify-start text-gray-900 dark:text-gray-100">
-                    Sign In
-                  </Button>
+                  <Link href="/auth/login">
+                    <Button variant="ghost" className="w-full justify-start text-gray-900 dark:text-gray-100">
+                      Sign In
+                    </Button>
+                  </Link>
                   <Link href="/auth/signup">
                     <Button className="w-full bg-primary hover:bg-primary/90 text-gray-900 dark:text-gray-100">
                       Get Started

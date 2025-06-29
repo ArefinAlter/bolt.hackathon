@@ -114,7 +114,7 @@ async function testVoicePersona(personaConfig: any, testContent: string) {
     },
     body: JSON.stringify({
       text: testContent,
-      model_id: 'eleven_flash_v2.5',
+      model_id: 'eleven_flash_v2_5',
       voice_settings: {
         stability: 0.5,
         similarity_boost: 0.5,
@@ -136,7 +136,7 @@ async function testVoicePersona(personaConfig: any, testContent: string) {
     audio_url: `data:audio/mpeg;base64,${audioBase64}`,
     duration: 'Generated successfully',
     voice_id: voiceId,
-    model_used: 'eleven_flash_v2.5'
+    model_used: 'eleven_flash_v2_5'
   }
 }
 

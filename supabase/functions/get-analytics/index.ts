@@ -99,6 +99,11 @@ Deno.serve(async (req) => {
       analytics.policy = await getPolicyMetrics(supabaseClient, business_id)
     }
 
+    // Get ElevenLabs Conversational AI Analytics
+    if (metric_type === 'all' || metric_type === 'elevenlabs_analytics') {
+      analytics.elevenlabs_analytics = await getElevenLabsAnalytics(business_id, null)
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true,
@@ -244,4 +249,57 @@ async function getPolicyMetrics(supabase: any, businessId: string) {
     current_approval_rate: approvalRate.toFixed(1),
     policy_effectiveness: approvalRate > 70 ? 'High' : approvalRate > 50 ? 'Medium' : 'Low'
   }
+}
+
+// Get ElevenLabs Conversational AI Analytics
+async function getElevenLabsAnalytics(businessId: string, dateRange: any) {
+  try {
+    const agentId = Deno.env.get('ELEVENLABS_CONVERSATIONAL_AGENT_ID') || 'agent_01jyy0m7raf6p9gmw9cvhzvm2f'
+    
+    // Get agent analytics from ElevenLabs
+    const response = await fetch(`https://api.elevenlabs.io/v1/agents/${agentId}/analytics`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'xi-api-key': Deno.env.get('ELEVENLABS_API_KEY') || ''
+      }
+    })
+
+    if (response.ok) {
+      const elevenLabsData = await response.json()
+      
+      // Store in database for historical tracking
+      await supabase
+        .from('business_analytics')
+        .insert([{
+          business_id: businessId,
+          metric_type: 'elevenlabs_analytics',
+          metric_data: elevenLabsData,
+          calculated_at: new Date().toISOString()
+        }])
+
+      return {
+        conversations_count: elevenLabsData.conversations_count || 0,
+        messages_count: elevenLabsData.messages_count || 0,
+        average_response_time: elevenLabsData.average_response_time || 0,
+        satisfaction_score: elevenLabsData.satisfaction_score || 0,
+        escalation_rate: elevenLabsData.escalation_rate || 0
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching ElevenLabs analytics:', error)
+  }
+
+  return {
+    conversations_count: 0,
+    messages_count: 0,
+    average_response_time: 0,
+    satisfaction_score: 0,
+    escalation_rate: 0
+  }
+}
+
+// Get combined analytics data
+async function getCombinedAnalytics(businessId: string, dateRange: any) {
+  // Implementation of getCombinedAnalytics function
 } 

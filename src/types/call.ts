@@ -22,6 +22,7 @@ export interface CallSession {
     audio?: string;
     video?: string;
   };
+  demo_mode?: boolean;
 }
 
 export interface CallTranscript {

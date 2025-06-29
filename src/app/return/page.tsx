@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -229,6 +230,13 @@ export default function ReturnPage() {
                 <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
                 <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
               </div>
+              <Button 
+                variant="outline"
+                onClick={() => router.push('/customer/chat')}
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Chat with Support
+              </Button>
               <Button 
                 className="bg-primary hover:bg-primary/90 text-black"
                 onClick={() => router.push('/return/new')}

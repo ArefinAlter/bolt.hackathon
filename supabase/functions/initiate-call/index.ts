@@ -92,7 +92,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { chat_session_id, call_type, provider, config_override, enable_streaming = true } = await req.json()
+    const { chat_session_id, call_type, provider, config_override, enable_streaming = true, demo_mode } = await req.json()
 
     // Validate required fields
     if (!chat_session_id || !call_type || !provider) {
@@ -102,7 +102,70 @@ serve(async (req) => {
       )
     }
 
-    // Validate UUID fields
+    // Demo mode - skip UUID validation and use mock data
+    if (demo_mode) {
+      const mockCallSession = {
+        id: `demo-call-${Date.now()}`,
+        chat_session_id,
+        call_type,
+        provider,
+        status: 'initiated',
+        is_active: true,
+        streaming_enabled: enable_streaming,
+        external_session_id: `demo-${provider}-session-${Date.now()}`,
+        session_url: `https://demo.${provider}.com/session/${Date.now()}`,
+        websocket_url: `wss://demo.websocket.com/session/${Date.now()}`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      // Mock provider response
+      const mockProviderResponse = provider === 'elevenlabs' ? {
+        external_session_id: mockCallSession.external_session_id,
+        session_url: mockCallSession.session_url,
+        agent_id: 'demo-agent-123',
+        conversation_id: `demo-conversation-${Date.now()}`,
+        status: 'ready',
+        ai_agent_ready: true,
+        streaming_config: {
+          enabled: enable_streaming,
+          processor_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/audio-stream-processor`,
+          websocket_url: mockCallSession.websocket_url
+        }
+      } : {
+        external_session_id: mockCallSession.external_session_id,
+        session_url: mockCallSession.session_url,
+        replica_id: 'demo-replica-123',
+        conversation_id: `demo-conversation-${Date.now()}`,
+        status: 'ready',
+        tavus_replica_id: 'demo-replica-123',
+        tavus_conversation_id: `demo-conversation-${Date.now()}`,
+        streaming_config: {
+          enabled: enable_streaming,
+          processor_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/video-stream-processor`,
+          websocket_url: mockCallSession.websocket_url
+        }
+      };
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          call_session_id: mockCallSession.id,
+          status: 'initiated',
+          streaming_enabled: enable_streaming,
+          websocket_url: mockCallSession.websocket_url,
+          stream_processor_urls: {
+            audio: mockProviderResponse.streaming_config?.processor_url,
+            video: mockProviderResponse.streaming_config?.processor_url
+          },
+          provider: mockProviderResponse,
+          demo_mode: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Validate UUID fields (only for non-demo mode)
     const uuidValidation = validateUUIDFields({
       chat_session_id,
       ...(config_override?.elevenlabs_agent_id && { elevenlabs_agent_id: config_override.elevenlabs_agent_id }),
@@ -347,97 +410,71 @@ async function setupWebSocketMonitoring(callSessionId: string, callType: string)
 
 async function initializeElevenLabsCall(callSessionId: string, session: any, configOverride?: ConfigOverride, enableStreaming?: boolean, supabaseClient: any): Promise<ElevenLabsResponse> {
   try {
-    // Get default voice configuration
-    const voiceId = configOverride?.voice_id || Deno.env.get('ELEVENLABS_DEFAULT_VOICE_ID')
+    // Get ElevenLabs Conversational AI Agent ID from environment or config
+    const agentId = configOverride?.elevenlabs_agent_id || Deno.env.get('ELEVENLABS_CONVERSATIONAL_AGENT_ID') || 'agent_01jyy0m7raf6p9gmw9cvhzvm2f'
     
-    if (!voiceId) {
-      throw new Error('No voice ID configured for ElevenLabs')
+    if (!agentId) {
+      throw new Error('No ElevenLabs Conversational AI Agent ID configured')
     }
 
-    // Initialize AI agent for conversation
-    const customerServiceAgent = new CustomerServiceAgent()
-    
-    // Get conversation history for context
-    const { data: conversationHistory } = await supabaseClient
-      .from('chat_messages')
-      .select('*')
-      .eq('session_id', session.id)
-      .order('created_at', { ascending: true })
-
-    // Prepare agent context
-    const agentContext = {
-      businessId: session.business_id || '123e4567-e89b-12d3-a456-426614174000',
-      customerEmail: session.customer_email,
-      sessionId: session.id,
-      userRole: 'customer' as const,
-      timestamp: new Date().toISOString()
-    }
-
-    // Generate initial greeting using AI agent
-    const aiResponse = await customerServiceAgent.processChatMessage(
-      "Hello, I'm starting a voice call. Please greet the customer warmly and explain that you're here to help with their return or refund request.",
-      agentContext,
-      conversationHistory || []
-    )
-
-    let initialGreeting = "Hello! I'm here to help you with your return or refund request. How can I assist you today?"
-    
-    if (aiResponse.success) {
-      initialGreeting = aiResponse.message
-    }
-
-    // Create streaming TTS session using correct ElevenLabs API
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`, {
+    // Initialize ElevenLabs Conversational AI session
+    const response = await fetch(`https://api.elevenlabs.io/v1/agents/${agentId}/conversations`, {
       method: 'POST',
       headers: {
-        'Accept': 'audio/mpeg',
+        'Accept': 'application/json',
         'xi-api-key': Deno.env.get('ELEVENLABS_API_KEY') || '',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        text: initialGreeting,
-        model_id: 'eleven_flash_v2.5', // Use Flash model for low latency
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.5,
-          style: 0.0,
-          use_speaker_boost: true
-        },
-        chunk_length_schedule: [120, 500, 1000], // Optimize for real-time conversation
-        output_format: 'mp3_44100_128'
+        name: `Call Session ${callSessionId}`,
+        description: `Voice call session for customer service`,
+        webhook_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-call-webhook`,
+        webhook_events: ['conversation_started', 'conversation_ended', 'message_received', 'message_sent'],
+        metadata: {
+          call_session_id: callSessionId,
+          business_id: session.business_id,
+          customer_email: session.customer_email,
+          chat_session_id: session.id,
+          context: {
+            business_id: session.business_id,
+            session_id: session.id,
+            demo_mode: demo_mode || false,
+            call_type: call_type,
+            provider: provider,
+            timestamp: new Date().toISOString()
+          }
+        }
       })
     })
 
     if (!response.ok) {
       const errorData = await response.json()
-      throw new Error(`ElevenLabs API error: ${errorData.detail || response.statusText}`)
+      throw new Error(`ElevenLabs Conversational AI error: ${errorData.detail || response.statusText}`)
     }
 
-    // Store the initial audio for immediate playback
-    const audioBuffer = await response.arrayBuffer()
-    const audioBase64 = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)))
+    const conversationData = await response.json()
 
     // Create conversation session ID
-    const conversationId = `call_${callSessionId}_${Date.now()}`
+    const conversationId = conversationData.conversation_id
 
     return {
       external_session_id: conversationId,
       session_url: `${Deno.env.get('SITE_URL')}/call/${conversationId}`,
       streaming_url: enableStreaming ? `${Deno.env.get('SUPABASE_URL')}/functions/v1/stream-voice-call?session_id=${conversationId}` : undefined,
-      agent_id: voiceId,
+      agent_id: agentId,
       conversation_id: conversationId,
       status: 'active',
       ai_agent_ready: true,
-      initial_audio: `data:audio/mpeg;base64,${audioBase64}`,
+      initial_audio: undefined, // Will be generated by Conversational AI
       voice_settings: {
-        model_id: 'eleven_flash_v2.5',
+        model_id: 'eleven_flash_v2_5',
         stability: 0.5,
         similarity_boost: 0.5,
         chunk_length_schedule: [120, 500, 1000]
       },
       ai_context: {
         agent_initialized: true,
-        conversation_history: conversationHistory?.length || 0,
+        conversation_history: 0,
         business_context: session.profiles
       },
       streaming_config: enableStreaming ? {
@@ -447,19 +484,19 @@ async function initializeElevenLabsCall(callSessionId: string, session: any, con
       } : undefined
     }
   } catch (error) {
-    console.error('ElevenLabs initialization error:', error)
+    console.error('ElevenLabs Conversational AI initialization error:', error)
     // Fallback to placeholder for demo
     return {
       external_session_id: `el_${callSessionId}`,
       session_url: `${Deno.env.get('SITE_URL')}/call/demo/${callSessionId}`,
       streaming_url: enableStreaming ? `${Deno.env.get('SUPABASE_URL')}/functions/v1/stream-voice-call?session_id=demo_${callSessionId}` : undefined,
-      agent_id: 'demo_voice_id',
+      agent_id: 'demo_agent_id',
       conversation_id: `demo_${callSessionId}`,
       status: 'demo_mode',
       ai_agent_ready: true,
       initial_audio: undefined,
       voice_settings: {
-        model_id: 'eleven_flash_v2.5',
+        model_id: 'eleven_flash_v2_5',
         stability: 0.5,
         similarity_boost: 0.5
       },

@@ -153,7 +153,7 @@ async function streamVoiceResponse(text: string, callSession: any): Promise<Resp
         },
         body: JSON.stringify({
           text: chunk,
-          model_id: 'eleven_flash_v2.5',
+          model_id: 'eleven_flash_v2_5',
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.5,
@@ -179,7 +179,7 @@ async function streamVoiceResponse(text: string, callSession: any): Promise<Resp
         audio_chunks: audioChunks,
         text_response: text,
         voice_id: voiceId,
-        model_used: 'eleven_flash_v2.5'
+        model_used: 'eleven_flash_v2_5'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

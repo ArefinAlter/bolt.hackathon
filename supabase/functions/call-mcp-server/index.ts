@@ -193,40 +193,48 @@ export class CallMCPServer extends MCPServer {
   }
   
   private async endCall(data: any): Promise<any> {
-    const { callSessionId, reason, duration } = data
+    const { callSessionId, reason, duration, demo_mode } = data
     
-    // Validate call session
+    // Handle demo mode
+    if (demo_mode) {
+      return {
+        callSessionId,
+        status: 'ended',
+        reason: reason || 'user_ended',
+        duration: duration || 0,
+        timestamp: new Date().toISOString(),
+        demo_mode: true
+      }
+    }
+    
+    // Validate call session (only for non-demo mode)
     const callSession = this.getCallSession(callSessionId)
     if (!callSession) {
       throw new Error('Call session not found')
     }
     
-    // Update call session
+    // Update call session status
     this.updateCallSession(callSessionId, {
       callStatus: 'ended',
       lastActivity: new Date().toISOString()
     })
     
-    // Update database
-    const { data: updatedSession, error } = await this.supabase
+    // Update database call session
+    const { error } = await this.supabase
       .from('call_sessions')
       .update({
         status: 'ended',
-        duration,
-        ended_at: new Date().toISOString()
+        ended_at: new Date().toISOString(),
+        duration: duration || 0,
+        end_reason: reason || 'user_ended'
       })
       .eq('id', callSessionId)
-      .select()
-      .single()
     
     if (error) {
-      throw new Error(`Failed to end call: ${error.message}`)
+      throw new Error(`Failed to update call session: ${error.message}`)
     }
     
-    // Clean up streaming session
-    this.streamingSessions.delete(callSessionId)
-    
-    // Log call end
+    // Log call end event
     await this.logCallEvent({
       callSessionId,
       eventType: 'call_ended',
@@ -235,9 +243,13 @@ export class CallMCPServer extends MCPServer {
       timestamp: new Date().toISOString()
     })
     
+    // Clean up streaming session
+    this.streamingSessions.delete(callSessionId)
+    
     return {
       callSessionId,
       status: 'ended',
+      reason,
       duration,
       timestamp: new Date().toISOString()
     }
@@ -661,7 +673,7 @@ export class CallMCPServer extends MCPServer {
       },
       body: JSON.stringify({
         text: 'Hello, this is your AI assistant. How can I help you today?',
-        model_id: 'eleven_monolingual_v1',
+        model_id: 'eleven_flash_v2_5',
         voice_settings: {
           stability: 0.5,
           similarity_boost: 0.5
@@ -876,4 +888,76 @@ export class CallMCPServer extends MCPServer {
       .map(([provider, count]) => ({ provider, count }))
       .sort((a, b) => (b.count as number) - (a.count as number))
   }
-} 
+}
+
+// Serve function for the edge function
+Deno.serve(async (req) => {
+  try {
+    // Handle CORS
+    if (req.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
+      })
+    }
+
+    // Parse request
+    const body = await req.json()
+    const { action, data, context, demo_mode } = body
+
+    // Create MCP request
+    const mcpRequest: MCPRequest = {
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      agentId: context?.agentId || 'default',
+      businessId: context?.businessId || 'default',
+      action,
+      data: { ...data, demo_mode },
+      context: {
+        userRole: context?.userRole || 'customer',
+        sessionId: context?.sessionId,
+        requestId: context?.requestId,
+        callSessionId: context?.callSessionId,
+        callType: context?.callType,
+        provider: context?.provider,
+        isCallInteraction: context?.isCallInteraction || false,
+        streamingEnabled: context?.streamingEnabled || false
+      }
+    }
+
+    // Create server instance and handle request
+    const server = new CallMCPServer()
+    const response = await server.handleRequest(mcpRequest)
+
+    return new Response(JSON.stringify(response), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    })
+
+  } catch (error) {
+    console.error('Error in call-mcp-server:', error)
+    
+    return new Response(JSON.stringify({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    })
+  }
+}) 

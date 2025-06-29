@@ -18,7 +18,12 @@ import {
   ChevronDown,
   ChevronRight,
   LogOut,
-  Search
+  Search,
+  LayoutDashboard,
+  Brain,
+  Phone,
+  MessageSquare,
+  History
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/common/GlobalSearch';
@@ -70,32 +75,32 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
     {
       title: 'Dashboard',
       href: '/dashboard',
-      icon: BarChart3,
+      icon: LayoutDashboard,
       role: 'business',
       shortcut: 'g d'
     },
     {
-      title: 'Return Requests',
+      title: 'Returns',
       href: '/dashboard/requests',
       icon: Package,
       role: 'business',
       shortcut: 'g r'
     },
     {
-      title: 'Policy Management',
-      href: '/dashboard/policy',
-      icon: FileText,
+      title: 'Analytics',
+      href: '/dashboard/analytics',
+      icon: BarChart3,
       role: 'business',
-      shortcut: 'g p'
+      shortcut: 'g a'
     },
     {
       title: 'Risk Assessment',
       href: '/dashboard/risk-assessment',
-      icon: Shield,
+      icon: Brain,
       role: 'business'
     },
     {
-      title: 'Support Personas',
+      title: 'Personas',
       href: '/dashboard/personas',
       icon: Users,
       role: 'business',
@@ -111,6 +116,19 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
           icon: Video
         }
       ]
+    },
+    {
+      title: 'Policy',
+      href: '/dashboard/policy',
+      icon: FileText,
+      role: 'business',
+      shortcut: 'g p'
+    },
+    {
+      title: 'Call History',
+      href: '/dashboard/call-history',
+      icon: History,
+      role: 'business'
     },
     {
       title: 'Settings',

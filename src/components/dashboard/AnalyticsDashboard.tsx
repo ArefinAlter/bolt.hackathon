@@ -10,7 +10,9 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Phone,
+  Volume2
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +22,7 @@ import { ReturnTrendChart } from './charts/ReturnTrendChart';
 import { AIAccuracyChart } from './charts/AIAccuracyChart';
 import { SatisfactionChart } from './charts/SatisfactionChart';
 import { PolicyComparisonChart } from './charts/PolicyComparisonChart';
+import { ElevenLabsAnalyticsChart } from './charts/ElevenLabsAnalyticsChart';
 import { fetchAnalytics, generatePDF } from '@/lib/analytics';
 import { AnalyticsData, DateRangeFilter, MetricType } from '@/types/analytics';
 import { supabase } from '@/lib/supabase';
@@ -108,6 +111,9 @@ export function AnalyticsDashboard() {
     if (businessId) {
       loadAnalyticsData(businessId);
     }
+    if (type === 'elevenlabs_analytics') {
+      console.log('Loading ElevenLabs analytics...');
+    }
   };
 
   const handleDateRangeChange = (range: DateRangeFilter) => {
@@ -191,6 +197,41 @@ export function AnalyticsDashboard() {
         />
       </div>
 
+      {/* ElevenLabs Voice Call Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Voice Conversations"
+          value={analyticsData.elevenlabs_analytics?.conversations_count || 0}
+          icon={<Phone className="h-5 w-5 text-blue-600" />}
+          description="Total voice calls handled"
+          isLoading={isLoading}
+        />
+        
+        <StatCard
+          title="Voice Satisfaction"
+          value={`${analyticsData.elevenlabs_analytics?.satisfaction_score || 0}%`}
+          icon={<Volume2 className="h-5 w-5 text-green-600" />}
+          description="Voice call satisfaction"
+          isLoading={isLoading}
+        />
+        
+        <StatCard
+          title="Avg Response Time"
+          value={`${analyticsData.elevenlabs_analytics?.average_response_time?.toFixed(1) || 0}s`}
+          icon={<Clock className="h-5 w-5 text-yellow-600" />}
+          description="ElevenLabs response time"
+          isLoading={isLoading}
+        />
+        
+        <StatCard
+          title="Escalation Rate"
+          value={`${analyticsData.elevenlabs_analytics?.escalation_rate?.toFixed(1) || 0}%`}
+          icon={<AlertTriangle className="h-5 w-5 text-red-600" />}
+          description="Calls escalated to human"
+          isLoading={isLoading}
+        />
+      </div>
+
       {/* Return Status Breakdown */}
       <Card className="border-0 shadow-md">
         <CardHeader className="pb-2">
@@ -261,6 +302,11 @@ export function AnalyticsDashboard() {
           data={analyticsData.policy!} 
           isLoading={isLoading || !analyticsData.policy} 
         />
+        
+        <ElevenLabsAnalyticsChart 
+          data={analyticsData.elevenlabs_analytics!} 
+          isLoading={isLoading || !analyticsData.elevenlabs_analytics} 
+        />
       </div>
 
       {/* Performance Indicators */}
@@ -315,6 +361,45 @@ export function AnalyticsDashboard() {
                         ? 'bg-yellow-500 w-[60%]'
                         : 'bg-red-500 w-[30%]'
                   }`}
+                ></div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ElevenLabs Analytics */}
+      <Card className="border-0 shadow-md">
+        <CardHeader className="pb-2">
+          <CardTitle>ElevenLabs Analytics</CardTitle>
+          <CardDescription>
+            Key metrics from ElevenLabs analytics
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-500">Total Calls</span>
+                <span className="text-sm font-medium">{analyticsData.elevenlabs_analytics?.conversations_count || 0}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  className="bg-primary h-2.5 rounded-full" 
+                  style={{ width: `${Math.min((analyticsData.elevenlabs_analytics?.conversations_count || 0) * 10, 100)}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-500">Average Call Duration</span>
+                <span className="text-sm font-medium">{analyticsData.elevenlabs_analytics?.average_call_duration?.toFixed(1) || '0'}m</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  className="bg-blue-500 h-2.5 rounded-full" 
+                  style={{ width: `${Math.min((analyticsData.elevenlabs_analytics?.average_call_duration || 0) * 20, 100)}%` }}
                 ></div>
               </div>
             </div>

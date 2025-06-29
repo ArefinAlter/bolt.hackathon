@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, Download, Filter, RefreshCw } from 'lucide-react';
-import { DateRangeFilter, MetricType } from '@/types/analytics';
+import { MetricType, DateRange, DateRangeFilter } from '@/types/analytics';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface AnalyticsFiltersProps {
   onMetricTypeChange: (type: MetricType) => void;
@@ -24,10 +25,29 @@ export function AnalyticsFilters({
   isLoading
 }: AnalyticsFiltersProps) {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isCustomDateOpen, setIsCustomDateOpen] = useState(false);
 
   const handleDateRangeClick = (range: '7d' | '30d' | '90d') => {
     onDateRangeChange({ range });
     setIsDatePickerOpen(false);
+  };
+
+  const handleDateRangeChange = (range: DateRange) => {
+    if (range === 'custom') {
+      setIsCustomDateOpen(true);
+    } else {
+      setIsCustomDateOpen(false);
+      onDateRangeChange({ range });
+    }
+  };
+
+  const handleCustomDateSubmit = (startDate: string, endDate: string) => {
+    onDateRangeChange({
+      range: 'custom',
+      startDate: new Date(startDate),
+      endDate: new Date(endDate)
+    });
+    setIsCustomDateOpen(false);
   };
 
   return (
@@ -75,6 +95,14 @@ export function AnalyticsFilters({
               size="sm"
             >
               Policy
+            </Button>
+            <Button
+              variant={selectedMetricType === 'elevenlabs_analytics' ? 'default' : 'outline'}
+              className={selectedMetricType === 'elevenlabs_analytics' ? 'bg-primary text-black' : ''}
+              onClick={() => onMetricTypeChange('elevenlabs_analytics')}
+              size="sm"
+            >
+              Voice Calls
             </Button>
           </div>
 

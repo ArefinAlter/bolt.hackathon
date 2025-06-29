@@ -23,6 +23,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTheme } from 'next-themes';
@@ -37,6 +38,7 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState(true);
   const [preferences, setPreferences] = useState<UserPreferences>({
     language: 'en',
     theme: 'light',
@@ -98,15 +100,15 @@ export default function SettingsPage() {
     setError(null);
     
     try {
-      await updateUserPreferences(userId, preferences);
+      await updateUserPreferences(userId, preferences, isDemoMode);
       
       // Update theme if changed
       if (preferences.theme !== theme) {
         setTheme(preferences.theme);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving preferences:', error);
-      setError('Failed to save preferences');
+      setError(error?.message || 'Failed to save preferences');
     } finally {
       setIsSaving(false);
     }
@@ -159,7 +161,11 @@ export default function SettingsPage() {
                 Manage your account settings and preferences
               </p>
             </div>
-            <div className="mt-4 md:mt-0">
+            <div className="mt-4 md:mt-0 flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
+                <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
+              </div>
               <Button 
                 className="bg-primary hover:bg-primary/90 text-black"
                 onClick={handleSavePreferences}

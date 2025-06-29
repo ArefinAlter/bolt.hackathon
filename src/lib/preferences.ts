@@ -33,18 +33,23 @@ export async function getUserPreferences(userId: string): Promise<UserPreference
 }
 
 // Update user preferences
-export async function updateUserPreferences(userId: string, preferences: UserPreferences): Promise<void> {
+export async function updateUserPreferences(userId: string, preferences: UserPreferences, demoMode = false): Promise<void> {
   try {
-    const { data, error } = await supabase
-      .from('user_preferences')
-      .upsert({
-        user_id: userId,
-        preferences,
-        updated_at: new Date().toISOString()
-      });
-    
-    if (error) {
-      throw error;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('No active session');
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/update-user-preferences`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ preferences, demo_mode: demoMode })
+    });
+
+    const result = await response.json();
+    if (!response.ok || result.error) {
+      throw new Error(result.error || 'Failed to update preferences');
     }
   } catch (error) {
     console.error('Error updating user preferences:', error);

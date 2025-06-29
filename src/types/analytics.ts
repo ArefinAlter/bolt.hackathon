@@ -36,11 +36,23 @@ export interface PolicyMetrics {
   policy_effectiveness: string;
 }
 
+export interface ElevenLabsAnalytics {
+  conversations_count: number;
+  messages_count: number;
+  average_response_time: number;
+  satisfaction_score: number;
+  escalation_rate: number;
+  total_duration_minutes: number;
+  average_call_duration: number;
+  success_rate: number;
+}
+
 export interface AnalyticsData {
   returns?: ReturnMetrics;
   ai_accuracy?: AIAccuracyMetrics;
   satisfaction?: SatisfactionMetrics;
   policy?: PolicyMetrics;
+  elevenlabs_analytics?: ElevenLabsAnalytics;
 }
 
 export interface AnalyticsResponse {
@@ -49,7 +61,7 @@ export interface AnalyticsResponse {
   analytics: AnalyticsData;
 }
 
-export type MetricType = 'all' | 'returns' | 'ai_accuracy' | 'satisfaction' | 'policy';
+export type MetricType = 'all' | 'returns' | 'ai_accuracy' | 'satisfaction' | 'policy' | 'elevenlabs_analytics';
 
 export type DateRange = '7d' | '30d' | '90d' | 'custom';
 

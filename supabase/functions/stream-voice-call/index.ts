@@ -84,7 +84,7 @@ async function handleStreamingRequest(req: Request, callSession: any, supabaseCl
       },
       body: JSON.stringify({
         text: text,
-        model_id: 'eleven_flash_v2.5',
+        model_id: 'eleven_flash_v2_5',
         voice_settings: {
           stability: 0.5,
           similarity_boost: 0.5,
@@ -200,7 +200,7 @@ async function handleVoiceInput(req: Request, callSession: any, supabaseClient: 
           },
           body: JSON.stringify({
             text: aiResponse.message,
-            model_id: 'eleven_flash_v2.5',
+            model_id: 'eleven_flash_v2_5',
             voice_settings: {
               stability: 0.5,
               similarity_boost: 0.5,

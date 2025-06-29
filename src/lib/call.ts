@@ -4,7 +4,8 @@ import { CallSession, CallTranscript, AudioChunk, VideoFrame, WebSocketMessage }
 // Start a voice call
 export async function startVoiceCall(
   chatSessionId: string,
-  configOverride?: { voice_id?: string }
+  configOverride?: { voice_id?: string },
+  demoMode = false
 ): Promise<CallSession> {
   try {
     // Call the initiate-call function
@@ -25,7 +26,8 @@ export async function startVoiceCall(
         call_type: 'voice',
         provider: 'elevenlabs',
         config_override: configOverride,
-        enable_streaming: true
+        enable_streaming: true,
+        demo_mode: demoMode
       })
     });
     
@@ -50,7 +52,8 @@ export async function startVoiceCall(
       session_url: data.provider?.session_url,
       elevenlabs_agent_id: data.provider?.agent_id,
       elevenlabs_conversation_id: data.provider?.conversation_id,
-      provider_data: data.provider
+      provider_data: data.provider,
+      demo_mode: data.demo_mode || demoMode
     };
   } catch (error) {
     console.error('Error starting voice call:', error);
@@ -61,7 +64,8 @@ export async function startVoiceCall(
 // Start a video call
 export async function startVideoCall(
   chatSessionId: string,
-  configOverride?: { replica_id?: string }
+  configOverride?: { replica_id?: string },
+  demoMode = false
 ): Promise<CallSession> {
   try {
     // Call the initiate-call function
@@ -82,7 +86,8 @@ export async function startVideoCall(
         call_type: 'video',
         provider: 'tavus',
         config_override: configOverride,
-        enable_streaming: true
+        enable_streaming: true,
+        demo_mode: demoMode
       })
     });
     
@@ -107,7 +112,8 @@ export async function startVideoCall(
       session_url: data.provider?.session_url,
       tavus_replica_id: data.provider?.replica_id,
       tavus_conversation_id: data.provider?.conversation_id,
-      provider_data: data.provider
+      provider_data: data.provider,
+      demo_mode: data.demo_mode || demoMode
     };
   } catch (error) {
     console.error('Error starting video call:', error);
@@ -116,7 +122,7 @@ export async function startVideoCall(
 }
 
 // End a call
-export async function endCall(callSessionId: string): Promise<void> {
+export async function endCall(callSessionId: string, demoMode = false): Promise<void> {
   try {
     // Call the update-call-status function
     const { data: { session } } = await supabase.auth.getSession();
@@ -136,7 +142,8 @@ export async function endCall(callSessionId: string): Promise<void> {
         data: {
           callSessionId,
           reason: 'user_ended',
-          duration: Math.floor((Date.now() - new Date().getTime()) / 1000)
+          duration: Math.floor((Date.now() - new Date().getTime()) / 1000),
+          demo_mode: demoMode
         },
         context: { userRole: 'customer' }
       })
@@ -323,7 +330,8 @@ export function connectToCallWebSocket(
 export async function processVoiceInput(
   callSessionId: string,
   audioData: string,
-  userMessage?: string
+  userMessage?: string,
+  demoMode = false
 ): Promise<{
   success: boolean;
   ai_response?: string;
@@ -346,7 +354,8 @@ export async function processVoiceInput(
       body: JSON.stringify({
         call_session_id: callSessionId,
         audio_data: audioData,
-        user_message: userMessage
+        user_message: userMessage,
+        demo_mode: demoMode
       })
     });
     
@@ -446,5 +455,41 @@ export function calculateCallQualityMetrics(
       color: 'text-red-500',
       message: 'Call quality is poor'
     };
+  }
+}
+
+export async function initiateCall(params: {
+  business_id: string
+  call_type: 'voice' | 'video'
+  provider: 'elevenlabs' | 'tavus' | 'test'
+  demo_mode?: boolean
+  session_id?: string
+  persona_config_id?: string
+}) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('No active session');
+    }
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/initiate-call`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params)
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to initiate call');
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error initiating call:', error)
+    throw error
   }
 }

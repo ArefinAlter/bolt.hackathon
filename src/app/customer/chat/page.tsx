@@ -32,7 +32,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ChatMessage, ChatSession, FileUpload } from '@/types/chat';
 import { CallSession } from '@/types/call';
 import { createChatSession, fetchChatMessages, sendChatMessage, subscribeToChatUpdates, createLocalFileUpload, uploadFile } from '@/lib/chat';
-import { startVoiceCall, startVideoCall } from '@/lib/call';
+import { startVoiceCall, startVideoCall, endCall } from '@/lib/call';
 import { VoiceCallInterface } from '@/components/customer/VoiceCallInterface';
 import { VideoCallInterface } from '@/components/customer/VideoCallInterface';
 import { supabase } from '@/lib/supabase';
@@ -74,11 +74,11 @@ export default function CustomerChatPage() {
         }
         
         // Create or get chat session
-        const chatSession = await createChatSession(authSession.user.id);
+        const chatSession = await createChatSession(authSession.user.id, isDemoMode);
         setSession(chatSession);
         
         // Fetch messages
-        const chatMessages = await fetchChatMessages(chatSession.id);
+        const chatMessages = await fetchChatMessages(chatSession.id, isDemoMode);
         setMessages(chatMessages);
         
         // Subscribe to real-time updates
@@ -95,7 +95,7 @@ export default function CustomerChatPage() {
           if (newMessage.sender === 'agent') {
             setIsTyping(false);
           }
-        });
+        }, isDemoMode);
         
         setIsLoading(false);
         
@@ -110,7 +110,7 @@ export default function CustomerChatPage() {
     };
     
     initializeChat();
-  }, [router]);
+  }, [router, isDemoMode]);
   
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -212,7 +212,8 @@ export default function CustomerChatPage() {
         newMessage,
         'user',
         'text',
-        metadata
+        metadata,
+        isDemoMode
       );
       
       // Clear input and file uploads
@@ -275,7 +276,7 @@ export default function CustomerChatPage() {
       setMessages(prev => [...prev, systemMessage]);
       
       // Start voice call
-      const callSessionData = await startVoiceCall(session.id);
+      const callSessionData = await startVoiceCall(session.id, undefined, isDemoMode);
       setCallSession(callSessionData);
       
     } catch (error) {
@@ -307,7 +308,7 @@ export default function CustomerChatPage() {
       setMessages(prev => [...prev, systemMessage]);
       
       // Start video call
-      const callSessionData = await startVideoCall(session.id);
+      const callSessionData = await startVideoCall(session.id, undefined, isDemoMode);
       setCallSession(callSessionData);
       
     } catch (error) {
@@ -319,24 +320,35 @@ export default function CustomerChatPage() {
     }
   };
   
-  const handleEndCall = () => {
-    // Add system message
-    if (session) {
-      const systemMessage: ChatMessage = {
-        id: uuidv4(),
-        session_id: session.id,
-        sender: 'system',
-        message: `${callType === 'voice' ? 'Voice' : 'Video'} call ended.`,
-        message_type: 'text',
-        created_at: new Date().toISOString()
-      };
+  const handleEndCall = async () => {
+    try {
+      // End the call with the backend if we have a call session
+      if (callSession) {
+        await endCall(callSession.id, isDemoMode);
+      }
       
-      setMessages(prev => [...prev, systemMessage]);
+      // Add system message
+      if (session) {
+        const systemMessage: ChatMessage = {
+          id: uuidv4(),
+          session_id: session.id,
+          sender: 'system',
+          message: `${callType === 'voice' ? 'Voice' : 'Video'} call ended.`,
+          message_type: 'text',
+          created_at: new Date().toISOString()
+        };
+        
+        setMessages(prev => [...prev, systemMessage]);
+      }
+    } catch (error) {
+      console.error('Error ending call:', error);
+      // Still end the call locally even if backend call fails
+    } finally {
+      // Always clean up local state
+      setIsCallActive(false);
+      setCallType(null);
+      setCallSession(null);
     }
-    
-    setIsCallActive(false);
-    setCallType(null);
-    setCallSession(null);
   };
   
   const handleFeedback = (messageId: string, isPositive: boolean) => {
