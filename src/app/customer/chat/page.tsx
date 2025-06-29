@@ -459,18 +459,20 @@ export default function CustomerChatPage() {
               size="sm"
               onClick={handleStartVoiceCall}
               disabled={isCallActive}
+              className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
             >
               <Phone className="h-4 w-4 mr-2" />
-              Voice
+              Voice Call
             </Button>
             <Button 
               variant="outline" 
               size="sm"
               onClick={handleStartVideoCall}
               disabled={isCallActive}
+              className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
             >
               <Video className="h-4 w-4 mr-2" />
-              Video
+              Video Call
             </Button>
           </div>
         </div>

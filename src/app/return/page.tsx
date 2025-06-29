@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -15,14 +15,31 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  Paperclip,
+  Image as ImageIcon,
+  X
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 import { ReturnRequest } from '@/types/return';
+import { ChatMessage, ChatSession, FileUpload } from '@/types/chat';
+import { CallSession } from '@/types/call';
 import { supabase } from '@/lib/supabase';
+import { createChatSession, fetchChatMessages, sendChatMessage, subscribeToChatUpdates, createLocalFileUpload, uploadFile } from '@/lib/chat';
+import { startVoiceCall, startVideoCall } from '@/lib/call';
+import { VoiceCallInterface } from '@/components/customer/VoiceCallInterface';
+import { VideoCallInterface } from '@/components/customer/VideoCallInterface';
 import { format } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
+import TextareaAutosize from 'react-textarea-autosize';
 
 export default function ReturnPage() {
   const router = useRouter();
@@ -31,13 +48,28 @@ export default function ReturnPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [returnRequests, setReturnRequests] = useState<ReturnRequest[]>([]);
-  const [messages, setMessages] = useState<{ sender: string; message: string; timestamp: Date }[]>([
-    { sender: 'agent', message: 'Hello! I\'m your AI assistant. How can I help you with your return today?', timestamp: new Date() }
-  ]);
+  
+  // Chat state
+  const [chatSession, setChatSession] = useState<ChatSession | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fileUploads, setFileUploads] = useState<FileUpload[]>([]);
+  const [showFilePreview, setShowFilePreview] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<FileUpload | null>(null);
+  
+  // Call state
+  const [isCallActive, setIsCallActive] = useState(false);
+  const [callType, setCallType] = useState<'voice' | 'video' | null>(null);
+  const [callSession, setCallSession] = useState<CallSession | null>(null);
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const checkUserRole = async () => {
+    const initializePage = async () => {
       try {
         // Check if user has selected a role
         const userRole = localStorage.getItem('userRole');
@@ -71,57 +103,247 @@ export default function ReturnPage() {
           setReturnRequests(requests || []);
         }
         
+        // Initialize chat session
+        const sessionData = await createChatSession(session.user.id);
+        setChatSession(sessionData);
+        
+        // Fetch existing messages
+        const chatMessages = await fetchChatMessages(sessionData.id);
+        setMessages(chatMessages);
+        
+        // Subscribe to real-time updates
+        const unsubscribe = subscribeToChatUpdates(sessionData.id, (newMessage) => {
+          setMessages(prev => {
+            if (prev.some(msg => msg.id === newMessage.id)) {
+              return prev;
+            }
+            return [...prev, newMessage];
+          });
+          
+          if (newMessage.sender === 'agent') {
+            setIsTyping(false);
+          }
+        });
+        
         setIsLoading(false);
+        
+        return () => {
+          unsubscribe();
+        };
       } catch (error) {
-        console.error('Error checking user role:', error);
-        router.push('/auth/login');
+        console.error('Error initializing page:', error);
+        setError('Failed to initialize. Please try again.');
+        setIsLoading(false);
       }
     };
     
-    checkUserRole();
+    initializePage();
   }, [router]);
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() && fileUploads.length === 0) return;
+    if (!chatSession) return;
     
-    // Add user message
-    setMessages(prev => [...prev, { 
-      sender: 'user', 
-      message: newMessage, 
-      timestamp: new Date() 
-    }]);
+    setIsSending(true);
     
-    // Clear input
-    setNewMessage('');
-    
-    // Simulate AI response
-    setTimeout(() => {
-      let responseMessage = "I'll help you with your return request. Could you please provide your order number?";
+    try {
+      // First, upload any files
+      const fileUrls: string[] = [];
       
-      // Check if message contains order number
-      if (newMessage.includes('ORDER-')) {
-        responseMessage = "Thanks for providing your order number. Can you tell me the reason for your return?";
-        
-        // Extract order number
-        const match = newMessage.match(/ORDER-\d+/i);
-        if (match) {
-          setOrderNumber(match[0]);
+      for (const fileUpload of fileUploads) {
+        if (fileUpload.status === 'pending' || fileUpload.status === 'error') {
+          setFileUploads(prev => 
+            prev.map(f => 
+              f.id === fileUpload.id 
+                ? { ...f, status: 'uploading' } 
+                : f
+            )
+          );
+          
+          try {
+            const fileUrl = await uploadFile(
+              chatSession.business_id || 'default',
+              fileUpload.file,
+              (progress) => {
+                setFileUploads(prev => 
+                  prev.map(f => 
+                    f.id === fileUpload.id 
+                      ? { ...f, upload_progress: progress } 
+                      : f
+                  )
+                );
+              }
+            );
+            
+            fileUrls.push(fileUrl);
+            
+            setFileUploads(prev => 
+              prev.map(f => 
+                f.id === fileUpload.id 
+                  ? { ...f, status: 'success', upload_progress: 100 } 
+                  : f
+              )
+            );
+          } catch (error) {
+            console.error('Error uploading file:', error);
+            setFileUploads(prev => 
+              prev.map(f => 
+                f.id === fileUpload.id 
+                  ? { ...f, status: 'error', error: 'Failed to upload file' } 
+                  : f
+              )
+            );
+          }
         }
       }
       
-      // Check if message mentions a reason
-      if (newMessage.toLowerCase().includes('defective') || 
-          newMessage.toLowerCase().includes('broken') || 
-          newMessage.toLowerCase().includes('wrong')) {
-        responseMessage = "I understand you received a defective/wrong item. I'll need to process this return. Would you like to provide any photos of the issue?";
+      // Send message with file URLs
+      const metadata = fileUrls.length > 0 
+        ? { 
+            file_urls: fileUrls,
+            file_types: fileUploads.map(f => f.file.type),
+            file_names: fileUploads.map(f => f.file.name)
+          } 
+        : undefined;
+      
+      // Add user message to state immediately
+      const tempUserMessage: ChatMessage = {
+        id: uuidv4(),
+        session_id: chatSession.id,
+        sender: 'user',
+        message: newMessage,
+        message_type: 'text',
+        metadata,
+        created_at: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, tempUserMessage]);
+      
+      // Send message to AI
+      const result = await sendChatMessage(
+        chatSession.id,
+        newMessage,
+        'user',
+        'text',
+        metadata
+      );
+      
+      // Clear input and file uploads
+      setNewMessage('');
+      setFileUploads([]);
+      
+      // Add AI response if available
+      if (result.agentResponse) {
+        setMessages(prev => [...prev, result.agentResponse!]);
       }
       
-      setMessages(prev => [...prev, { 
-        sender: 'agent', 
-        message: responseMessage, 
-        timestamp: new Date() 
-      }]);
-    }, 1000);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setError('Failed to send message. Please try again.');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newUploads = files.map(file => createLocalFileUpload(file));
+    setFileUploads(prev => [...prev, ...newUploads]);
+    e.target.value = '';
+  };
+
+  const handleRemoveFile = (id: string) => {
+    setFileUploads(prev => prev.filter(f => f.id !== id));
+  };
+
+  const handleStartVoiceCall = async () => {
+    if (!chatSession) return;
+    
+    try {
+      setIsCallActive(true);
+      setCallType('voice');
+      
+      // Add system message
+      const systemMessage: ChatMessage = {
+        id: uuidv4(),
+        session_id: chatSession.id,
+        sender: 'system',
+        message: 'Voice call initiated. Connecting...',
+        message_type: 'text',
+        created_at: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, systemMessage]);
+      
+      // Start voice call
+      const callSessionData = await startVoiceCall(chatSession.id);
+      setCallSession(callSessionData);
+      
+    } catch (error) {
+      console.error('Error starting voice call:', error);
+      setError('Failed to start voice call. Please try again.');
+      setIsCallActive(false);
+      setCallType(null);
+      setCallSession(null);
+    }
+  };
+
+  const handleStartVideoCall = async () => {
+    if (!chatSession) return;
+    
+    try {
+      setIsCallActive(true);
+      setCallType('video');
+      
+      // Add system message
+      const systemMessage: ChatMessage = {
+        id: uuidv4(),
+        session_id: chatSession.id,
+        sender: 'system',
+        message: 'Video call initiated. Connecting...',
+        message_type: 'text',
+        created_at: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, systemMessage]);
+      
+      // Start video call
+      const callSessionData = await startVideoCall(chatSession.id);
+      setCallSession(callSessionData);
+      
+    } catch (error) {
+      console.error('Error starting video call:', error);
+      setError('Failed to start video call. Please try again.');
+      setIsCallActive(false);
+      setCallType(null);
+      setCallSession(null);
+    }
+  };
+
+  const handleEndCall = () => {
+    if (chatSession) {
+      const systemMessage: ChatMessage = {
+        id: uuidv4(),
+        session_id: chatSession.id,
+        sender: 'system',
+        message: `${callType === 'voice' ? 'Voice' : 'Video'} call ended.`,
+        message_type: 'text',
+        created_at: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, systemMessage]);
+    }
+    
+    setIsCallActive(false);
+    setCallType(null);
+    setCallSession(null);
   };
 
   const handleStartReturn = async () => {
@@ -131,7 +353,6 @@ export default function ReturnPage() {
     setSearchError(null);
     
     try {
-      // Get current session
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -139,7 +360,6 @@ export default function ReturnPage() {
         return;
       }
       
-      // Get user profile to get business_id
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('business_id')
@@ -153,7 +373,6 @@ export default function ReturnPage() {
         return;
       }
       
-      // Check if order exists using API function instead of direct table access
       const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-order?order_id=${orderNumber}`, {
         method: 'GET',
         headers: {
@@ -177,7 +396,6 @@ export default function ReturnPage() {
         return;
       }
       
-      // Check if return request already exists
       const { data: existingRequests, error: requestError } = await supabase
         .from('return_requests')
         .select('public_id')
@@ -192,12 +410,10 @@ export default function ReturnPage() {
       }
       
       if (existingRequests && existingRequests.length > 0) {
-        // Return request already exists, redirect to it
         router.push(`/return/${existingRequests[0].public_id}`);
         return;
       }
       
-      // Create new return request with actual business_id
       const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/init-return`, {
         method: 'POST',
         headers: {
@@ -205,7 +421,7 @@ export default function ReturnPage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          business_id: profile.business_id, // Fixed: Use actual business_id from profile
+          business_id: profile.business_id,
           order_id: orderNumber
         })
       });
@@ -216,8 +432,6 @@ export default function ReturnPage() {
       }
       
       const data = await response.json();
-      
-      // Redirect to return detail page
       router.push(`/return/${data.public_id}`);
     } catch (error) {
       console.error('Error starting return:', error);
@@ -426,56 +640,329 @@ export default function ReturnPage() {
         </CardContent>
       </Card>
 
-      {/* Chat Interface */}
+      {/* Enhanced Chat Interface */}
       <Card className="border-0 shadow-md">
         <CardHeader>
-          <CardTitle>Chat with AI Support</CardTitle>
-          <CardDescription>
-            Our AI agent can help process your return request
-          </CardDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Chat with AI Support</CardTitle>
+              <CardDescription>
+                Our AI agent can help process your return request
+              </CardDescription>
+            </div>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleStartVoiceCall}
+                disabled={isCallActive}
+                className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                Voice Call
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleStartVideoCall}
+                disabled={isCallActive}
+                className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+              >
+                <Video className="h-4 w-4 mr-2" />
+                Video Call
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="bg-gray-50 rounded-lg p-4 h-80 overflow-y-auto flex flex-col space-y-4">
-            {messages.map((msg, index) => (
-              <div 
-                key={index} 
-                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div 
-                  className={`max-w-[80%] rounded-lg p-3 ${
-                    msg.sender === 'user' 
-                      ? 'bg-primary text-black' 
-                      : 'bg-white border border-gray-200'
-                  }`}
-                >
-                  <p className="text-sm">{msg.message}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
+          {/* Error message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertTriangle className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium">{error}</p>
+                  <button 
+                    className="text-sm text-red-700 underline"
+                    onClick={() => setError(null)}
+                  >
+                    Dismiss
+                  </button>
                 </div>
               </div>
-            ))}
+            </div>
+          )}
+
+          {/* Messages */}
+          <div className="bg-gray-50 rounded-lg p-4 h-80 overflow-y-auto flex flex-col space-y-4">
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                  <MessageSquare className="h-8 w-8 text-primary" />
+                </div>
+                <h2 className="text-xl font-semibold text-black mb-2">Welcome to AI Support</h2>
+                <p className="text-black max-w-md mb-6">
+                  Our AI assistant is here to help with your return or refund requests. How can we assist you today?
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center justify-center"
+                    onClick={() => setNewMessage("I need to return an item")}
+                  >
+                    <Package className="mr-2 h-4 w-4" />
+                    Return an item
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center justify-center"
+                    onClick={() => setNewMessage("I have a question about my order")}
+                  >
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Order question
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map((message) => {
+                  const isUser = message.sender === 'user';
+                  const isSystem = message.sender === 'system';
+                  const hasReturnDetection = Boolean(message.metadata?.return_detected);
+
+                  return (
+                    <div 
+                      key={message.id} 
+                      className={`flex ${isUser ? 'justify-end' : isSystem ? 'justify-center' : 'justify-start'}`}
+                    >
+                      {isSystem ? (
+                        <div className="bg-gray-100 text-black rounded-lg px-4 py-2 max-w-[80%] text-sm">
+                          {message.message}
+                        </div>
+                      ) : (
+                        <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+                          <div 
+                            className={`rounded-lg px-4 py-3 ${
+                              isUser 
+                                ? 'bg-primary text-black' 
+                                : 'bg-white border border-gray-200'
+                            }`}
+                          >
+                            <p className="whitespace-pre-wrap">{message.message}</p>
+                            
+                            {/* File attachments */}
+                            {message.metadata?.file_urls && (
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {Array.isArray(message.metadata.file_urls) && message.metadata.file_urls.map((url: string, index: number) => {
+                                  const isImage = url.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+                                  const fileName = message.metadata?.file_names?.[index] || 'file';
+                                  return isImage ? (
+                                    <div 
+                                      key={index} 
+                                      className="relative w-20 h-20 rounded overflow-hidden border cursor-pointer"
+                                      onClick={() => {
+                                        setSelectedFile({
+                                          id: `file-${index}`,
+                                          file: new File([], fileName),
+                                          preview_url: url,
+                                          upload_progress: 100,
+                                          status: 'success'
+                                        });
+                                        setShowFilePreview(true);
+                                      }}
+                                    >
+                                      <img 
+                                        src={url} 
+                                        alt="Attachment" 
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <a 
+                                      key={index}
+                                      href={url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center bg-gray-100 rounded-md px-3 py-2 text-sm text-black hover:bg-gray-200"
+                                    >
+                                      <Paperclip className="h-4 w-4 mr-2" />
+                                      {fileName}
+                                    </a>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Return detection indicator */}
+                          {!isUser && hasReturnDetection && (
+                            <div className="mt-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              <Package className="h-3 w-3 mr-1" />
+                              Return request detected
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                
+                {/* Typing indicator */}
+                {isTyping && (
+                  <div className="flex justify-start mb-4">
+                    <div className="bg-white border border-gray-200 rounded-lg px-4 py-3">
+                      <div className="flex space-x-2">
+                        <div className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Anchor for scrolling to bottom */}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
           </div>
+          
+          {/* File uploads preview */}
+          {fileUploads.length > 0 && (
+            <div className="bg-gray-50 border-t p-2 flex flex-wrap gap-2 mt-4">
+              {fileUploads.map(file => (
+                <div 
+                  key={file.id} 
+                  className="relative bg-white rounded-md border p-2 flex items-center"
+                >
+                  {file.status === 'uploading' ? (
+                    <div className="w-6 h-6 mr-2 flex items-center justify-center">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    </div>
+                  ) : file.status === 'error' ? (
+                    <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
+                  ) : (
+                    <Paperclip className="h-4 w-4 mr-2 text-black" />
+                  )}
+                  
+                  <span className="text-sm truncate max-w-[150px]">{file.file.name}</span>
+                  
+                  <button 
+                    className="ml-2 text-black hover:text-gray-600"
+                    onClick={() => handleRemoveFile(file.id)}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  
+                  {file.status === 'uploading' && (
+                    <div className="absolute bottom-0 left-0 h-1 bg-primary" style={{ width: `${file.upload_progress}%` }}></div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
         <CardFooter>
           <div className="flex w-full space-x-2">
-            <Input
-              placeholder="Type your message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-              className="flex-1"
-            />
+            <div className="flex-1 relative">
+              <TextareaAutosize
+                placeholder="Type your message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary resize-none max-h-32"
+                minRows={1}
+                maxRows={5}
+                disabled={isSending}
+              />
+            </div>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" disabled={isSending}>
+                  <Paperclip className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  <span>Upload Image</span>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    multiple
+                  />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                  <Paperclip className="h-4 w-4 mr-2" />
+                  <span>Upload File</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             <Button 
               className="bg-primary hover:bg-primary/90 text-black"
               onClick={handleSendMessage}
-              disabled={!newMessage.trim()}
+              disabled={isSending || (!newMessage.trim() && fileUploads.length === 0)}
             >
-              <Send className="h-4 w-4" />
+              {isSending ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5" />
+              )}
             </Button>
           </div>
         </CardFooter>
       </Card>
+
+      {/* File preview dialog */}
+      {showFilePreview && selectedFile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">File Preview</h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowFilePreview(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex justify-center">
+              <img 
+                src={selectedFile.preview_url} 
+                alt="Preview" 
+                className="max-h-[60vh] max-w-full object-contain rounded-md"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Call interfaces */}
+      {isCallActive && callSession && (
+        <>
+          {callType === 'voice' ? (
+            <VoiceCallInterface 
+              callSession={callSession}
+              onEndCall={handleEndCall}
+              onError={setError}
+            />
+          ) : callType === 'video' ? (
+            <VideoCallInterface 
+              callSession={callSession}
+              onEndCall={handleEndCall}
+              onError={setError}
+            />
+          ) : null}
+        </>
+      )}
     </div>
   );
 }

@@ -108,6 +108,33 @@ export function AuthForm({ type }: AuthFormProps) {
         console.log('Auth successful, user:', result.data.user.email);
         console.log('Session access token:', result.data.session.access_token ? 'PRESENT' : 'MISSING');
         
+        // Create user profile if this is a signup
+        if (type === 'signup') {
+          try {
+            const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-profile`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${result.data.session.access_token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                user_id: result.data.user.id,
+                business_name: form.getValues('business_name') || 'New Business'
+              })
+            });
+            
+            if (!profileResponse.ok) {
+              console.error('Failed to create profile:', await profileResponse.text());
+              // Don't fail the signup, but log the error
+            } else {
+              console.log('Profile created successfully');
+            }
+          } catch (profileError) {
+            console.error('Error creating profile:', profileError);
+            // Don't fail the signup, but log the error
+          }
+        }
+        
         // Show success toast
         toast({
           title: type === 'login' ? 'Welcome back!' : 'Account created successfully!',
