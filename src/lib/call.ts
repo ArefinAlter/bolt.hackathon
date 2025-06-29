@@ -74,28 +74,49 @@ export async function startVideoCall(
       throw new Error('No active session');
     }
 
-    // Create call session first
-    const { data: callSession, error: callError } = await supabase
-      .from('call_sessions')
-      .insert([
-        {
-          chat_session_id: chatSessionId,
-          call_type: 'video',
-          provider: 'tavus',
-          status: 'initializing',
-          started_at: new Date().toISOString(),
-          provider_data: {
-            replica_id: configOverride?.replica_id || (demoMode ? 'demo-replica-123' : undefined),
-            persona_id: demoMode ? 'demo-persona-123' : undefined,
-            config_override: configOverride
-          }
-        }
-      ])
-      .select()
-      .single();
+    let callSession: any;
 
-    if (callError) {
-      throw callError;
+    if (demoMode) {
+      // In demo mode, create a mock call session without database
+      console.log('🎭 Demo mode: Creating mock video call session');
+      callSession = {
+        id: `demo-video-${Date.now()}`,
+        chat_session_id: chatSessionId,
+        call_type: 'video',
+        provider: 'tavus',
+        status: 'initializing',
+        started_at: new Date().toISOString(),
+        provider_data: {
+          replica_id: configOverride?.replica_id || 'demo-replica-123',
+          persona_id: 'demo-persona-123',
+          config_override: configOverride
+        }
+      };
+    } else {
+      // Create call session in database for live mode
+      const { data: dbCallSession, error: callError } = await supabase
+        .from('call_sessions')
+        .insert([
+          {
+            chat_session_id: chatSessionId,
+            call_type: 'video',
+            provider: 'tavus',
+            status: 'initializing',
+            started_at: new Date().toISOString(),
+            provider_data: {
+              replica_id: configOverride?.replica_id,
+              persona_id: undefined,
+              config_override: configOverride
+            }
+          }
+        ])
+        .select()
+        .single();
+
+      if (callError) {
+        throw callError;
+      }
+      callSession = dbCallSession;
     }
 
     // Initialize video conversation
@@ -107,8 +128,8 @@ export async function startVideoCall(
       },
       body: JSON.stringify({
         call_session_id: callSession.id,
-        replica_id: configOverride?.replica_id || (demoMode ? 'demo-replica-123' : undefined),
-        persona_id: demoMode ? 'demo-persona-123' : undefined,
+        replica_id: configOverride?.replica_id || undefined,
+        persona_id: undefined,
         conversation_settings: {
           background: 'transparent',
           quality: 'standard'
@@ -125,41 +146,59 @@ export async function startVideoCall(
     const conversationData = await response.json();
 
     // Update call session with conversation details
-    const { data: updatedCallSession, error: updateError } = await supabase
-      .from('call_sessions')
-      .update({
-        status: 'active',
-        external_session_id: conversationData.conversation_id,
-        session_url: conversationData.conversation_url,
+    if (demoMode) {
+      // In demo mode, just update the local object
+      callSession.status = 'active';
+      callSession.external_session_id = conversationData.conversation_id;
+      callSession.session_url = conversationData.conversation_url;
+      callSession.websocket_url = conversationData.websocket_url;
+      callSession.provider_data = {
+        ...callSession.provider_data,
+        conversation_id: conversationData.conversation_id,
+        conversation_url: conversationData.conversation_url,
         websocket_url: conversationData.websocket_url,
-        provider_data: {
-          ...callSession.provider_data,
-          conversation_id: conversationData.conversation_id,
-          conversation_url: conversationData.conversation_url,
+        ai_agent_ready: conversationData.ai_agent_ready
+      };
+    } else {
+      // Update call session in database for live mode
+      const { data: updatedCallSession, error: updateError } = await supabase
+        .from('call_sessions')
+        .update({
+          status: 'active',
+          external_session_id: conversationData.conversation_id,
+          session_url: conversationData.conversation_url,
           websocket_url: conversationData.websocket_url,
-          ai_agent_ready: conversationData.ai_agent_ready
-        }
-      })
-      .eq('id', callSession.id)
-      .select()
-      .single();
+          provider_data: {
+            ...callSession.provider_data,
+            conversation_id: conversationData.conversation_id,
+            conversation_url: conversationData.conversation_url,
+            websocket_url: conversationData.websocket_url,
+            ai_agent_ready: conversationData.ai_agent_ready
+          }
+        })
+        .eq('id', callSession.id)
+        .select()
+        .single();
 
-    if (updateError) {
-      throw updateError;
+      if (updateError) {
+        throw updateError;
+      }
+      callSession = updatedCallSession;
     }
 
     return {
-      id: updatedCallSession.id,
-      chat_session_id: updatedCallSession.chat_session_id,
-      call_type: updatedCallSession.call_type,
-      provider: updatedCallSession.provider,
-      status: updatedCallSession.status,
-      external_session_id: updatedCallSession.external_session_id,
-      session_url: updatedCallSession.session_url,
-      websocket_url: updatedCallSession.websocket_url,
-      provider_data: updatedCallSession.provider_data,
-      created_at: updatedCallSession.created_at || new Date().toISOString(),
-      is_active: updatedCallSession.status === 'active'
+      id: callSession.id,
+      chat_session_id: callSession.chat_session_id,
+      call_type: callSession.call_type,
+      provider: callSession.provider,
+      status: callSession.status,
+      external_session_id: callSession.external_session_id,
+      session_url: callSession.session_url,
+      websocket_url: callSession.websocket_url,
+      provider_data: callSession.provider_data,
+      created_at: callSession.created_at || new Date().toISOString(),
+      is_active: callSession.status === 'active',
+      demo_mode: demoMode
     };
 
   } catch (error) {

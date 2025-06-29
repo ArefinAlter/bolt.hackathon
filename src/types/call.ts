@@ -14,6 +14,7 @@ export interface CallSession {
   tavus_replica_id?: string;
   tavus_conversation_id?: string;
   session_url?: string;
+  conversation_url?: string;
   webhook_data?: any;
   is_active: boolean;
   streaming_enabled?: boolean;
