@@ -15,6 +15,8 @@ import { ReviewQueue } from '@/components/dashboard/requests/ReviewQueue';
 import { RequestDetailModal } from '@/components/dashboard/requests/RequestDetailModal';
 import { ReturnRequest } from '@/types/return';
 import { supabase } from '@/lib/supabase';
+import { Switch } from '@/components/ui/switch'
+import { Badge } from '@/components/ui/badge'
 
 export default function RequestsPage() {
   const router = useRouter();
@@ -23,6 +25,7 @@ export default function RequestsPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<ReturnRequest | null>(null);
   const [requests, setRequests] = useState<ReturnRequest[]>([]);
+  const [isDemoMode, setIsDemoMode] = useState(true)
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -49,7 +52,7 @@ export default function RequestsPage() {
           return;
         }
         
-        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-return-request?business_id=${profile.business_id}`, {
+        const response = await fetch(`/api/request-mcp-server?demo_mode=${isDemoMode}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
@@ -72,7 +75,7 @@ export default function RequestsPage() {
     };
     
     fetchRequests();
-  }, [router]);
+  }, [router, isDemoMode]);
 
   const handleViewRequest = (request: ReturnRequest) => {
     setSelectedRequest(request);
@@ -141,6 +144,11 @@ export default function RequestsPage() {
             Create Manual Return
           </Button>
         </div>
+      </div>
+      
+      <div className="flex items-center space-x-4 mb-4">
+        <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
+        <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
       </div>
       
       {error && (

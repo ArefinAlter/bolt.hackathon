@@ -17,7 +17,29 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { user_id, business_name } = await req.json()
+    const { user_id, business_name, demo_mode } = await req.json()
+
+    // Demo mode - return mock profile data
+    if (demo_mode) {
+      const mockProfile = {
+        id: user_id || 'demo-user-123',
+        business_name: business_name || 'Demo Business',
+        subscription_plan: 'free',
+        onboarded: true,
+        business_id: '123e4567-e89b-12d3-a456-426614174000',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          data: mockProfile,
+          demo_mode: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     if (!user_id) {
       return new Response(

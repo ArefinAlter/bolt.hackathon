@@ -114,11 +114,55 @@ serve(async (req) => {
 async function getPolicies(req: Request, supabase: any, userId: string) {
   const url = new URL(req.url)
   const businessId = url.searchParams.get('business_id')
+  const demo_mode = url.searchParams.get('demo_mode') === 'true'
   
-  if (!businessId) {
+  if (!businessId && !demo_mode) {
     return new Response(
       JSON.stringify({ error: 'business_id required' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  // Demo mode - return mock policies
+  if (demo_mode) {
+    const mockPolicies = [
+      {
+        id: 1,
+        business_id: businessId || '123e4567-e89b-12d3-a456-426614174000',
+        version: '1.0',
+        is_active: true,
+        effective_date: new Date().toISOString(),
+        rules: {
+          return_window_days: 30,
+          auto_approve_threshold: 100,
+          required_evidence: ['photo', 'description'],
+          acceptable_reasons: ['defective', 'wrong item', 'damaged'],
+          high_risk_categories: ['electronics', 'jewelry'],
+          fraud_flags: ['multiple_returns', 'high_value']
+        },
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 2,
+        business_id: businessId || '123e4567-e89b-12d3-a456-426614174000',
+        version: '2.0',
+        is_active: false,
+        effective_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        rules: {
+          return_window_days: 45,
+          auto_approve_threshold: 150,
+          required_evidence: ['photo', 'description', 'receipt'],
+          acceptable_reasons: ['defective', 'wrong item', 'damaged', 'not as described'],
+          high_risk_categories: ['electronics', 'jewelry', 'clothing'],
+          fraud_flags: ['multiple_returns', 'high_value', 'suspicious_pattern']
+        },
+        created_at: new Date().toISOString()
+      }
+    ]
+
+    return new Response(
+      JSON.stringify({ success: true, data: mockPolicies, demo_mode: true }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 

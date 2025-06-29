@@ -8,6 +8,8 @@ import { RiskStatsCard } from '@/components/dashboard/risk-assessment/RiskStatsC
 import { RiskProfileTable } from '@/components/dashboard/risk-assessment/RiskProfileTable';
 import { RiskProfileDetail } from '@/components/dashboard/risk-assessment/RiskProfileDetail';
 import { supabase } from '@/lib/supabase';
+import { Switch } from '@/components/ui/switch'
+import { Badge } from '@/components/ui/badge'
 
 interface RiskProfile {
   id: string;
@@ -29,6 +31,8 @@ export default function RiskAssessmentPage() {
   const [selectedProfile, setSelectedProfile] = useState<RiskProfile | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedCustomerEmail, setSelectedCustomerEmail] = useState<string>('');
+  const [isDemoMode, setIsDemoMode] = useState(true)
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadRiskData = async () => {
@@ -151,6 +155,50 @@ export default function RiskAssessmentPage() {
     return { total, high, medium, low, avgScore };
   };
 
+  const fetchRisk = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.push('/auth/login');
+        return;
+      }
+      
+      // Get user profile to get business_id
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('business_id')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (profileError || !profile) {
+        console.error('Profile not found:', profileError);
+        setError('Unable to load your profile. Please try logging out and back in.');
+        return;
+      }
+      
+      const response = await fetch(`/api/risk-assessment/profile?business_id=${profile.business_id}&demo_mode=${isDemoMode}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch risk profiles');
+      }
+      
+      const data = await response.json();
+      if (data.data) {
+        setRiskProfiles(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching risk profiles:', error);
+      setError('Failed to load risk profiles');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -163,6 +211,10 @@ export default function RiskAssessmentPage() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center space-x-4 mb-4">
+        <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
+        <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
+      </div>
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>

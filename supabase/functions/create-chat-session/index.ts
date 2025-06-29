@@ -11,6 +11,32 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const { session_name, chat_mode, demo_mode } = await req.json()
+
+    // Demo mode - return mock data
+    if (demo_mode) {
+      const mockChatSession = {
+        id: 'demo-chat-session-123',
+        user_id: 'demo-user-123',
+        business_id: '123e4567-e89b-12d3-a456-426614174000',
+        session_name: session_name || 'Demo Chat Session',
+        chat_mode: chat_mode || 'text',
+        customer_email: 'customer@example.com',
+        status: 'active',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: mockChatSession,
+          demo_mode: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const { createClient } = await import('npm:@supabase/supabase-js@2')
     
     const supabaseClient = createClient(
@@ -18,43 +44,50 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { user_id, session_name, chat_mode, session_type } = await req.json()
-
-    // Validate required fields
-    if (!user_id) {
+    // Get user from authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Missing required field: user_id' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        JSON.stringify({ error: 'No authorization header' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       )
     }
 
-    // Get user's business_id from profiles table
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
+    }
+
+    // Get user profile
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('business_id')
-      .eq('id', user_id)
+      .eq('id', user.id)
       .single()
 
-    if (profileError) {
-      console.error('Error fetching profile:', profileError)
+    if (profileError || !profile) {
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch user profile' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        JSON.stringify({ error: 'Profile not found' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
       )
     }
 
-    // Create new chat session
-    const { data: session, error } = await supabaseClient
+    // Create chat session
+    const { data: chatSession, error } = await supabaseClient
       .from('chat_sessions')
       .insert([
         {
-          user_id,
+          user_id: user.id,
           business_id: profile.business_id,
-          session_name: session_name || 'Test Session',
-          chat_mode: chat_mode || 'normal',
-          session_type: session_type || 'test_mode',
-          is_active: true,
-          customer_email: '' // Will be set when customer provides email
+          session_name: session_name || 'New Chat Session',
+          chat_mode: chat_mode || 'text',
+          customer_email: user.email,
+          status: 'active'
         }
       ])
       .select()
@@ -64,26 +97,10 @@ Deno.serve(async (req) => {
       throw error
     }
 
-    // Add welcome message
-    await supabaseClient
-      .from('chat_messages')
-      .insert([
-        {
-          session_id: session.id,
-          sender: 'system',
-          message: `Welcome to Dokani! I'm your AI assistant. You can test return requests with any order from our mock orders. How can I help you today?`,
-          message_type: 'text'
-        }
-      ])
-
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        session_id: session.id,
-        business_id: session.business_id,
-        customer_email: session.customer_email,
-        chat_mode: session.chat_mode,
-        message: 'Chat session created successfully'
+      JSON.stringify({
+        success: true,
+        data: chatSession
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

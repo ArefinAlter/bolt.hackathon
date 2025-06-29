@@ -12,20 +12,63 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
     const url = new URL(req.url)
     const public_id = url.searchParams.get('public_id')
+    const demo_mode = url.searchParams.get('demo_mode') === 'true'
 
-    if (!public_id) {
+    if (!public_id && !demo_mode) {
       return new Response(
         JSON.stringify({ error: 'Missing required parameter: public_id' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }
+
+    // Demo mode - return mock data
+    if (demo_mode) {
+      const mockReturnRequest = {
+        id: 'demo-return-123',
+        public_id: public_id || 'demo-return-123',
+        business_id: '123e4567-e89b-12d3-a456-426614174000',
+        order_id: 'ORDER-12345',
+        customer_email: 'customer@example.com',
+        reason_for_return: 'Product arrived damaged',
+        status: 'pending_triage',
+        evidence_urls: ['https://example.com/photo1.jpg'],
+        conversation_log: [
+          {
+            message: 'I received my order but it was damaged',
+            timestamp: new Date().toISOString(),
+            sender: 'customer'
+          }
+        ],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        days_since_purchase: 5,
+        created_at_formatted: new Date().toLocaleDateString(),
+        order_details: {
+          order_id: 'ORDER-12345',
+          purchase_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          customer_email: 'customer@example.com',
+          product_name: 'Wireless Headphones',
+          product_category: 'Electronics',
+          order_value: 89.99
+        }
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: mockReturnRequest,
+          demo_mode: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
     // Get return request with order details
     const { data: returnRequest, error } = await supabaseClient

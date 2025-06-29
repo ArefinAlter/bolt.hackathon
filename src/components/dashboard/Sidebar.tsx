@@ -135,7 +135,7 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
             alt="Dokani"
             width={100}
             height={28}
-            className="h-7 w-auto"
+            className="h-8 w-auto"
           />
         </Link>
         <Button
@@ -171,14 +171,14 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
                 alt="Dokani"
                 width={180}
                 height={48}
-                className="h-12 w-auto dark:hidden"
+                className="h-16 w-auto dark:hidden"
               />
               <Image
                 src="/white_logo.svg"
                 alt="Dokani"
                 width={180}
                 height={48}
-                className="h-12 w-auto hidden dark:block"
+                className="h-16 w-auto hidden dark:block"
               />
             </Link>
           </div>

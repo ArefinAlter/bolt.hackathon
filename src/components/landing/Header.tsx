@@ -21,7 +21,7 @@ export function Header() {
                 alt="Dokani"
                 width={180}
                 height={48}
-                className="h-12 w-auto"
+                className="h-16 w-auto"
               />
             </Link>
           </div>

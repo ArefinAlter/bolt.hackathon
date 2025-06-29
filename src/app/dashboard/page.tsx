@@ -14,11 +14,14 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [isDemoMode, setIsDemoMode] = useState(true);
   const [stats, setStats] = useState({
     totalReturns: 0,
     pendingReturns: 0,
@@ -48,32 +51,48 @@ export default function DashboardPage() {
           return;
         }
         
-        // Get user profile to get business_id
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('business_id')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (!profile) {
-          console.error('Profile not found');
-          setIsLoading(false);
-          return;
-        }
-        
-        // Get return request stats
-        const { data: returns } = await supabase
-          .from('return_requests')
-          .select('status')
-          .eq('business_id', profile.business_id);
-        
-        if (returns) {
+        if (isDemoMode) {
+          // Use demo data
           setStats({
-            totalReturns: returns.length,
-            pendingReturns: returns.filter(r => r.status === 'pending_triage' || r.status === 'pending_review').length,
-            approvedReturns: returns.filter(r => r.status === 'approved').length,
-            deniedReturns: returns.filter(r => r.status === 'denied').length
+            totalReturns: 45,
+            pendingReturns: 12,
+            approvedReturns: 28,
+            deniedReturns: 5
           });
+        } else {
+          // Get user profile to get business_id
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('business_id')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (!profile) {
+            console.error('Profile not found');
+            setIsLoading(false);
+            return;
+          }
+          
+          // Get analytics data using the function
+          const response = await fetch(`/api/get-analytics?business_id=${profile.business_id}&metric_type=all&demo_mode=false`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.data) {
+              setStats({
+                totalReturns: data.data.total_returns || 0,
+                pendingReturns: data.data.pending_returns || 0,
+                approvedReturns: data.data.approved_returns || 0,
+                deniedReturns: data.data.denied_returns || 0
+              });
+            }
+          }
         }
         
         setIsLoading(false);
@@ -84,7 +103,7 @@ export default function DashboardPage() {
     };
     
     loadDashboardData();
-  }, [router]);
+  }, [router, isDemoMode]);
 
   if (isLoading) {
     return (
@@ -96,6 +115,12 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* Demo Mode Toggle */}
+      <div className="flex items-center space-x-4 mb-4">
+        <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
+        <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
+      </div>
+
       {/* Welcome card */}
       <Card className="border-0 shadow-md">
         <CardHeader className="pb-2">
@@ -208,7 +233,7 @@ export default function DashboardPage() {
             </div>
             <CardTitle>Analytics</CardTitle>
             <CardDescription>
-              View return metrics and insights
+              View detailed analytics and insights
             </CardDescription>
           </CardHeader>
           <CardFooter>
@@ -227,17 +252,17 @@ export default function DashboardPage() {
             <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-orange-600" />
             </div>
-            <CardTitle>Support Personas</CardTitle>
+            <CardTitle>Risk Assessment</CardTitle>
             <CardDescription>
-              Create voice and video AI personas
+              Monitor customer risk profiles
             </CardDescription>
           </CardHeader>
           <CardFooter>
             <Button 
               className="w-full bg-primary hover:bg-primary/90 text-black"
-              onClick={() => router.push('/dashboard/personas')}
+              onClick={() => router.push('/dashboard/risk-assessment')}
             >
-              Manage Personas
+              View Risk Profiles
               <ArrowUpRight className="ml-2 h-4 w-4" />
             </Button>
           </CardFooter>

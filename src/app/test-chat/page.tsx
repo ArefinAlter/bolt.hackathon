@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,64 +74,101 @@ export default function TestChatPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6">Chat Connection Test</h1>
-      
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Environment Test</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={testEnvironment} className="mb-4">
-              Test Environment Variables
-            </Button>
-            {result?.type === 'environment' && (
-              <pre className="bg-gray-100 p-4 rounded text-sm">
-                {JSON.stringify(result.data, null, 2)}
-              </pre>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Chat Message Test</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Input
-                placeholder="Enter test message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center">
+            <Link href="/" className="flex items-center space-x-2">
+              <Image
+                src="/main_logo.svg"
+                alt="Dokani"
+                width={240}
+                height={64}
+                className="h-16 w-auto dark:hidden"
               />
-              <Button 
-                onClick={testChatMessage} 
-                disabled={loading}
-                className="w-full"
-              >
-                {loading ? 'Testing...' : 'Test Chat Message'}
-              </Button>
+              <Image
+                src="/white_logo.svg"
+                alt="Dokani"
+                width={240}
+                height={64}
+                className="h-16 w-auto hidden dark:block"
+              />
+            </Link>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Chat Testing
             </div>
-            
-            {error && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded">
-                <h3 className="font-semibold text-red-800">Error:</h3>
-                <p className="text-red-700">{error}</p>
-              </div>
-            )}
-            
-            {result && result.type !== 'environment' && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded">
-                <h3 className="font-semibold text-green-800">Success:</h3>
-                <pre className="text-sm text-green-700">
-                  {JSON.stringify(result, null, 2)}
-                </pre>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Chat Connection Test</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-2">
+              Test chat functionality and environment variables
+            </p>
+          </div>
+          
+          <div className="grid gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Environment Test</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={testEnvironment} className="mb-4">
+                  Test Environment Variables
+                </Button>
+                {result?.type === 'environment' && (
+                  <pre className="bg-gray-100 p-4 rounded text-sm">
+                    {JSON.stringify(result.data, null, 2)}
+                  </pre>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Chat Message Test</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Input
+                    placeholder="Enter test message..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                  />
+                  <Button 
+                    onClick={testChatMessage} 
+                    disabled={loading}
+                    className="w-full"
+                  >
+                    {loading ? 'Testing...' : 'Test Chat Message'}
+                  </Button>
+                </div>
+                
+                {error && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded">
+                    <h3 className="font-semibold text-red-800">Error:</h3>
+                    <p className="text-red-700">{error}</p>
+                  </div>
+                )}
+                
+                {result && result.type !== 'environment' && (
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded">
+                    <h3 className="font-semibold text-green-800">Success:</h3>
+                    <pre className="text-sm text-green-700">
+                      {JSON.stringify(result, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </main>
     </div>
   );
 } 

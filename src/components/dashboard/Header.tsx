@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { 
   Bell, 
@@ -56,10 +57,29 @@ export function Header({ userRole, userName, onRoleSwitch, onSignOut }: HeaderPr
   return (
     <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
       <div className="h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        {/* Left: Page title */}
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          {getPageTitle()}
-        </h1>
+        {/* Left: Logo and Page title */}
+        <div className="flex items-center space-x-4">
+          <Link href="/" className="flex items-center space-x-2">
+            <Image
+              src="/main_logo.svg"
+              alt="Dokani"
+              width={120}
+              height={32}
+              className="h-8 w-auto dark:hidden"
+            />
+            <Image
+              src="/white_logo.svg"
+              alt="Dokani"
+              width={120}
+              height={32}
+              className="h-8 w-auto hidden dark:block"
+            />
+          </Link>
+          <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            {getPageTitle()}
+          </h1>
+        </div>
 
         {/* Middle: Search */}
         <div className="hidden md:block max-w-md w-full mx-4">

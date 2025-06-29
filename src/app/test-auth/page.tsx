@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -351,52 +353,88 @@ export default function TestAuthPage() {
   }, []);
 
   return (
-    <div className="min-h-screen p-8 bg-gray-50">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Authentication Debug Panel</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-4">
-              <Button onClick={checkAuthStatus} className="w-full">
-                Check Auth Status
-              </Button>
-              
-              <Button onClick={testSignIn} className="w-full">
-                Test sign in
-              </Button>
-              
-              <Button onClick={testSessionPersistence} className="w-full">
-                Test session persistance
-              </Button>
-              
-              <Button onClick={testFullAuthFlow} className="w-full">
-                Test full auth flow
-              </Button>
-              
-              <Button onClick={testMiddlewareWithSession} className="w-full">
-                Test middleware with session
-              </Button>
-              
-              <Button onClick={testAuthGuard} className="w-full">
-                Test AuthGuard
-              </Button>
-
-              <Button onClick={testSupabaseClients} className="w-full">
-                Test Supabase Clients
-              </Button>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center">
+            <Link href="/" className="flex items-center space-x-2">
+              <Image
+                src="/main_logo.svg"
+                alt="Dokani"
+                width={240}
+                height={64}
+                className="h-16 w-auto dark:hidden"
+              />
+              <Image
+                src="/white_logo.svg"
+                alt="Dokani"
+                width={240}
+                height={64}
+                className="h-16 w-auto hidden dark:block"
+              />
+            </Link>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Authentication Testing
             </div>
+          </div>
+        </div>
+      </header>
 
-            <div className="bg-gray-100 p-4 rounded-lg">
-              <h3 className="font-semibold mb-2">Debug Information:</h3>
-              <pre className="text-xs overflow-auto max-h-96">
-                {JSON.stringify(debugInfo, null, 2)}
-              </pre>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Main content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Authentication Test Page</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-2">
+              Debug and test authentication functionality
+            </p>
+          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Authentication Debug Panel</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <Button onClick={checkAuthStatus} className="w-full">
+                  Check Auth Status
+                </Button>
+                
+                <Button onClick={testSignIn} className="w-full">
+                  Test sign in
+                </Button>
+                
+                <Button onClick={testSessionPersistence} className="w-full">
+                  Test session persistance
+                </Button>
+                
+                <Button onClick={testFullAuthFlow} className="w-full">
+                  Test full auth flow
+                </Button>
+                
+                <Button onClick={testMiddlewareWithSession} className="w-full">
+                  Test middleware with session
+                </Button>
+                
+                <Button onClick={testAuthGuard} className="w-full">
+                  Test AuthGuard
+                </Button>
+
+                <Button onClick={testSupabaseClients} className="w-full">
+                  Test Supabase Clients
+                </Button>
+              </div>
+
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <h3 className="font-semibold mb-2">Debug Information:</h3>
+                <pre className="text-xs overflow-auto max-h-96">
+                  {JSON.stringify(debugInfo, null, 2)}
+                </pre>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
     </div>
   );
 } 

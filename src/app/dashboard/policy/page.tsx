@@ -22,6 +22,8 @@ import { PolicyComplianceMonitor } from '@/components/dashboard/policy/PolicyCom
 import { Policy, PolicyRule } from '@/types/policy';
 import { fetchPolicies, createPolicy, updatePolicy, activatePolicy } from '@/lib/policy';
 import { supabase } from '@/lib/supabase';
+import { Switch } from '@/components/ui/switch'
+import { Badge } from '@/components/ui/badge'
 
 export default function PolicyPage() {
   const router = useRouter();
@@ -33,6 +35,7 @@ export default function PolicyPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState(true)
 
   const fetchPolicies = async () => {
     setIsLoading(true);
@@ -58,7 +61,7 @@ export default function PolicyPage() {
         return;
       }
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/policies?business_id=${profile.business_id}`, {
+      const response = await fetch(`/api/policy-mcp-server?demo_mode=${isDemoMode}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -216,6 +219,10 @@ export default function PolicyPage() {
           </div>
         </CardHeader>
         <CardContent>
+          <div className="flex items-center space-x-4 mb-4">
+            <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
+            <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
+          </div>
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
               <div className="flex">

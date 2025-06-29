@@ -13,12 +13,30 @@ serve(async (req) => {
   }
 
   try {
+    const { call_session_id, audio_data, user_message, demo_mode } = await req.json()
+
+    // Demo mode - return mock processed data
+    if (demo_mode) {
+      const mockProcessedVoice = {
+        success: true,
+        user_input: user_message || 'Hello, I need help with a return request',
+        ai_response: 'Hello! I\'m here to help you with your return request. Could you please provide your order number so I can assist you better?',
+        audio_data: 'data:audio/mpeg;base64,demo_audio_data',
+        next_action: 'request_order_number',
+        return_detected: true,
+        demo_mode: true
+      }
+
+      return new Response(
+        JSON.stringify(mockProcessedVoice),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
-
-    const { call_session_id, audio_data, user_message } = await req.json()
 
     if (!call_session_id) {
       return new Response(

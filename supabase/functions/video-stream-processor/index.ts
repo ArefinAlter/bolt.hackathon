@@ -427,7 +427,34 @@ serve(async (req) => {
   }
 
   try {
-    const { sessionId, userId, frameData, sequence, isKeyFrame, metadata } = await req.json()
+    const { sessionId, userId, frameData, sequence, isKeyFrame, metadata, demo_mode } = await req.json()
+
+    // Demo mode - return mock processed data
+    if (demo_mode) {
+      const mockProcessedVideo = {
+        session_id: sessionId || 'demo-session-123',
+        user_id: userId || 'demo-user-123',
+        processed: true,
+        frame_quality: 0.95,
+        participant_detected: true,
+        analysis: {
+          participant_count: 1,
+          video_quality: 'high',
+          frame_rate: 30,
+          resolution: '1920x1080'
+        },
+        timestamp: new Date().toISOString(),
+        demo_mode: true
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: mockProcessedVideo
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     if (!sessionId || !userId || !frameData) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {

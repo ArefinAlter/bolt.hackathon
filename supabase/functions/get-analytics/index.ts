@@ -21,11 +21,59 @@ Deno.serve(async (req) => {
     const url = new URL(req.url)
     const business_id = url.searchParams.get('business_id')
     const metric_type = url.searchParams.get('metric_type') || 'all' // all, returns, ai_accuracy, satisfaction, policy
+    const demo_mode = url.searchParams.get('demo_mode') === 'true'
 
     if (!business_id) {
       return new Response(
         JSON.stringify({ error: 'Missing required parameter: business_id' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    if (demo_mode) {
+      // Return demo analytics data without database queries
+      const demoAnalytics = {
+        returns: {
+          total_returns: 45,
+          approved_returns: 32,
+          denied_returns: 8,
+          pending_review: 5,
+          approval_rate: '71.1',
+          trend: {
+            recent_period: 15,
+            previous_period: 12,
+            change_percentage: '25.0'
+          }
+        },
+        ai_accuracy: {
+          total_ai_decisions: 38,
+          correct_decisions: 34,
+          accuracy_rate: '89.5'
+        },
+        satisfaction: {
+          total_interactions: 156,
+          positive_interactions: 142,
+          negative_interactions: 8,
+          satisfaction_score: '85.9',
+          response_time_avg: '2.3s'
+        },
+        policy: {
+          total_policies: 3,
+          active_policy: 'v2.1',
+          policy_changes: 2,
+          current_approval_rate: '71.1',
+          policy_effectiveness: 'High'
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          business_id,
+          analytics: demoAnalytics,
+          demo_mode: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 

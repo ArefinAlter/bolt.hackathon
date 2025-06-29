@@ -18,7 +18,25 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { provider, event_type, session_id, data } = await req.json()
+    const { provider, event_type, session_id, data, demo_mode } = await req.json()
+
+    // Demo mode - return mock webhook response
+    if (demo_mode) {
+      const mockWebhookResponse = {
+        success: true,
+        message: 'Webhook processed successfully (demo mode)',
+        provider: provider || 'demo-provider',
+        event_type: event_type || 'demo-event',
+        session_id: session_id || 'demo-session-123',
+        data: data || {},
+        demo_mode: true
+      }
+
+      return new Response(
+        JSON.stringify(mockWebhookResponse),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     // Validate webhook data
     if (!provider || !event_type || !session_id) {

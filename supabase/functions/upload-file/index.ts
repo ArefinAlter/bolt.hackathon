@@ -18,7 +18,24 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { business_id, file_type, file_name, file_data, file_metadata } = await req.json()
+    const { business_id, file_type, file_name, file_data, file_metadata, demo_mode } = await req.json()
+
+    // Demo mode - return mock upload data
+    if (demo_mode) {
+      const mockUploadData = {
+        success: true,
+        file_id: 'demo-file-123',
+        file_url: 'https://demo.example.com/uploads/demo-file.jpg',
+        file_path: `${business_id || 'demo-business'}/${file_type || 'evidence_photo'}/demo_${file_name || 'file.jpg'}`,
+        message: 'File uploaded successfully (demo mode)',
+        demo_mode: true
+      }
+
+      return new Response(
+        JSON.stringify(mockUploadData),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     // Validate required fields
     if (!business_id || !file_type || !file_name || !file_data) {

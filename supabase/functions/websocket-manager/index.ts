@@ -385,12 +385,40 @@ serve(async (req) => {
 
   // Handle HTTP requests for WebSocket management
   const url = new URL(req.url)
+  const demo_mode = url.searchParams.get('demo_mode') === 'true'
   
   if (url.pathname === '/websocket-manager/session-info') {
     const sessionId = url.searchParams.get('sessionId')
-    if (!sessionId) {
+    if (!sessionId && !demo_mode) {
       return new Response(JSON.stringify({ error: 'Session ID required' }), {
         status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Demo mode - return mock session info
+    if (demo_mode) {
+      const mockSessionInfo = {
+        sessionId: sessionId || 'demo-session-123',
+        connectionCount: 2,
+        connections: [
+          {
+            id: 'demo-conn-1',
+            userId: 'demo-user-1',
+            callType: 'voice',
+            lastActivity: Date.now()
+          },
+          {
+            id: 'demo-conn-2',
+            userId: 'demo-user-2',
+            callType: 'voice',
+            lastActivity: Date.now()
+          }
+        ],
+        demo_mode: true
+      }
+
+      return new Response(JSON.stringify(mockSessionInfo), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
@@ -411,7 +439,18 @@ serve(async (req) => {
   }
 
   if (url.pathname === '/websocket-manager/broadcast') {
-    const { sessionId, message } = await req.json()
+    const { sessionId, message, demo_mode: bodyDemoMode } = await req.json()
+    
+    // Demo mode - return mock broadcast response
+    if (demo_mode || bodyDemoMode) {
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: 'Message broadcast successfully (demo mode)',
+        demo_mode: true
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
     
     if (!sessionId || !message) {
       return new Response(JSON.stringify({ error: 'Session ID and message required' }), {

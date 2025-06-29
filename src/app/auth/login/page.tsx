@@ -20,7 +20,7 @@ export default function LoginPage() {
               alt="Dokani"
               width={180}
               height={48}
-              className="h-12 w-auto"
+              className="h-16 w-auto"
             />
           </Link>
           <Link href="/auth/signup" className="text-sm font-medium text-primary hover:underline">

@@ -1,76 +1,129 @@
 import { serve } from "https://deno.land/std@0.220.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+Deno.serve(async (req) => {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  }
 
-serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    const { order_id, customer_email, reason, evidence_urls, demo_mode } = await req.json()
+
+    // Demo mode - return mock data
+    if (demo_mode) {
+      const mockReturnRequest = {
+        id: 'demo-return-init-123',
+        public_id: 'demo-return-123',
+        business_id: '123e4567-e89b-12d3-a456-426614174000',
+        order_id: order_id || 'ORDER-12345',
+        customer_email: customer_email || 'customer@example.com',
+        reason_for_return: reason || 'Product arrived damaged',
+        evidence_urls: evidence_urls || ['https://example.com/photo1.jpg'],
+        status: 'pending_triage',
+        conversation_log: [
+          {
+            message: reason || 'Product arrived damaged',
+            timestamp: new Date().toISOString(),
+            sender: 'customer'
+          }
+        ],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: mockReturnRequest,
+          demo_mode: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const { createClient } = await import('npm:@supabase/supabase-js@2')
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { order_id, business_id } = await req.json()
-
     // Validate required fields
-    if (!order_id || !business_id) {
+    if (!order_id || !customer_email || !reason) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: order_id and business_id' }),
+        JSON.stringify({ error: 'Missing required fields: order_id, customer_email, reason' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }
 
-    // Validate order exists
-    // Note: mock_orders are shared demo data for hackathon purposes
-    // In production, this would be business-specific order data
-    const { data: order, error: orderError } = await supabaseClient
-      .from('mock_orders')
-      .select('*')
-      .eq('order_id', order_id)
+    // Get user from authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'No authorization header' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
+    }
+
+    // Get user profile
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('business_id')
+      .eq('id', user.id)
       .single()
 
-    if (orderError || !order) {
+    if (profileError || !profile) {
       return new Response(
-        JSON.stringify({ error: 'Order not found. Try using demo order IDs like ORDER-12345, ORDER-67890, etc.' }),
+        JSON.stringify({ error: 'Profile not found' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
       )
     }
 
-    // Create new return request
-    const { data: returnRequest, error: createError } = await supabaseClient
+    // Create return request
+    const { data: returnRequest, error } = await supabaseClient
       .from('return_requests')
       .insert([
         {
-          business_id,
+          business_id: profile.business_id,
           order_id,
-          customer_email: order.customer_email,
-          status: 'pending_triage'
+          customer_email,
+          reason_for_return: reason,
+          evidence_urls: evidence_urls || [],
+          status: 'pending_triage',
+          conversation_log: [
+            {
+              message: reason,
+              timestamp: new Date().toISOString(),
+              sender: 'customer'
+            }
+          ]
         }
       ])
       .select()
       .single()
 
-    if (createError) {
-      throw createError
+    if (error) {
+      throw error
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        public_id: returnRequest.public_id,
-        portal_url: `${Deno.env.get('SITE_URL')}/return/${returnRequest.public_id}`,
-        order_details: {
-          product_name: order.product_name,
-          purchase_date: order.purchase_date
-        }
+      JSON.stringify({
+        success: true,
+        data: returnRequest
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

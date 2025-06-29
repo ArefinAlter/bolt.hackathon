@@ -98,7 +98,7 @@ export function RoleSelectionPage() {
               alt="Dokani"
               width={180}
               height={48}
-              className="h-12 w-auto"
+              className="h-16 w-auto"
             />
           </div>
           <div className="flex items-center space-x-4">

@@ -20,11 +20,37 @@ Deno.serve(async (req) => {
 
     const url = new URL(req.url)
     const user_id = url.searchParams.get('user_id')
+    const demo_mode = url.searchParams.get('demo_mode') === 'true'
 
-    if (!user_id) {
+    if (!user_id && !demo_mode) {
       return new Response(
         JSON.stringify({ error: 'Missing required parameter: user_id' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    if (demo_mode) {
+      // Return demo user preferences without database query
+      const demoPreferences = {
+        preferred_chat_mode: 'normal',
+        voice_enabled: true,
+        video_enabled: true,
+        notifications_enabled: true,
+        auto_escalate: false,
+        language: 'en',
+        ai_agent_preference: 'customer-service',
+        call_quality_preference: 'high',
+        response_time_preference: 'fast'
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          preferences: demoPreferences,
+          last_updated: new Date().toISOString(),
+          demo_mode: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 

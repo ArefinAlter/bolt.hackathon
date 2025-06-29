@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
 import { 
   MessageSquare, 
   Phone, 
@@ -36,6 +38,8 @@ import { VideoCallInterface } from '@/components/customer/VideoCallInterface';
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import TextareaAutosize from 'react-textarea-autosize';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 
 export default function CustomerChatPage() {
   const router = useRouter();
@@ -53,6 +57,7 @@ export default function CustomerChatPage() {
   const [isCallActive, setIsCallActive] = useState(false);
   const [callType, setCallType] = useState<'voice' | 'video' | null>(null);
   const [callSession, setCallSession] = useState<CallSession | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState(true);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -440,20 +445,37 @@ export default function CustomerChatPage() {
       <header className="bg-white border-b px-4 py-3">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-              <MessageSquare className="h-5 w-5 text-primary" />
-            </div>
-            <div className="ml-3">
-              <h1 className="text-lg font-semibold text-black">Customer Support</h1>
-              <p className="text-sm text-black">
-                {isCallActive 
-                  ? `${callType === 'voice' ? 'Voice' : 'Video'} call in progress...` 
-                  : 'Chat with our AI assistant'}
-              </p>
-            </div>
+            <Link href="/" className="flex items-center space-x-3">
+              <Image
+                src="/main_logo.svg"
+                alt="Dokani"
+                width={120}
+                height={32}
+                className="h-8 w-auto dark:hidden"
+              />
+              <Image
+                src="/white_logo.svg"
+                alt="Dokani"
+                width={120}
+                height={32}
+                className="h-8 w-auto hidden dark:block"
+              />
+              <div className="ml-3">
+                <h1 className="text-lg font-semibold text-black">Customer Support</h1>
+                <p className="text-sm text-black">
+                  {isCallActive 
+                    ? `${callType === 'voice' ? 'Voice' : 'Video'} call in progress...` 
+                    : 'Chat with our AI assistant'}
+                </p>
+              </div>
+            </Link>
           </div>
           
           <div className="flex space-x-2">
+            <div className="flex items-center space-x-2 mr-4">
+              <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
+              <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
+            </div>
             <Button 
               variant="outline" 
               size="sm"
