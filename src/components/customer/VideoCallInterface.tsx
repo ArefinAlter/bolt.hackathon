@@ -25,12 +25,14 @@ interface VideoCallInterfaceProps {
   callSession: CallSession;
   onEndCall: () => void;
   onError: (error: string) => void;
+  isDemoMode?: boolean;
 }
 
 export function VideoCallInterface({ 
   callSession, 
   onEndCall,
-  onError
+  onError,
+  isDemoMode = false
 }: VideoCallInterfaceProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
@@ -63,9 +65,11 @@ export function VideoCallInterface({
     return () => clearInterval(interval);
   }, []);
   
-  // Initialize WebSocket connection
+  // Connect to WebSocket for real-time communication
   useEffect(() => {
-    if (callSession.websocket_url) {
+    if (callSession.websocket_url && !isDemoMode) {
+      console.log('🔌 Connecting to WebSocket:', callSession.websocket_url);
+      
       const ws = connectToCallWebSocket(
         callSession.websocket_url,
         handleWebSocketMessage,
@@ -79,8 +83,11 @@ export function VideoCallInterface({
       return () => {
         ws.close();
       };
+    } else if (isDemoMode) {
+      console.log('🎭 Demo mode: Skipping WebSocket connection');
+      setIsConnecting(false);
     }
-  }, [callSession.websocket_url, onError]);
+  }, [callSession.websocket_url, onError, isDemoMode]);
   
   // Initialize video
   useEffect(() => {
@@ -156,31 +163,25 @@ export function VideoCallInterface({
         if (videoFrameCountRef.current % 5 === 0) {
           const isKeyFrame = videoFrameCountRef.current % 30 === 0;
           
-          if (webSocketRef.current && webSocketRef.current.readyState === WebSocket.OPEN) {
-            const videoFrame: VideoFrame = {
-              data: base64Data,
-              timestamp: Date.now(),
-              sequence: videoFrameCountRef.current,
-              isKeyFrame,
-              width: canvas.width,
-              height: canvas.height
-            };
-            
+          const videoFrame: VideoFrame = {
+            data: base64Data,
+            timestamp: Date.now(),
+            sequence: videoFrameCountRef.current,
+            isKeyFrame,
+            width: canvas.width,
+            height: canvas.height
+          };
+          
+          if (webSocketRef.current && webSocketRef.current.readyState === WebSocket.OPEN && !isDemoMode) {
+            // Use WebSocket in live mode
             webSocketRef.current.send(JSON.stringify({
               type: 'video_data',
               data: videoFrame,
               timestamp: Date.now()
             }));
           } else {
-            // Fallback to REST API if WebSocket is not available
-            sendVideoFrame(callSession.id, {
-              data: base64Data,
-              timestamp: Date.now(),
-              sequence: videoFrameCountRef.current,
-              isKeyFrame,
-              width: canvas.width,
-              height: canvas.height
-            }).catch(error => {
+            // Use REST API in demo mode or when WebSocket is not available
+            sendVideoFrame(callSession.id, videoFrame).catch(error => {
               console.error('Error sending video frame:', error);
             });
           }

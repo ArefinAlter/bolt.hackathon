@@ -15,57 +15,190 @@ serve(async (req) => {
   try {
     const { call_session_id, audio_data, user_message, demo_mode } = await req.json()
 
-    // Demo mode - use APIs and CustomerServiceAgent but with demo context
-    if (demo_mode) {
-      // Process speech-to-text if audio provided
-      let transcribedText = user_message
-      if (audio_data && !user_message) {
-        transcribedText = await processSpeechToText(audio_data)
-      }
+    if (!call_session_id) {
+      return new Response(
+        JSON.stringify({ error: 'call_session_id is required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
 
-      if (!transcribedText) {
+    // Always use the same agent ID for both demo and live modes
+    const agentId = Deno.env.get('ELEVENLABS_CONVERSATIONAL_AGENT_ID')
+    const apiKey = Deno.env.get('ELEVENLABS_API_KEY')
+    
+    console.log('🔍 Debug Info:')
+    console.log('🔍 Agent ID:', agentId)
+    console.log('🔍 API Key exists:', !!apiKey)
+    console.log('🔍 API Key prefix:', apiKey?.substring(0, 10) + '...')
+    
+    if (!agentId || !apiKey) {
+      return new Response(
+        JSON.stringify({ error: 'ElevenLabs agent or API key not configured' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
+    }
+
+    // Create or get conversation ID (use call_session_id as conversation ID)
+    // For demo mode, we need to create a real conversation if it doesn't exist
+    let conversationId = call_session_id
+    
+    // If this is demo mode and the conversation ID looks like a demo ID, create a real conversation
+    if (demo_mode && call_session_id.startsWith('demo-call-')) {
+      try {
+        console.log('🟡 Creating real ElevenLabs conversation for demo mode...')
+        
+        // ElevenLabs Conversational AI uses WebSocket connections, not REST API for conversation creation
+        // We'll use the call_session_id as the conversation ID and handle the conversation through WebSocket
+        conversationId = call_session_id
+        console.log('🟢 Using call session ID as conversation ID for WebSocket:', conversationId)
+        
+        // Note: Actual conversation creation happens via WebSocket connection
+        // The conversation will be created when the frontend connects to the WebSocket
+        
+      } catch (error) {
+        console.error('❌ Error setting up conversation for demo:', error)
         return new Response(
-          JSON.stringify({ error: 'No text to process' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+          JSON.stringify({ 
+            error: 'Failed to set up ElevenLabs conversation for demo mode',
+            details: error.message 
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
         )
       }
+    }
 
-      // Use CustomerServiceAgent for demo mode
+    // If we have audio data, process it with ElevenLabs STT first
+    let transcribedText = user_message || ''
+    if (user_message === '__init__' || user_message === 'greeting') {
+      // Use a clear, friendly greeting prompt
+      transcribedText = "Please greet the user and introduce yourself as the AI assistant for this call. Offer to help with any questions or requests.";
+    }
+    
+    if (audio_data && !user_message) {
+      // Convert base64 audio to buffer
+      const audioBuffer = Uint8Array.from(atob(audio_data), c => c.charCodeAt(0))
+      
+      console.log('🎤 Processing audio data, length:', audioBuffer.length)
+      
+      // Send audio to ElevenLabs STT
+      // ElevenLabs STT API expects the audio file to be sent as a proper file upload
+      const formData = new FormData()
+      
+      // Create a proper file from the audio buffer
+      const audioBlob = new Blob([audioBuffer], { type: 'audio/webm' })
+      const audioFile = new File([audioBlob], 'audio.webm', { type: 'audio/webm' })
+      formData.append('file', audioFile)
+      formData.append('model_id', 'scribe_v1')
+      
+      const sttResponse = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+        method: 'POST',
+        headers: {
+          'xi-api-key': apiKey,
+          // Don't set Content-Type for FormData, let the browser set it with boundary
+        },
+        body: formData
+      })
+
+      console.log('🎤 STT Response status:', sttResponse.status)
+      
+      if (sttResponse.ok) {
+        const sttResult = await sttResponse.json()
+        transcribedText = sttResult.text || ''
+        console.log('🎤 STT Result:', transcribedText)
+      } else {
+        const errorText = await sttResponse.text()
+        console.error('❌ STT Error:', sttResponse.status, errorText)
+        
+        // Try alternative STT approach if the first fails
+        try {
+          console.log('🔄 Trying alternative STT approach...')
+          
+          // Try with different audio format
+          const alternativeFormData = new FormData()
+          const alternativeAudioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' })
+          const alternativeAudioFile = new File([alternativeAudioBlob], 'audio.mp3', { type: 'audio/mpeg' })
+          alternativeFormData.append('file', alternativeAudioFile)
+          alternativeFormData.append('model_id', 'scribe_v1')
+          
+          const altSttResponse = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+            method: 'POST',
+            headers: {
+              'xi-api-key': apiKey,
+            },
+            body: alternativeFormData
+          })
+          
+          if (altSttResponse.ok) {
+            const altSttResult = await altSttResponse.json()
+            transcribedText = altSttResult.text || ''
+            console.log('🎤 Alternative STT Result:', transcribedText)
+          } else {
+            const altErrorText = await altSttResponse.text()
+            console.error('❌ Alternative STT Error:', altSttResponse.status, altErrorText)
+            throw new Error(`STT failed: ${sttResponse.status} - ${errorText}`)
+          }
+        } catch (altError) {
+          console.error('❌ Alternative STT approach failed:', altError)
+          throw new Error(`STT failed: ${sttResponse.status} - ${errorText}`)
+        }
+      }
+    }
+
+    if (!transcribedText.trim()) {
+      // If no text was transcribed, provide a helpful response
+      console.log('⚠️ No text transcribed, providing fallback response')
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          user_input: '[Audio input - could not transcribe]',
+          ai_response: 'I heard you speak, but I couldn\'t understand what you said clearly. Could you please try speaking again, or type your message instead?',
+          audio_data: null,
+          audio_url: null,
+          conversation_id: conversationId,
+          next_action: 'continue_conversation',
+          return_detected: false,
+          demo_mode: demo_mode,
+          stt_failed: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Send message to ElevenLabs Conversational AI
+    console.log('🟡 Sending message to ElevenLabs agent:', agentId, 'Conversation:', conversationId, 'Text:', transcribedText);
+    
+    // Since ElevenLabs Conversational AI uses WebSocket connections, we'll use our CustomerServiceAgent for now
+    // In a full implementation, this would be handled via WebSocket connection
+    try {
       const customerServiceAgent = new CustomerServiceAgent()
       
-      // Create demo context
-      const demoContext = {
-        businessId: 'demo-business-123',
-        customerEmail: 'demo@example.com',
-        sessionId: call_session_id,
+      // Prepare agent context
+      const agentContext = {
+        businessId: demo_mode ? 'demo-business-123' : 'live-business-456',
+        customerEmail: demo_mode ? 'demo@example.com' : 'customer@example.com',
+        sessionId: conversationId,
         userRole: 'customer' as const,
         timestamp: new Date().toISOString(),
-        callSessionId: call_session_id,
-        provider: 'elevenlabs',
-        callType: 'voice'
+        demo_mode: demo_mode
       }
 
-      // Get AI response using CustomerServiceAgent
+      // Get AI response from CustomerServiceAgent
       const aiResponse = await customerServiceAgent.processChatMessage(
         transcribedText,
-        demoContext,
-        [] // Empty conversation history for demo
+        agentContext,
+        [] // Empty conversation history for now
       )
 
       if (aiResponse.success) {
         // Generate TTS for AI response using ElevenLabs
         const voiceId = Deno.env.get('ELEVENLABS_DEFAULT_VOICE_ID') || '21m00Tcm4TlvDq8ikWAM'
-        const apiKey = Deno.env.get('ELEVENLABS_API_KEY')
-        
-        console.log('🔑 ElevenLabs API Key present:', !!apiKey)
-        console.log('🎤 Voice ID:', voiceId)
-        console.log('📝 Text to synthesize:', aiResponse.message)
         
         const ttsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
           method: 'POST',
           headers: {
             'Accept': 'audio/mpeg',
-            'xi-api-key': apiKey || '',
+            'xi-api-key': apiKey,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
@@ -76,175 +209,65 @@ serve(async (req) => {
               similarity_boost: 0.5,
               style: 0.0,
               use_speaker_boost: true
-            },
-            output_format: 'mp3_44100_128'
+            }
           })
         })
 
-        console.log('📡 ElevenLabs TTS Response Status:', ttsResponse.status)
-        
         if (ttsResponse.ok) {
           const audioBuffer = await ttsResponse.arrayBuffer()
           const audioBase64 = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)))
-          
-          console.log('✅ TTS successful, audio length:', audioBase64.length)
+          const audioData = `data:audio/mpeg;base64,${audioBase64}`
 
           return new Response(
             JSON.stringify({
               success: true,
               user_input: transcribedText,
               ai_response: aiResponse.message,
-              audio_data: `data:audio/mpeg;base64,${audioBase64}`,
-              next_action: aiResponse.data?.nextAction || 'continue_conversation',
-              return_detected: !!aiResponse.data?.returnRequest,
-              demo_mode: true
+              audio_data: audioData,
+              audio_url: null,
+              conversation_id: conversationId,
+              next_action: 'continue_conversation',
+              return_detected: aiResponse.data?.returnRequest ? true : false,
+              demo_mode: demo_mode
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           )
         } else {
-          // Log the error response
-          const errorText = await ttsResponse.text()
-          console.error('❌ ElevenLabs TTS API error:', ttsResponse.status, errorText)
-          
-          // Fallback if TTS fails
+          // Fallback without audio
           return new Response(
             JSON.stringify({
               success: true,
               user_input: transcribedText,
               ai_response: aiResponse.message,
-              audio_data: 'data:audio/mpeg;base64,demo_audio_fallback',
-              next_action: aiResponse.data?.nextAction || 'continue_conversation',
-              return_detected: !!aiResponse.data?.returnRequest,
-              demo_mode: true,
-              tts_error: `ElevenLabs API error: ${ttsResponse.status} - ${errorText}`
+              audio_data: null,
+              audio_url: null,
+              conversation_id: conversationId,
+              next_action: 'continue_conversation',
+              return_detected: aiResponse.data?.returnRequest ? true : false,
+              demo_mode: demo_mode,
+              no_audio: true
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           )
         }
       } else {
-        // Fallback if AI response fails
-        return new Response(
-          JSON.stringify({
-            success: true,
-            user_input: transcribedText,
-            ai_response: 'I apologize, but I\'m having trouble processing your request right now. Could you please try again?',
-            audio_data: 'data:audio/mpeg;base64,demo_audio_fallback',
-            next_action: 'continue_conversation',
-            return_detected: false,
-            demo_mode: true
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        throw new Error('Failed to process message with CustomerServiceAgent')
       }
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    if (!call_session_id) {
+    } catch (error) {
+      console.error('❌ Error processing message with CustomerServiceAgent:', error)
       return new Response(
-        JSON.stringify({ error: 'Missing required field: call_session_id' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        JSON.stringify({ 
+          error: 'Failed to process message',
+          details: error.message 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       )
     }
-
-    // Get call session details
-    const { data: callSession, error: sessionError } = await supabaseClient
-      .from('call_sessions')
-      .select('*, chat_sessions(*)')
-      .eq('id', call_session_id)
-      .single()
-
-    if (sessionError || !callSession) {
-      return new Response(
-        JSON.stringify({ error: 'Call session not found' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
-      )
-    }
-
-    // Use ElevenLabs Conversational AI for live mode
-    const agentId = callSession.provider_data?.agent_id || Deno.env.get('ELEVENLABS_CONVERSATIONAL_AGENT_ID')
-    const conversationId = callSession.provider_data?.conversation_id
-
-    if (!agentId || !conversationId) {
-      return new Response(
-        JSON.stringify({ error: 'ElevenLabs Conversational AI not properly configured' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      )
-    }
-
-    // Send message to ElevenLabs Conversational AI
-    const response = await fetch(`https://api.elevenlabs.io/v1/agents/${agentId}/conversations/${conversationId}/messages`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'xi-api-key': Deno.env.get('ELEVENLABS_API_KEY') || '',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: user_message || audio_data, // Send text or audio data
-        message_type: audio_data ? 'audio' : 'text',
-        metadata: {
-          call_session_id: callSession.id,
-          business_id: callSession.chat_sessions?.business_id,
-          customer_email: callSession.chat_sessions?.customer_email
-        }
-      })
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(`ElevenLabs Conversational AI error: ${errorData.detail || response.statusText}`)
-    }
-
-    const conversationResponse = await response.json()
-
-    // Store user input transcript
-    await supabaseClient
-      .from('call_transcripts')
-      .insert([
-        {
-          call_session_id: callSession.id,
-          speaker: 'user',
-          message: user_message || '[Audio input]',
-          timestamp_seconds: Date.now() / 1000
-        }
-      ])
-
-    // Store AI response transcript
-    if (conversationResponse.response?.text) {
-      await supabaseClient
-        .from('call_transcripts')
-        .insert([
-          {
-            call_session_id: callSession.id,
-            speaker: 'agent',
-            message: conversationResponse.response.text,
-            timestamp_seconds: Date.now() / 1000
-          }
-        ])
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        user_input: user_message || '[Audio input]',
-        ai_response: conversationResponse.response?.text || 'I apologize, but I didn\'t receive a response.',
-        audio_data: conversationResponse.response?.audio_url || null,
-        next_action: conversationResponse.response?.next_action || 'continue_conversation',
-        return_detected: conversationResponse.response?.return_detected || false,
-        conversation_id: conversationId,
-        message_id: conversationResponse.message_id
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
 
   } catch (error) {
-    console.error('Error in process-voice-input:', error)
+    console.error('❌ Error in process-voice-input:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }

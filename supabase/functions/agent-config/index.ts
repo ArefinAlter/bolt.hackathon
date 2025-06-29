@@ -27,6 +27,8 @@ export interface AgentConfig {
     callType?: string
     isCallInteraction?: boolean
     callTranscripts?: any[]
+    // Demo mode flag
+    demo_mode?: boolean
   }
   
   export interface AgentResponse {

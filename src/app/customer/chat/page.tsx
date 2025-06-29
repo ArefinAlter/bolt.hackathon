@@ -735,12 +735,14 @@ export default function CustomerChatPage() {
           {callType === 'voice' ? (
             <VoiceCallInterface 
               callSession={callSession}
+              isDemoMode={isDemoMode}
               onEndCall={handleEndCall}
               onError={setError}
             />
           ) : callType === 'video' ? (
             <VideoCallInterface 
               callSession={callSession}
+              isDemoMode={isDemoMode}
               onEndCall={handleEndCall}
               onError={setError}
             />

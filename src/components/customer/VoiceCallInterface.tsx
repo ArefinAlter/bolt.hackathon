@@ -18,6 +18,7 @@ import {
   User
 } from 'lucide-react';
 import { CallSession } from '@/types/call';
+import { supabase } from '@/lib/supabase';
 
 interface VoiceCallInterfaceProps {
   callSession: CallSession;
@@ -56,6 +57,14 @@ export function VoiceCallInterface({
     initializeCall();
     return () => cleanupCall();
   }, []);
+
+  // Send initial greeting from AI as soon as call is connected
+  useEffect(() => {
+    if (callSession && isConnected) {
+      sendInitialGreeting();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [callSession, isConnected]);
 
   useEffect(() => {
     if (isConnected) {
@@ -205,29 +214,39 @@ export function VoiceCallInterface({
       const uint8Array = new Uint8Array(arrayBuffer);
       const base64Audio = btoa(String.fromCharCode.apply(null, Array.from(uint8Array)));
 
-      // Send to backend for processing
-      const response = await fetch('/api/process-voice-input', {
+      // Get session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No active session');
+      }
+
+      // Send to Supabase function for processing
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/process-voice-input`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          call_session_id: callSession.id,
           audio_data: base64Audio,
-          demo_mode: isDemoMode,
-          conversation_id: callSession.elevenlabs_conversation_id || (isDemoMode ? 'demo-conversation' : undefined)
+          user_message: undefined,
+          demo_mode: isDemoMode
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to process audio');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process audio');
       }
 
       const result = await response.json();
       
       if (result.success) {
         // Add user message to transcript
-        if (result.transcript) {
-          setTranscript(prev => [...prev, `You: ${result.transcript}`]);
+        if (result.user_input) {
+          setTranscript(prev => [...prev, `You: ${result.user_input}`]);
         }
         
         // Add AI response to transcript
@@ -236,7 +255,7 @@ export function VoiceCallInterface({
         }
 
         // Play AI response audio if available
-        if (result.audio_data) {
+        if (result.audio_data && !result.no_audio) {
           playAudioResponse(result.audio_data);
         }
       } else {
@@ -255,23 +274,83 @@ export function VoiceCallInterface({
 
   const playAudioResponse = (audioData: string) => {
     try {
-      // Convert base64 to audio
-      const audioBlob = new Blob([
-        Uint8Array.from(atob(audioData), c => c.charCodeAt(0))
-      ], { type: 'audio/mpeg' });
+      console.log('🎵 Playing audio response:', audioData?.substring(0, 100) + '...');
       
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      let audioUrl: string;
       
+      if (audioData.startsWith('data:audio/')) {
+        // Handle data URL format (base64 encoded audio)
+        const audioBlob = new Blob([
+          Uint8Array.from(atob(audioData.split(',')[1]), c => c.charCodeAt(0))
+        ], { type: 'audio/mpeg' });
+        
+        audioUrl = URL.createObjectURL(audioBlob);
+        console.log('🔧 Created blob URL for audio:', audioUrl);
+      } else if (audioData.startsWith('http')) {
+        // Handle URL format (direct URL to audio file)
+        audioUrl = audioData;
+        console.log('🔗 Using direct URL for audio:', audioUrl);
+      } else {
+        console.error('❌ Unknown audio data format:', audioData?.substring(0, 50));
+        return;
+      }
+      
+      const audio = new Audio();
+      
+      // Add event listeners for debugging
+      audio.onloadstart = () => console.log('🎵 Audio loading started');
+      audio.oncanplay = () => console.log('🎵 Audio can play');
+      audio.oncanplaythrough = () => console.log('🎵 Audio can play through');
       audio.onended = () => {
-        URL.revokeObjectURL(audioUrl);
+        console.log('🎵 Audio playback ended');
+        if (audioUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(audioUrl);
+        }
       };
       
-      audio.play().catch(error => {
-        console.error('Error playing audio:', error);
-      });
+      audio.onerror = (error) => {
+        console.error('❌ Audio playback error:', error);
+        console.error('❌ Audio error details:', audio.error);
+        
+        // Check for common browser issues
+        if (audio.error?.code === 4) {
+          console.error('❌ Audio format not supported by browser');
+        } else if (audio.error?.code === 3) {
+          console.error('❌ Audio decoding failed');
+        } else if (audio.error?.code === 2) {
+          console.error('❌ Audio network error');
+        }
+      };
+      
+      // Set audio properties for better compatibility
+      audio.preload = 'auto';
+      audio.volume = 1.0;
+      audio.src = audioUrl;
+      
+      // Try to play with user interaction requirement handling
+      const playPromise = audio.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log('✅ Audio playback started successfully');
+          })
+          .catch(error => {
+            console.error('❌ Error playing audio:', error);
+            
+            // Handle autoplay policy issues
+            if (error.name === 'NotAllowedError') {
+              console.error('❌ Autoplay blocked by browser. User interaction required.');
+              // Try to play again after a short delay
+              setTimeout(() => {
+                audio.play().catch(e => console.error('❌ Retry failed:', e));
+              }, 100);
+            }
+          });
+      }
+      
     } catch (error) {
-      console.error('Error creating audio response:', error);
+      console.error('❌ Error creating audio response:', error);
     }
   };
 
@@ -294,6 +373,37 @@ export function VoiceCallInterface({
   const handleEndCall = async () => {
     cleanupCall();
     await onEndCall();
+  };
+
+  const sendInitialGreeting = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      setIsProcessing(true);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/process-voice-input`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          call_session_id: callSession.id,
+          user_message: '__init__', // special trigger for greeting
+          demo_mode: isDemoMode
+        }),
+      });
+      const result = await response.json();
+      if (result.success && result.audio_data) {
+        playAudioResponse(result.audio_data);
+        setTranscript(prev => [...prev, `Agent: ${result.ai_response}`]);
+      } else if (result.success && result.ai_response) {
+        setTranscript(prev => [...prev, `Agent: ${result.ai_response}`]);
+      }
+    } catch (error) {
+      console.error('Error sending initial greeting:', error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (

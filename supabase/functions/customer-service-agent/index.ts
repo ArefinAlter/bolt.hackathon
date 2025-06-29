@@ -217,6 +217,19 @@ export class CustomerServiceAgent {
   
   private async logInteraction(context: AgentContext, interactionData: any): Promise<void> {
     try {
+      // Skip database logging in demo mode
+      if (context.demo_mode) {
+        console.log('📝 Demo mode: Skipping database logging for interaction')
+        console.log('Customer Service Interaction Log (Demo):', {
+          businessId: context.businessId,
+          sessionId: context.sessionId,
+          callSessionId: context.callSessionId,
+          success: interactionData.success,
+          timestamp: new Date().toISOString()
+        })
+        return
+      }
+
       const { createClient } = await import('npm:@supabase/supabase-js@2')
       const supabase = createClient(
         Deno.env.get('SUPABASE_URL') || '',

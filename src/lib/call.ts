@@ -68,53 +68,100 @@ export async function startVideoCall(
   demoMode = false
 ): Promise<CallSession> {
   try {
-    // Call the initiate-call function
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
       throw new Error('No active session');
     }
-    
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/initiate-call`, {
+
+    // Create call session first
+    const { data: callSession, error: callError } = await supabase
+      .from('call_sessions')
+      .insert([
+        {
+          chat_session_id: chatSessionId,
+          call_type: 'video',
+          provider: 'tavus',
+          status: 'initializing',
+          started_at: new Date().toISOString(),
+          provider_data: {
+            replica_id: configOverride?.replica_id || (demoMode ? 'demo-replica-123' : undefined),
+            persona_id: demoMode ? 'demo-persona-123' : undefined,
+            config_override: configOverride
+          }
+        }
+      ])
+      .select()
+      .single();
+
+    if (callError) {
+      throw callError;
+    }
+
+    // Initialize video conversation
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/initiate-video-conversation`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        chat_session_id: chatSessionId,
-        call_type: 'video',
-        provider: 'tavus',
-        config_override: configOverride,
-        enable_streaming: true,
+        call_session_id: callSession.id,
+        replica_id: configOverride?.replica_id || (demoMode ? 'demo-replica-123' : undefined),
+        persona_id: demoMode ? 'demo-persona-123' : undefined,
+        conversation_settings: {
+          background: 'transparent',
+          quality: 'standard'
+        },
         demo_mode: demoMode
       })
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to start video call');
+      throw new Error(errorData.error || 'Failed to initiate video conversation');
     }
-    
-    const data = await response.json();
+
+    const conversationData = await response.json();
+
+    // Update call session with conversation details
+    const { data: updatedCallSession, error: updateError } = await supabase
+      .from('call_sessions')
+      .update({
+        status: 'active',
+        external_session_id: conversationData.conversation_id,
+        session_url: conversationData.conversation_url,
+        websocket_url: conversationData.websocket_url,
+        provider_data: {
+          ...callSession.provider_data,
+          conversation_id: conversationData.conversation_id,
+          conversation_url: conversationData.conversation_url,
+          websocket_url: conversationData.websocket_url,
+          ai_agent_ready: conversationData.ai_agent_ready
+        }
+      })
+      .eq('id', callSession.id)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
+
     return {
-      id: data.call_session_id,
-      chat_session_id: chatSessionId,
-      call_type: 'video',
-      provider: 'tavus',
-      status: data.status || 'initiated',
-      created_at: new Date().toISOString(),
-      is_active: true,
-      streaming_enabled: data.streaming_enabled,
-      websocket_url: data.websocket_url,
-      stream_processor_urls: data.stream_processor_urls,
-      external_session_id: data.provider?.external_session_id,
-      session_url: data.provider?.session_url,
-      tavus_replica_id: data.provider?.replica_id,
-      tavus_conversation_id: data.provider?.conversation_id,
-      provider_data: data.provider,
-      demo_mode: data.demo_mode || demoMode
+      id: updatedCallSession.id,
+      chat_session_id: updatedCallSession.chat_session_id,
+      call_type: updatedCallSession.call_type,
+      provider: updatedCallSession.provider,
+      status: updatedCallSession.status,
+      external_session_id: updatedCallSession.external_session_id,
+      session_url: updatedCallSession.session_url,
+      websocket_url: updatedCallSession.websocket_url,
+      provider_data: updatedCallSession.provider_data,
+      created_at: updatedCallSession.created_at || new Date().toISOString(),
+      is_active: updatedCallSession.status === 'active'
     };
+
   } catch (error) {
     console.error('Error starting video call:', error);
     throw error;
