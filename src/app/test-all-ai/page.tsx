@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { Bot, MessageSquare, FileText, Settings, Play, Square, RotateCcw, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { Bot, MessageSquare, FileText, Settings, Play, Square, RotateCcw, CheckCircle, XCircle, Clock, Shield, Brain, Users, Phone, Video } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Loader2, Zap, AlertTriangle, BarChart3 } from 'lucide-react'
@@ -202,13 +202,13 @@ export default function TestAllAIPage() {
 
     } catch (error) {
       const duration = Date.now() - startTime
-      addLog(`${functionName} test failed: ${error.message}`)
+      addLog(`${functionName} test failed: ${error instanceof Error ? error.message : String(error)}`)
       
       return {
         function: functionName,
         success: false,
         response: null,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         timestamp: new Date().toISOString(),
         duration
       }
@@ -391,7 +391,7 @@ export default function TestAllAIPage() {
     return aiFunctions.filter(f => f.category === category)
   }
 
-  const categories = [...new Set(aiFunctions.map(f => f.category))]
+  const categories = Array.from(new Set(aiFunctions.map(f => f.category)))
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

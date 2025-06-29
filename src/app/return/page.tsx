@@ -150,7 +150,7 @@ export default function ReturnPage() {
   const filteredReturns = returns.filter(returnRequest => {
     const matchesSearch = returnRequest.customer_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          returnRequest.order_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         returnRequest.reason_for_return.toLowerCase().includes(searchTerm.toLowerCase());
+                         (returnRequest.reason_for_return ? returnRequest.reason_for_return.toLowerCase().includes(searchTerm.toLowerCase()) : false);
     
     const matchesStatus = filterStatus === 'all' || returnRequest.status === filterStatus;
     
@@ -386,7 +386,7 @@ export default function ReturnPage() {
                           </div>
                           <div>
                             <p className="text-gray-500">Reason</p>
-                            <p className="font-medium truncate">{returnRequest.reason_for_return}</p>
+                            <p className="font-medium truncate">{returnRequest.reason_for_return || 'Not specified'}</p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">

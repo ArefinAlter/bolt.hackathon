@@ -29,6 +29,7 @@ export interface ReturnRequest {
   denied_at?: string;
   return_history?: number;
   created_at: string;
+  updated_at: string;
   order_details?: OrderDetails;
 }
 
