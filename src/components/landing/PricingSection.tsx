@@ -70,11 +70,11 @@ export function PricingSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             Simple, Transparent{' '}
             <span className="gradient-text">Pricing</span>
           </h2>
-          <p className="text-xl text-black max-w-3xl mx-auto">
+          <p className="text-xl text-gray-900 dark:text-gray-100 max-w-3xl mx-auto">
             Choose the plan that fits your business size and needs. All plans include a 14-day free trial.
           </p>
         </div>
@@ -93,7 +93,7 @@ export function PricingSection() {
             >
               {tier.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-primary text-black px-4 py-1 rounded-full text-sm font-medium flex items-center">
+                  <div className="bg-primary text-gray-900 dark:text-gray-100 px-4 py-1 rounded-full text-sm font-medium flex items-center">
                     <Star className="w-4 h-4 mr-1" />
                     Most Popular
                   </div>
@@ -101,17 +101,17 @@ export function PricingSection() {
               )}
               
               <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl font-bold text-black">
+                <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {tier.name}
                 </CardTitle>
-                <CardDescription className="text-black mt-2">
+                <CardDescription className="text-gray-900 dark:text-gray-100 mt-2">
                   {tier.description}
                 </CardDescription>
-                <div className="mt-6">
-                  <span className="text-4xl font-bold text-black">
+                <div className="mt-4">
+                  <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
                     ${tier.price}
                   </span>
-                  <span className="text-black ml-1">/{tier.period}</span>
+                  <span className="text-gray-900 dark:text-gray-100 ml-1">/{tier.period}</span>
                 </div>
               </CardHeader>
 
@@ -120,7 +120,7 @@ export function PricingSection() {
                   {tier.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start">
                       <Check className="w-5 h-5 text-success mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-black">{feature}</span>
+                      <span className="text-gray-900 dark:text-gray-100">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -131,7 +131,7 @@ export function PricingSection() {
                   <Button 
                     className={`w-full ${
                       tier.popular 
-                        ? 'bg-primary hover:bg-primary/90 text-black' 
+                        ? 'bg-primary hover:bg-primary/90 text-gray-900 dark:text-gray-100' 
                         : 'bg-gray-900 hover:bg-gray-800 text-white'
                     }`}
                     size="lg"
@@ -146,10 +146,10 @@ export function PricingSection() {
 
         {/* Bottom note */}
         <div className="text-center mt-12">
-          <p className="text-black">
+          <p className="text-gray-900 dark:text-gray-100">
             All plans include 14-day free trial • No setup fees • Cancel anytime
           </p>
-          <p className="text-sm text-black mt-2">
+          <p className="text-sm text-gray-900 dark:text-gray-100 mt-2">
             Need a custom plan? <Link href="/contact" className="text-primary hover:underline">Contact our sales team</Link>
           </p>
         </div>

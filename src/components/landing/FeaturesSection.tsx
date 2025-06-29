@@ -94,11 +94,11 @@ export function FeaturesSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             Powerful Features for Modern E-commerce
           </h2>
-          <p className="text-xl text-black max-w-3xl mx-auto">
-            Everything you need to streamline your return process and delight your customers
+          <p className="text-xl text-gray-900 dark:text-gray-100 max-w-3xl mx-auto">
+            Everything you need to streamline returns, enhance customer experience, and boost your bottom line.
           </p>
         </div>
 
@@ -116,17 +116,17 @@ export function FeaturesSection() {
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                     <IconComponent className="w-6 h-6 text-primary" />
                   </div>
-                  <CardTitle className="text-xl font-semibold text-black group-hover:text-primary transition-colors">
+                  <CardTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors">
                     {feature.title}
                   </CardTitle>
-                  <CardDescription className="text-black">
+                  <CardDescription className="text-gray-900 dark:text-gray-100">
                     {feature.description}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <ul className="space-y-2">
                     {feature.benefits.map((benefit, benefitIndex) => (
-                      <li key={benefitIndex} className="flex items-center text-sm text-black">
+                      <li key={benefitIndex} className="flex items-center text-sm text-gray-900 dark:text-gray-100">
                         <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3 flex-shrink-0" />
                         {benefit}
                       </li>
@@ -142,7 +142,7 @@ export function FeaturesSection() {
         <div className="text-center mt-16">
           <div className="inline-flex items-center px-6 py-3 rounded-full bg-white shadow-md">
             <Shield className="w-5 h-5 text-success mr-2" />
-            <span className="text-sm font-medium text-black">Enterprise-grade security and compliance</span>
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Enterprise-grade security and compliance</span>
           </div>
         </div>
       </div>

@@ -9,6 +9,32 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        gray: {
+          50: 'hsl(var(--gray-50))',
+          100: 'hsl(var(--gray-100))',
+          200: 'hsl(var(--gray-200))',
+          300: 'hsl(var(--gray-300))',
+          400: 'hsl(var(--gray-400))',
+          500: 'hsl(var(--gray-500))',
+          600: 'hsl(var(--gray-600))',
+          700: 'hsl(var(--gray-700))',
+          800: 'hsl(var(--gray-800))',
+          900: 'hsl(var(--gray-900))',
+          950: 'hsl(var(--gray-950))',
+        },
+        blue: {
+          50: 'hsl(var(--blue-50))',
+          100: 'hsl(var(--blue-100))',
+          200: 'hsl(var(--blue-200))',
+          300: 'hsl(var(--blue-300))',
+          400: 'hsl(var(--blue-400))',
+          500: 'hsl(var(--blue-500))',
+          600: 'hsl(var(--blue-600))',
+          700: 'hsl(var(--blue-700))',
+          800: 'hsl(var(--blue-800))',
+          900: 'hsl(var(--blue-900))',
+          950: 'hsl(var(--blue-950))',
+        },
         primary: {
           DEFAULT: '#eace0a',
           50: '#fefce8',

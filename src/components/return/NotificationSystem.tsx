@@ -112,10 +112,10 @@ export function NotificationSystem({ request }: NotificationSystemProps) {
              <Bell className="h-5 w-5" />}
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-black">{notification.message}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{notification.message}</p>
           </div>
           <button 
-            className="flex-shrink-0 text-black hover:text-gray-500"
+            className="flex-shrink-0 text-gray-900 dark:text-gray-100 hover:text-gray-500 dark:hover:text-gray-400"
             onClick={() => dismissNotification(notification.id)}
           >
             <XCircle className="h-4 w-4" />

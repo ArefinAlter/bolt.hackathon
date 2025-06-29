@@ -28,29 +28,27 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="#features" className="text-black hover:text-gray-900 transition-colors">
+            <Link href="#features" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
               Features
             </Link>
-            <Link href="#benefits" className="text-black hover:text-gray-900 transition-colors">
+            <Link href="#benefits" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
               Benefits
             </Link>
-            <Link href="#pricing" className="text-black hover:text-gray-900 transition-colors">
+            <Link href="#pricing" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
               Pricing
             </Link>
-            <Link href="#stack" className="text-black hover:text-gray-900 transition-colors">
+            <Link href="#stack" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
               Tech Stack
             </Link>
           </nav>
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/auth/login">
-              <Button variant="ghost" className="text-black hover:text-gray-900">
-                Sign In
-              </Button>
-            </Link>
+            <Button variant="ghost" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
+              Sign In
+            </Button>
             <Link href="/auth/signup">
-              <Button className="bg-primary hover:bg-primary/90 text-black font-medium">
+              <Button className="bg-primary hover:bg-primary/90 text-gray-900 dark:text-gray-100 font-medium">
                 Get Started
               </Button>
             </Link>
@@ -61,8 +59,8 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
+              className="md:hidden text-gray-900 dark:text-gray-100"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-black"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
@@ -75,41 +73,39 @@ export function Header() {
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
               <Link
                 href="#features"
-                className="block px-3 py-2 text-black hover:text-gray-900"
+                className="block px-3 py-2 text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Features
               </Link>
               <Link
                 href="#benefits"
-                className="block px-3 py-2 text-black hover:text-gray-900"
+                className="block px-3 py-2 text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Benefits
               </Link>
               <Link
                 href="#pricing"
-                className="block px-3 py-2 text-black hover:text-gray-900"
+                className="block px-3 py-2 text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Pricing
               </Link>
               <Link
                 href="#stack"
-                className="block px-3 py-2 text-black hover:text-gray-900"
+                className="block px-3 py-2 text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Tech Stack
               </Link>
               <div className="pt-4 pb-3 border-t border-gray-200">
                 <div className="flex items-center px-3 space-x-3">
-                  <Link href="/auth/login">
-                    <Button variant="ghost" className="w-full justify-start">
-                      Sign In
-                    </Button>
-                  </Link>
+                  <Button variant="ghost" className="w-full justify-start text-gray-900 dark:text-gray-100">
+                    Sign In
+                  </Button>
                   <Link href="/auth/signup">
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-black">
+                    <Button className="w-full bg-primary hover:bg-primary/90 text-gray-900 dark:text-gray-100">
                       Get Started
                     </Button>
                   </Link>
