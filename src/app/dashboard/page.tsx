@@ -114,7 +114,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6">
       {/* Demo Mode Toggle */}
       <div className="flex items-center space-x-4 mb-4">
         <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
@@ -124,8 +124,8 @@ export default function DashboardPage() {
       {/* Welcome card */}
       <Card className="border-0 shadow-md">
         <CardHeader className="pb-2">
-          <CardTitle className="text-2xl text-gray-900">Welcome to your Dashboard</CardTitle>
-          <CardDescription className="text-gray-700">
+          <CardTitle className="text-2xl">Welcome to your Dashboard</CardTitle>
+          <CardDescription>
             Manage your return requests, policies, and analytics all in one place
           </CardDescription>
         </CardHeader>
@@ -134,8 +134,8 @@ export default function DashboardPage() {
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-700">Total Returns</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalReturns}</p>
+                  <p className="text-sm text-gray-500">Total Returns</p>
+                  <p className="text-2xl font-bold">{stats.totalReturns}</p>
                 </div>
                 <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
                   <Package className="w-5 h-5 text-blue-600" />
@@ -146,8 +146,8 @@ export default function DashboardPage() {
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-700">Pending</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.pendingReturns}</p>
+                  <p className="text-sm text-gray-500">Pending</p>
+                  <p className="text-2xl font-bold">{stats.pendingReturns}</p>
                 </div>
                 <div className="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center">
                   <Clock className="w-5 h-5 text-orange-600" />
@@ -158,8 +158,8 @@ export default function DashboardPage() {
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-700">Approved</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.approvedReturns}</p>
+                  <p className="text-sm text-gray-500">Approved</p>
+                  <p className="text-2xl font-bold">{stats.approvedReturns}</p>
                 </div>
                 <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-green-600" />
@@ -170,8 +170,8 @@ export default function DashboardPage() {
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-700">Denied</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.deniedReturns}</p>
+                  <p className="text-sm text-gray-500">Denied</p>
+                  <p className="text-2xl font-bold">{stats.deniedReturns}</p>
                 </div>
                 <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
                   <AlertCircle className="w-5 h-5 text-red-600" />
@@ -189,8 +189,8 @@ export default function DashboardPage() {
             <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
               <Package className="w-6 h-6 text-blue-600" />
             </div>
-            <CardTitle className="text-gray-900">Return Requests</CardTitle>
-            <CardDescription className="text-gray-700">
+            <CardTitle>Return Requests</CardTitle>
+            <CardDescription>
               View and manage customer return requests
             </CardDescription>
           </CardHeader>
@@ -210,8 +210,8 @@ export default function DashboardPage() {
             <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mb-4">
               <FileText className="w-6 h-6 text-green-600" />
             </div>
-            <CardTitle className="text-gray-900">Policy Management</CardTitle>
-            <CardDescription className="text-gray-700">
+            <CardTitle>Policy Management</CardTitle>
+            <CardDescription>
               Configure and update return policies
             </CardDescription>
           </CardHeader>
@@ -231,8 +231,8 @@ export default function DashboardPage() {
             <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
               <BarChart3 className="w-6 h-6 text-purple-600" />
             </div>
-            <CardTitle className="text-gray-900">Analytics</CardTitle>
-            <CardDescription className="text-gray-700">
+            <CardTitle>Analytics</CardTitle>
+            <CardDescription>
               View detailed analytics and insights
             </CardDescription>
           </CardHeader>
@@ -252,8 +252,8 @@ export default function DashboardPage() {
             <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-orange-600" />
             </div>
-            <CardTitle className="text-gray-900">Risk Assessment</CardTitle>
-            <CardDescription className="text-gray-700">
+            <CardTitle>Risk Assessment</CardTitle>
+            <CardDescription>
               Monitor customer risk profiles
             </CardDescription>
           </CardHeader>
@@ -268,9 +268,6 @@ export default function DashboardPage() {
           </CardFooter>
         </Card>
       </div>
-
-      {/* Section header on dark background */}
-      <h2 className="text-2xl font-bold text-white mt-10">Recent Activity</h2>
 
       {/* Recent activity */}
       <Card className="border-0 shadow-md">
