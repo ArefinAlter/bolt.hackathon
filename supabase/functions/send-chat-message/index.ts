@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
 
   try {
     const { createClient } = await import('npm:@supabase/supabase-js@2')
-    const { CustomerServiceAgent } = await import('../customer-service-agent')
+    const { CustomerServiceAgent } = await import('../customer-service-agent/index.ts')
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -84,11 +84,25 @@ Deno.serve(async (req) => {
       }
 
       // Get AI response
+      console.log('Calling CustomerServiceAgent with context:', {
+        businessId: agentContext.businessId,
+        customerEmail: agentContext.customerEmail,
+        sessionId: agentContext.sessionId,
+        messageLength: message.length
+      });
+
       const aiResponse = await customerServiceAgent.processChatMessage(
         message,
         agentContext,
         conversationHistory || []
       )
+
+      console.log('AI Response result:', {
+        success: aiResponse.success,
+        messageLength: aiResponse.message?.length,
+        hasData: !!aiResponse.data,
+        error: aiResponse.data?.error
+      });
 
       if (aiResponse.success) {
         agentResponse = aiResponse.message
@@ -136,6 +150,10 @@ Deno.serve(async (req) => {
         }
       } else {
         // Fallback response if AI fails
+        console.error('AI Agent failed:', {
+          error: aiResponse.data?.error,
+          message: aiResponse.message
+        });
         agentResponse = "I'm here to help with your return or refund request. Could you please provide your order number and describe the issue you're experiencing?"
       }
 

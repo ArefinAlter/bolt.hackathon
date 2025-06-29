@@ -83,8 +83,16 @@ export async function sendChatMessage(
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
-      throw new Error('No active session');
+      throw new Error('No active session - please log in again');
     }
+    
+    console.log('Sending chat message:', {
+      sessionId,
+      message: message.substring(0, 50) + '...',
+      sender,
+      messageType,
+      hasMetadata: !!metadata
+    });
     
     const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-chat-message`, {
       method: 'POST',
@@ -101,12 +109,30 @@ export async function sendChatMessage(
       })
     });
     
+    console.log('Response status:', response.status);
+    
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to send message');
+      const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
+      console.error('Chat API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
+      
+      // Provide more specific error messages
+      if (response.status === 401) {
+        throw new Error('Authentication failed - please log in again');
+      } else if (response.status === 404) {
+        throw new Error('Chat session not found - please refresh the page');
+      } else if (response.status === 500) {
+        throw new Error('Server error - please try again in a moment');
+      } else {
+        throw new Error(errorData.error || `Failed to send message (${response.status})`);
+      }
     }
     
     const data = await response.json();
+    console.log('Chat message sent successfully:', data);
     
     return {
       userMessage: data.user_message,

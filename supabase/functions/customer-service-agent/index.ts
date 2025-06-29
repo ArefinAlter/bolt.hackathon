@@ -147,8 +147,12 @@ export class CustomerServiceAgent {
     try {
       const apiKey = Deno.env.get('OPENAI_API_KEY')
       if (!apiKey) {
+        console.error('❌ OPENAI_API_KEY not configured in environment variables');
         throw new Error('OPENAI_API_KEY not configured')
       }
+      
+      console.log('🔑 OpenAI API Key found, making request...');
+      console.log('📝 Messages being sent:', messages.length, 'messages');
       
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -164,12 +168,18 @@ export class CustomerServiceAgent {
         })
       })
       
+      console.log('📡 OpenAI API Response Status:', response.status);
+      
       if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`)
+        const errorText = await response.text();
+        console.error('❌ OpenAI API error response:', errorText);
+        throw new Error(`OpenAI API error: ${response.status} - ${errorText}`)
       }
       
       const data = await response.json()
       const content = data.choices[0].message.content
+      
+      console.log('✅ OpenAI API call successful, response length:', content.length);
       
       // Log interaction to database
       await this.logInteraction(context, {
@@ -189,7 +199,7 @@ export class CustomerServiceAgent {
       }
       
     } catch (error) {
-      console.error('OpenAI API Error:', error)
+      console.error('❌ OpenAI API Error:', error)
       
       // Log failed interaction
       await this.logInteraction(context, {

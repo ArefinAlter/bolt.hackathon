@@ -14,44 +14,83 @@ serve(async (req) => {
   }
 
   try {
-    const { testType, data } = await req.json()
+    // Test environment variables
+    const openaiKey = Deno.env.get('OPENAI_API_KEY')
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
-    let result: any
+    console.log('🔍 Environment Variables Check:');
+    console.log('OpenAI API Key:', openaiKey ? '✅ SET' : '❌ NOT SET');
+    console.log('Supabase URL:', supabaseUrl ? '✅ SET' : '❌ NOT SET');
+    console.log('Service Role Key:', serviceRoleKey ? '✅ SET' : '❌ NOT SET');
     
-    switch (testType) {
-      case 'customer_service':
-        const customerAgent = new CustomerServiceAgent()
-        result = await customerAgent.processChatMessage(
-          data.message,
-          data.context,
-          data.history || []
-        )
-        break
-        
-      case 'triage':
-        const triageAgent = new TriageAgent()
-        result = await triageAgent.evaluateReturnRequest(
-          data.requestData,
-          data.policyRules,
-          data.businessId
-        )
-        break
-        
-      case 'policy_mcp':
-        const policyServer = new PolicyMCPServer()
-        result = await policyServer.handleRequest(data.request)
-        break
-        
-      default:
-        throw new Error(`Unknown test type: ${testType}`)
+    if (!openaiKey) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'OPENAI_API_KEY not configured',
+          message: 'Please set the OPENAI_API_KEY environment variable in your Supabase project'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
     }
     
-    return new Response(
-      JSON.stringify({ success: true, result }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    // Test OpenAI API call
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openaiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            { role: 'system', content: 'You are a helpful assistant.' },
+            { role: 'user', content: 'Say "Hello, AI is working!"' }
+          ],
+          max_tokens: 50
+        })
+      })
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`OpenAI API error: ${response.status} - ${errorText}`)
+      }
+      
+      const data = await response.json()
+      const content = data.choices[0].message.content
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          message: 'AI is working correctly!',
+          openaiResponse: content,
+          environment: {
+            openaiKey: openaiKey ? 'SET' : 'NOT SET',
+            supabaseUrl: supabaseUrl ? 'SET' : 'NOT SET',
+            serviceRoleKey: serviceRoleKey ? 'SET' : 'NOT SET'
+          }
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+      
+    } catch (openaiError) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'OpenAI API test failed',
+          message: openaiError.message,
+          environment: {
+            openaiKey: openaiKey ? 'SET' : 'NOT SET',
+            supabaseUrl: supabaseUrl ? 'SET' : 'NOT SET',
+            serviceRoleKey: serviceRoleKey ? 'SET' : 'NOT SET'
+          }
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
+    }
     
   } catch (error) {
+    console.error('Error in test-ai-agents:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
