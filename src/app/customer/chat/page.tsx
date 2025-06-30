@@ -41,6 +41,8 @@ import { v4 as uuidv4 } from 'uuid';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Logo } from '@/components/common/Logo';
+import { DemoToggle } from '@/components/common/DemoToggle';
 
 export default function CustomerChatPage() {
   const router = useRouter();
@@ -453,116 +455,114 @@ export default function CustomerChatPage() {
   }
   
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b px-4 py-3">
-        <Container>
-          <Grid cols={12} gap="md">
-            <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
-              <Flex direction="row" gap="sm" align="center">
-                <Link href="/" className="flex items-center space-x-3">
-                  <Image
-                    src="/main_logo.svg"
-                    alt="Dokani"
-                    width={120}
-                    height={32}
-                    className="h-8 w-auto dark:hidden"
-                    style={{ width: 'auto' }}
-                  />
-                  <Image
-                    src="/white_logo.svg"
-                    alt="Dokani"
-                    width={120}
-                    height={32}
-                    className="h-8 w-auto hidden dark:block"
-                    style={{ width: 'auto' }}
-                  />
-                  <div className="ml-3">
-                    <h1 className="text-lg font-semibold text-black">Customer Support</h1>
-                    <p className="text-sm text-black">
-                      {isCallActive 
-                        ? `${callType === 'voice' ? 'Voice' : 'Video'} call in progress...` 
-                        : 'Chat with our AI assistant'}
-                    </p>
-                  </div>
-                </Link>
-              </Flex>
-            </GridItem>
-            <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
-              <Flex direction="col" gap="sm" responsive={{ 
-                sm: { direction: 'col' }, 
-                md: { direction: 'row', justify: 'end' },
-                lg: { direction: 'row', justify: 'end' },
-                xl: { direction: 'row', justify: 'end' }
-              }}>
-                <Flex direction="row" gap="sm" align="center">
-                  <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-                  <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
-                </Flex>
-                <Flex direction="row" gap="sm" responsive={{ 
-                  sm: { direction: 'col' }, 
-                  md: { direction: 'row' },
-                  lg: { direction: 'row' },
-                  xl: { direction: 'row' }
-                }}>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleStartVoiceCall}
-                    disabled={isCallActive}
-                    className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 w-full md:w-auto"
-                  >
-                    <Phone className="h-4 w-4 mr-2" />
-                    Voice Call
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleStartVideoCall}
-                    disabled={isCallActive}
-                    className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100 w-full md:w-auto"
-                  >
-                    <Video className="h-4 w-4 mr-2" />
-                    Video Call
-                  </Button>
-                </Flex>
-              </Flex>
-            </GridItem>
-          </Grid>
-        </Container>
-      </header>
-      
+    <div className="relative bg-white" style={{ height: '100vh', minHeight: '100vh' }}>
       {/* Main chat area */}
-      <main className="flex-1 overflow-hidden">
-        <div className="max-w-4xl mx-auto h-full flex flex-col">
-          {/* Error message */}
-          {error && (
-            <Grid cols={12} gap="sm">
-              <GridItem span={12}>
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md m-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <AlertTriangle className="h-5 w-5 text-red-400" />
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm font-medium">{error}</p>
-                      <button 
-                        className="text-sm text-red-700 underline"
-                        onClick={() => setError(null)}
-                      >
-                        Dismiss
-                      </button>
-                    </div>
+      <div className="flex flex-col h-full">
+        {/* Unified header combining layout and chat headers */}
+        <div className="bg-white border-b flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+              {/* Left section: Logo, Portal info, Chat info */}
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
+                <div className="flex items-center space-x-4">
+                  <Logo />
+                  <span className="text-sm text-gray-500">Customer Portal</span>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <p className="text-sm text-gray-500">
+                    {isCallActive 
+                      ? `${callType === 'voice' ? 'Voice' : 'Video'} call in progress...` 
+                      : ''}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Right section: Demo toggle, Call buttons, Account actions */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                {/* Demo and Call buttons */}
+                <div className="flex items-center space-x-4">
+                  <DemoToggle 
+                    isDemoMode={isDemoMode} 
+                    onDemoModeChange={setIsDemoMode}
+                  />
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleStartVoiceCall}
+                      disabled={isCallActive}
+                      className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                    >
+                      <Phone className="h-4 w-4 mr-2" />
+                      Voice Call
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleStartVideoCall}
+                      disabled={isCallActive}
+                      className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                    >
+                      <Video className="h-4 w-4 mr-2" />
+                      Video Call
+                    </Button>
                   </div>
                 </div>
-              </GridItem>
-            </Grid>
+                
+                {/* Account actions */}
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      localStorage.setItem('userRole', 'business');
+                      router.push('/dashboard');
+                    }}
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    Switch to Business View
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => supabase.auth.signOut().then(() => router.push('/'))}
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    Sign Out
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex-1 flex flex-col min-h-0" style={{ paddingBottom: fileUploads.length > 0 ? '200px' : '120px' }}>
+          
+          {/* Error message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md m-4 flex-shrink-0">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertTriangle className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium">{error}</p>
+                  <button 
+                    className="text-sm text-red-700 underline"
+                    onClick={() => setError(null)}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
           
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4 min-h-0">
+            <div className="max-w-4xl mx-auto">
             {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="flex flex-col items-center justify-center min-h-[300px] text-center">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <MessageSquare className="h-8 w-8 text-primary" />
                 </div>
@@ -610,46 +610,54 @@ export default function CustomerChatPage() {
                 <div ref={messagesEndRef} />
               </div>
             )}
+            </div>
           </div>
           
+        </div>
+        
+        {/* Fixed input area at bottom */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-10 backdrop-blur-sm bg-white/95" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}>
           {/* File uploads preview */}
           {fileUploads.length > 0 && (
-            <div className="bg-gray-50 border-t p-2 flex flex-wrap gap-2">
-              {fileUploads.map(file => (
-                <div 
-                  key={file.id} 
-                  className="relative bg-white rounded-md border p-2 flex items-center"
-                >
-                  {file.status === 'uploading' ? (
-                    <div className="w-6 h-6 mr-2 flex items-center justify-center">
-                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    </div>
-                  ) : file.status === 'error' ? (
-                    <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
-                  ) : (
-                    <Paperclip className="h-4 w-4 mr-2 text-black" />
-                  )}
-                  
-                  <span className="text-sm truncate max-w-[150px]">{file.file.name}</span>
-                  
-                  <button 
-                    className="ml-2 text-black hover:text-gray-600"
-                    onClick={() => handleRemoveFile(file.id)}
+            <div className="bg-gray-50 border-t p-2 flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+              <div className="max-w-4xl mx-auto w-full flex flex-wrap gap-2">
+                {fileUploads.map(file => (
+                  <div 
+                    key={file.id} 
+                    className="relative bg-white rounded-md border p-2 flex items-center"
                   >
-                    <X className="h-4 w-4" />
-                  </button>
-                  
-                  {file.status === 'uploading' && (
-                    <div className="absolute bottom-0 left-0 h-1 bg-primary" style={{ width: `${file.upload_progress}%` }}></div>
-                  )}
-                </div>
-              ))}
+                    {file.status === 'uploading' ? (
+                      <div className="w-6 h-6 mr-2 flex items-center justify-center">
+                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      </div>
+                    ) : file.status === 'error' ? (
+                      <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
+                    ) : (
+                      <Paperclip className="h-4 w-4 mr-2 text-black" />
+                    )}
+                    
+                    <span className="text-sm truncate max-w-[150px]">{file.file.name}</span>
+                    
+                    <button 
+                      className="ml-2 text-black hover:text-gray-600"
+                      onClick={() => handleRemoveFile(file.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                    
+                    {file.status === 'uploading' && (
+                      <div className="absolute bottom-0 left-0 h-1 bg-primary" style={{ width: `${file.upload_progress}%` }}></div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           
           {/* Input area */}
-          <div className="bg-white border-t p-4">
-            <div className="max-w-4xl mx-auto flex items-end space-x-2">
+          <div className="p-4">
+            <div className="max-w-4xl mx-auto">
+            <div className="flex items-end space-x-2">
               <div className="flex-1 relative">
                 <TextareaAutosize
                   placeholder="Type your message..."
@@ -661,9 +669,9 @@ export default function CustomerChatPage() {
                       handleSendMessage();
                     }
                   }}
-                  className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary resize-none max-h-32"
+                  className="w-full bg-white border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary resize-none max-h-24"
                   minRows={1}
-                  maxRows={5}
+                  maxRows={2}
                   disabled={isSending}
                 />
               </div>
@@ -706,9 +714,10 @@ export default function CustomerChatPage() {
                 )}
               </Button>
             </div>
+            </div>
           </div>
         </div>
-      </main>
+      </div>
       
       {/* File preview dialog */}
       <Dialog open={showFilePreview} onOpenChange={setShowFilePreview}>

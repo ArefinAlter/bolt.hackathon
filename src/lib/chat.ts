@@ -78,7 +78,7 @@ export async function fetchChatMessages(sessionId: string, demoMode = false): Pr
           id: 'demo-msg-1',
           session_id: sessionId,
           sender: 'system',
-          message: 'Welcome to Dokani Customer Support! How can I help you today?',
+          message: 'Welcome to Dokani AI Customer Support! How can I help you today?',
           message_type: 'text',
           created_at: new Date(Date.now() - 60000).toISOString()
         },

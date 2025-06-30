@@ -170,20 +170,6 @@ export function CallHistory({ businessId, isDemoMode = false }: CallHistoryProps
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Call History</h2>
-          <p className="text-gray-600">Review past voice conversations and transcripts</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-        </div>
-      </div>
-
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
@@ -200,18 +186,19 @@ export function CallHistory({ businessId, isDemoMode = false }: CallHistoryProps
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-gray-400" />
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as any)}
-                className="border rounded-md px-3 py-2 text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white"
               >
                 <option value="all">All Status</option>
-                <option value="ended">Completed</option>
+                <option value="completed">Completed</option>
                 <option value="failed">Failed</option>
-                <option value="active">In Progress</option>
-                <option value="connecting">Connecting</option>
-                <option value="initiated">Initiated</option>
+                <option value="in_progress">In Progress</option>
               </select>
             </div>
           </div>

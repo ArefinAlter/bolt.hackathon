@@ -58,7 +58,7 @@ export function ChatHeader({
           <div className="ml-3">
             <h1 className="text-lg font-semibold text-gray-900">Customer Support</h1>
             <p className="text-sm text-gray-500">
-              {isCallActive ? 'Call in progress...' : 'Chat with our AI assistant'}
+              {isCallActive ? 'Call in progress...' : ''}
             </p>
           </div>
         </div>

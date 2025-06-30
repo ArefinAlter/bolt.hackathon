@@ -138,48 +138,33 @@ export default function PersonasPage() {
   }
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 lg:px-8 pt-4">
-      {/* Header */}
-      <Grid cols={12} gap="md">
-        <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Support Personas</h1>
-          <p className="text-gray-500">
-            Create and manage voice and video AI personas for customer interactions
-          </p>
-        </div>
-        </GridItem>
-        <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
-          <Flex direction="col" gap="sm" responsive={{ 
-            sm: { direction: 'col' }, 
-            md: { direction: 'row', justify: 'end' },
-            lg: { direction: 'row', justify: 'end' },
-            xl: { direction: 'row', justify: 'end' }
-          }}>
+    <div className="space-y-6">
+      {/* Actions Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div></div>
+        <div className="flex gap-2">
           <Button 
             variant="outline" 
             onClick={handleRefresh}
             disabled={isLoading}
-              className="w-full md:w-auto"
+            size="sm"
           >
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           <Button 
-              className="bg-primary hover:bg-primary/90 text-black w-full md:w-auto"
+            className="bg-primary hover:bg-primary/90 text-black"
             onClick={() => setIsCreating(true)}
             disabled={isCreating}
+            size="sm"
           >
             <Plus className="mr-2 h-4 w-4" />
             Create New Persona
           </Button>
-          </Flex>
-        </GridItem>
-      </Grid>
+        </div>
+      </div>
       
       {error && (
-        <Grid cols={12} gap="sm">
-          <GridItem span={12}>
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
           <div className="flex">
             <div className="flex-shrink-0">
@@ -190,8 +175,6 @@ export default function PersonasPage() {
             </div>
           </div>
         </div>
-          </GridItem>
-        </Grid>
       )}
       
       {isCreating ? (
@@ -375,7 +358,7 @@ export default function PersonasPage() {
             </div>
             
             {/* Usage chart would go here in a real implementation */}
-            <div className="mt-6 h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                          <div className="mt-6 h-64 bg-white border rounded-lg flex items-center justify-center shadow-sm">
               <p className="text-gray-500">Persona usage analytics will appear here as you use your personas</p>
             </div>
           </CardContent>

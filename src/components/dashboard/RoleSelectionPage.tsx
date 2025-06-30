@@ -20,6 +20,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { UserRole } from '@/types/auth';
 import { supabase } from '@/lib/supabase';
+import { Logo } from '@/components/common/Logo';
 
 export function RoleSelectionPage() {
   const router = useRouter();
@@ -88,38 +89,10 @@ export function RoleSelectionPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <header className="py-6 px-4 sm:px-6 lg:px-8 border-b bg-white">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center">
-            <Image
-              src="/main_logo.svg"
-              alt="Dokani"
-              width={180}
-              height={48}
-              className="h-16 w-auto"
-            />
-          </div>
-          <div className="flex items-center space-x-4">
-            {user && (
-              <span className="text-sm text-gray-600">
-                Welcome, {user.email}
-                {profile && (
-                  <span className="ml-2 text-xs text-gray-500">
-                    ({profile.business_name})
-                  </span>
-                )}
-              </span>
-            )}
-            <Button 
-              variant="ghost" 
-              className="text-sm text-black"
-              onClick={handleSignOut}
-            >
-              Sign Out
-            </Button>
-          </div>
+    <div className="min-h-screen flex flex-col bg-white">
+      <header className="bg-white border-b px-4 py-4">
+        <div className="max-w-7xl mx-auto">
+          <Logo />
         </div>
       </header>
 

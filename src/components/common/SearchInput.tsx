@@ -33,7 +33,7 @@ export function SearchInput({
 
   useEffect(() => {
     onSearch(debouncedValue);
-  }, [debouncedValue, onSearch]);
+  }, [debouncedValue]);
 
   const handleClear = () => {
     setValue('');

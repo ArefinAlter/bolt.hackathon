@@ -10,7 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { DemoToggle } from '@/components/common/DemoToggle';
 import { createReturnRequest } from '@/lib/return';
+import { Logo } from '@/components/common/Logo';
 
 export default function NewReturnPage() {
   const router = useRouter();
@@ -58,35 +60,28 @@ export default function NewReturnPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.back()}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                New Return Request
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-              <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-white">
       {/* Main content */}
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6 flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <h1 className="text-2xl font-bold text-gray-900">New Return Request</h1>
+          </div>
+                      <DemoToggle 
+              isDemoMode={isDemoMode} 
+              onDemoModeChange={setIsDemoMode}
+            />
+        </div>
+        
         <Card className="border-0 shadow-md">
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -120,6 +115,7 @@ export default function NewReturnPage() {
                     value={formData.order_id}
                     onChange={(e) => setFormData(prev => ({ ...prev, order_id: e.target.value }))}
                     placeholder="Enter your order ID"
+                    className="bg-white"
                     required
                   />
                 </div>
@@ -131,6 +127,7 @@ export default function NewReturnPage() {
                     value={formData.customer_email}
                     onChange={(e) => setFormData(prev => ({ ...prev, customer_email: e.target.value }))}
                     placeholder="your@email.com"
+                    className="bg-white"
                     required
                   />
                 </div>
@@ -142,7 +139,7 @@ export default function NewReturnPage() {
                   id="reason_for_return"
                   value={formData.reason_for_return}
                   onChange={(e) => setFormData(prev => ({ ...prev, reason_for_return: e.target.value }))}
-                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full border rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary"
                   required
                 >
                   <option value="">Select a reason</option>
@@ -163,6 +160,7 @@ export default function NewReturnPage() {
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Provide additional details about your return request..."
+                  className="bg-white"
                   rows={4}
                 />
               </div>
@@ -195,7 +193,7 @@ export default function NewReturnPage() {
                 {files.length > 0 && (
                   <div className="mt-4 space-y-2">
                     {files.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                      <div key={index} className="flex items-center justify-between bg-white border p-2 rounded">
                         <span className="text-sm truncate">{file.name}</span>
                         <Button
                           type="button"

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createClient } from '@supabase/supabase-js';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Logo } from '@/components/common/Logo';
 
 export default function TestAuthPage() {
   const router = useRouter();
@@ -353,23 +354,23 @@ export default function TestAuthPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <Image
-                src="/main_logo.svg"
-                alt="Dokani"
-                width={240}
-                height={64}
-                className="h-16 w-auto"
-              />
-            </Link>
-            <div className="text-sm text-gray-500">
-              Authentication Testing
+            <div className="flex items-center space-x-4">
+              <Logo />
+              <span className="text-sm text-gray-500">Auth Testing</span>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => router.push('/')}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              Back to Home
+            </Button>
           </div>
         </div>
       </header>

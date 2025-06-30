@@ -131,7 +131,7 @@ export default function CustomerChatPage() {
   }
   
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-white">
       {/* Header */}
       <ChatHeader 
         userName={userName}

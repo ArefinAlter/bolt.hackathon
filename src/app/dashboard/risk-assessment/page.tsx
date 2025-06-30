@@ -10,7 +10,8 @@ import { RiskProfileTable } from '@/components/dashboard/risk-assessment/RiskPro
 import { RiskProfileDetail } from '@/components/dashboard/risk-assessment/RiskProfileDetail';
 import { supabase } from '@/lib/supabase';
 import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@/components/ui/badge';
+import { DemoToggle } from '@/components/common/DemoToggle';
 
 interface RiskProfile {
   id: string;
@@ -211,56 +212,36 @@ export default function RiskAssessmentPage() {
   const stats = getRiskStats();
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 lg:px-8 pt-4">
-      <Grid cols={12} gap="sm">
-        <GridItem span={12} responsive={{ sm: 12, md: 6, lg: 4, xl: 3 }}>
-          <Flex direction="row" gap="sm" align="center">
-            <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-            <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
-          </Flex>
-        </GridItem>
-      </Grid>
-      
-      {/* Header */}
-      <Grid cols={12} gap="md">
-        <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
-          <div>
-            <h1 className="text-2xl font-bold text-black">Risk Assessment</h1>
-            <p className="text-black">Monitor customer risk profiles and fraud indicators</p>
-          </div>
-        </GridItem>
-        <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
-          <Flex direction="col" gap="sm" responsive={{ 
-            sm: { direction: 'col' }, 
-            md: { direction: 'row', justify: 'end' },
-            lg: { direction: 'row', justify: 'end' },
-            xl: { direction: 'row', justify: 'end' }
-          }}>
-            <Button variant="outline" size="sm" className="w-full md:w-auto">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
-          </Flex>
-        </GridItem>
-      </Grid>
+    <div className="space-y-6">
+      {/* Actions Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <DemoToggle 
+          isDemoMode={isDemoMode} 
+          onDemoModeChange={setIsDemoMode}
+        />
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => fetchRisk()}
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
+      </div>
 
       {/* Stats Cards */}
-      <Grid cols={12} gap="lg">
-        <GridItem span={12}>
-          <RiskStatsCard stats={stats} />
-        </GridItem>
-      </Grid>
+      <div>
+        <RiskStatsCard stats={stats} />
+      </div>
 
       {/* Risk Profiles Table */}
-      <Grid cols={12} gap="lg">
-        <GridItem span={12}>
-          <RiskProfileTable 
-            riskProfiles={riskProfiles}
-            onViewProfile={handleViewProfile}
-            onRecalculateRisk={handleRecalculateRisk}
-          />
-        </GridItem>
-      </Grid>
+      <div>
+        <RiskProfileTable 
+          riskProfiles={riskProfiles}
+          onViewProfile={handleViewProfile}
+          onRecalculateRisk={handleRecalculateRisk}
+        />
+      </div>
 
       {/* Risk Profile Detail Modal */}
       {businessId && (

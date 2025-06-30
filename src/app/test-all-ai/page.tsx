@@ -16,6 +16,8 @@ import { Bot, MessageSquare, FileText, Settings, Play, Square, RotateCcw, CheckC
 import Image from 'next/image'
 import Link from 'next/link'
 import { Loader2, Zap, AlertTriangle, BarChart3 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Logo } from '@/components/common/Logo'
 
 interface TestResult {
   function: string
@@ -37,6 +39,7 @@ export default function TestAllAIPage() {
   const [results, setResults] = useState<any>({})
   const [errors, setErrors] = useState<any>({})
   const { toast } = useToast()
+  const router = useRouter()
 
   const addLog = (message: string) => {
     setLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`])
@@ -394,23 +397,23 @@ export default function TestAllAIPage() {
   const categories = Array.from(new Set(aiFunctions.map(f => f.category)))
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <Image
-                src="/main_logo.svg"
-                alt="Dokani"
-                width={240}
-                height={64}
-                className="h-16 w-auto"
-              />
-            </Link>
-            <div className="text-sm text-gray-500">
-              AI Testing Suite
+            <div className="flex items-center space-x-4">
+              <Logo />
+              <span className="text-sm text-gray-500">AI Testing Suite</span>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => router.push('/')}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              Back to Home
+            </Button>
           </div>
         </div>
       </header>

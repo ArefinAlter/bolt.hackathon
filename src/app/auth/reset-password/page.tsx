@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm';
+import { Logo } from '@/components/common/Logo';
 
 export const metadata: Metadata = {
   title: 'Reset Password - Dokani',
@@ -12,20 +13,14 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="py-6 px-4 sm:px-6 lg:px-8 border-b bg-white">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link href="/" className="flex items-center space-x-2">
-            <Image
-              src="/main_logo.svg"
-              alt="Dokani"
-              width={180}
-              height={48}
-              className="h-12 w-auto"
-            />
-          </Link>
-          <Link href="/auth/login" className="text-sm font-medium text-primary hover:underline">
-            Back to sign in
-          </Link>
+      <header className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center">
+            <Logo />
+            <Link href="/auth/login" className="text-sm font-medium text-primary hover:underline">
+              Back to sign in
+            </Link>
+          </div>
         </div>
       </header>
 

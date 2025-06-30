@@ -213,38 +213,38 @@ export function ReturnsTable({
     
     switch (status) {
       case 'pending_triage':
-        bgColor = 'bg-blue-50 dark:bg-blue-900/30';
-        textColor = 'text-blue-700 dark:text-blue-300';
+        bgColor = 'bg-blue-50';
+        textColor = 'text-blue-700';
         icon = <Clock className="w-4 h-4 mr-1" />;
         label = 'Pending Triage';
         break;
       case 'pending_review':
-        bgColor = 'bg-orange-50 dark:bg-orange-900/30';
-        textColor = 'text-orange-700 dark:text-orange-300';
+        bgColor = 'bg-orange-50';
+        textColor = 'text-orange-700';
         icon = <Clock className="w-4 h-4 mr-1" />;
         label = 'Pending Review';
         break;
       case 'approved':
-        bgColor = 'bg-green-50 dark:bg-green-900/30';
-        textColor = 'text-green-700 dark:text-green-300';
+        bgColor = 'bg-green-50';
+        textColor = 'text-green-700';
         icon = <CheckCircle className="w-4 h-4 mr-1" />;
         label = 'Approved';
         break;
       case 'denied':
-        bgColor = 'bg-red-50 dark:bg-red-900/30';
-        textColor = 'text-red-700 dark:text-red-300';
+        bgColor = 'bg-red-50';
+        textColor = 'text-red-700';
         icon = <XCircle className="w-4 h-4 mr-1" />;
         label = 'Denied';
         break;
       case 'completed':
-        bgColor = 'bg-purple-50 dark:bg-purple-900/30';
-        textColor = 'text-purple-700 dark:text-purple-300';
+        bgColor = 'bg-purple-50';
+        textColor = 'text-purple-700';
         icon = <CheckCircle className="w-4 h-4 mr-1" />;
         label = 'Completed';
         break;
       default:
-        bgColor = 'bg-gray-50 dark:bg-gray-800';
-        textColor = 'text-gray-700 dark:text-gray-300';
+        bgColor = 'bg-gray-50';
+        textColor = 'text-gray-700';
         label = status;
     }
     
@@ -257,43 +257,19 @@ export function ReturnsTable({
   };
 
   return (
-    <Card className="border-0 shadow-md dark:bg-gray-800 dark:border-gray-700">
-      <CardHeader className="pb-2">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-          <div>
-            <CardTitle className="text-2xl dark:text-white">Return Requests</CardTitle>
-            <CardDescription className="dark:text-gray-400">
-              View and manage all customer return requests
-            </CardDescription>
-          </div>
-          <div className="mt-4 md:mt-0 flex space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isLoading}
-              className="dark:border-gray-600 dark:text-gray-300"
-            >
-              <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-            <Button 
-              className="bg-primary hover:bg-primary/90 text-black"
-              size="sm"
-              onClick={() => router.push('/dashboard/requests/new')}
-            >
-              <Package className="mr-2 h-4 w-4" />
-              Create Manual Return
-            </Button>
-          </div>
-        </div>
+    <Card className="border-0 shadow-md">
+      <CardHeader>
+        <CardTitle>Return Requests</CardTitle>
+        <CardDescription>
+          Manage and review customer return requests
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-md mb-6">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
             <div className="flex">
               <div className="flex-shrink-0">
-                <AlertTriangle className="h-5 w-5 text-red-400 dark:text-red-300" />
+                <AlertTriangle className="h-5 w-5 text-red-400" />
               </div>
               <div className="ml-3">
                 <p className="text-sm font-medium">{error}</p>
@@ -314,7 +290,7 @@ export function ReturnsTable({
           <div className="flex gap-2">
             <Button
               variant={!filter.status || filter.status === 'all' ? 'default' : 'outline'}
-              className={!filter.status || filter.status === 'all' ? 'bg-primary text-black' : 'dark:border-gray-600 dark:text-gray-300'}
+              className={!filter.status || filter.status === 'all' ? 'bg-primary text-black' : ''}
               onClick={() => handleStatusFilter('all')}
               size="sm"
             >
@@ -322,7 +298,7 @@ export function ReturnsTable({
             </Button>
             <Button
               variant={filter.status === 'pending_triage' || filter.status === 'pending_review' ? 'default' : 'outline'}
-              className={filter.status === 'pending_triage' || filter.status === 'pending_review' ? 'bg-orange-500 text-white' : 'dark:border-gray-600 dark:text-gray-300'}
+              className={filter.status === 'pending_triage' || filter.status === 'pending_review' ? 'bg-orange-500 text-white' : ''}
               onClick={() => handleStatusFilter(filter.status === 'pending_triage' ? 'pending_review' : 'pending_triage')}
               size="sm"
             >
@@ -331,7 +307,7 @@ export function ReturnsTable({
             </Button>
             <Button
               variant={filter.status === 'approved' ? 'default' : 'outline'}
-              className={filter.status === 'approved' ? 'bg-green-500 text-white' : 'dark:border-gray-600 dark:text-gray-300'}
+              className={filter.status === 'approved' ? 'bg-green-500 text-white' : ''}
               onClick={() => handleStatusFilter(filter.status === 'approved' ? null : 'approved')}
               size="sm"
             >
@@ -340,7 +316,7 @@ export function ReturnsTable({
             </Button>
             <Button
               variant={filter.status === 'denied' ? 'default' : 'outline'}
-              className={filter.status === 'denied' ? 'bg-red-500 text-white' : 'dark:border-gray-600 dark:text-gray-300'}
+              className={filter.status === 'denied' ? 'bg-red-500 text-white' : ''}
               onClick={() => handleStatusFilter(filter.status === 'denied' ? null : 'denied')}
               size="sm"
             >
@@ -352,8 +328,8 @@ export function ReturnsTable({
 
         {/* Bulk actions */}
         {selectedRequests.length > 0 && (
-          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-2 mb-4 flex items-center justify-between">
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+          <div className="bg-gray-50 border border-gray-200 rounded-md p-2 mb-4 flex items-center justify-between">
+            <span className="text-sm text-gray-700">
               {selectedRequests.length} {selectedRequests.length === 1 ? 'request' : 'requests'} selected
             </span>
             <div className="flex space-x-2">
@@ -361,7 +337,7 @@ export function ReturnsTable({
                 variant="outline" 
                 size="sm"
                 onClick={() => handleBulkAction('approve')}
-                className="text-green-600 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/30"
+                className="text-green-600 border-green-200 hover:bg-green-50"
               >
                 <CheckCircle className="mr-2 h-3 w-3" />
                 Approve
@@ -370,7 +346,7 @@ export function ReturnsTable({
                 variant="outline" 
                 size="sm"
                 onClick={() => handleBulkAction('deny')}
-                className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/30"
+                className="text-red-600 border-red-200 hover:bg-red-50"
               >
                 <XCircle className="mr-2 h-3 w-3" />
                 Deny
@@ -379,7 +355,6 @@ export function ReturnsTable({
                 variant="outline" 
                 size="sm"
                 onClick={() => setSelectedRequests([])}
-                className="dark:border-gray-600 dark:text-gray-300"
               >
                 Clear
               </Button>
@@ -388,30 +363,14 @@ export function ReturnsTable({
         )}
 
         {/* Export button */}
-        <div className="flex justify-end mb-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="dark:border-gray-600 dark:text-gray-300">
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={handleExport}>
-                Export as CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExport}>
-                Export as Excel
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExport}>
-                Export as PDF
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="mb-4">
+          <Button variant="outline" size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Export Data
+          </Button>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
+        <div className="overflow-x-auto rounded-md border border-gray-200">
           {isLoading ? (
             <div className="flex justify-center items-center py-12">
               <LoadingSpinner text="Loading return requests..." />
@@ -419,18 +378,18 @@ export function ReturnsTable({
           ) : requests.length > 0 ? (
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-gray-50 dark:bg-gray-800 text-left">
-                  <th className="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                <tr className="bg-gray-50 text-left">
+                  <th className="px-4 py-3 text-sm font-medium text-gray-500">
                     <div className="flex items-center">
                       <input
                         type="checkbox"
-                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                         checked={selectedRequests.length === requests.length && requests.length > 0}
                         onChange={handleSelectAll}
                       />
                     </div>
                   </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-sm font-medium text-gray-500">
                     <button 
                       className="flex items-center"
                       onClick={() => handleSort('id')}
@@ -439,7 +398,7 @@ export function ReturnsTable({
                       <ArrowUpDown className="ml-1 h-4 w-4" />
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-sm font-medium text-gray-500">
                     <button 
                       className="flex items-center"
                       onClick={() => handleSort('order_id')}
@@ -448,7 +407,7 @@ export function ReturnsTable({
                       <ArrowUpDown className="ml-1 h-4 w-4" />
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-sm font-medium text-gray-500">
                     <button 
                       className="flex items-center"
                       onClick={() => handleSort('customer_email')}
@@ -457,7 +416,7 @@ export function ReturnsTable({
                       <ArrowUpDown className="ml-1 h-4 w-4" />
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-sm font-medium text-gray-500">
                     <button 
                       className="flex items-center"
                       onClick={() => handleSort('created_at')}
@@ -466,7 +425,7 @@ export function ReturnsTable({
                       <ArrowUpDown className="ml-1 h-4 w-4" />
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-sm font-medium text-gray-500">
                     <button 
                       className="flex items-center"
                       onClick={() => handleSort('status')}
@@ -475,7 +434,7 @@ export function ReturnsTable({
                       <ArrowUpDown className="ml-1 h-4 w-4" />
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-sm font-medium text-gray-500">
                     <button 
                       className="flex items-center"
                       onClick={() => handleSort('reason_for_return')}
@@ -484,7 +443,7 @@ export function ReturnsTable({
                       <ArrowUpDown className="ml-1 h-4 w-4" />
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-sm font-medium text-gray-500">
                     <button 
                       className="flex items-center"
                       onClick={() => handleSort('order_value')}
@@ -493,44 +452,44 @@ export function ReturnsTable({
                       <ArrowUpDown className="ml-1 h-4 w-4" />
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <th className="px-4 py-3 text-sm font-medium text-gray-500">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-gray-200">
                 {requests.map((request) => (
-                  <tr key={request.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                    <td className="px-4 py-4 text-sm text-gray-900 dark:text-gray-300">
+                  <tr key={request.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-4 text-sm text-gray-900">
                       <input
                         type="checkbox"
-                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                         checked={selectedRequests.includes(request.id)}
                         onChange={() => handleSelectRequest(request.id)}
                       />
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-900 dark:text-gray-300">{request.id}</td>
-                    <td className="px-4 py-4 text-sm text-gray-900 dark:text-gray-300">{request.order_id}</td>
-                    <td className="px-4 py-4 text-sm text-gray-900 dark:text-gray-300">{request.customer_email}</td>
-                    <td className="px-4 py-4 text-sm text-gray-900 dark:text-gray-300">
+                    <td className="px-4 py-4 text-sm text-gray-900">{request.id}</td>
+                    <td className="px-4 py-4 text-sm text-gray-900">{request.order_id}</td>
+                    <td className="px-4 py-4 text-sm text-gray-900">{request.customer_email}</td>
+                    <td className="px-4 py-4 text-sm text-gray-900">
                       {format(new Date(request.created_at), 'MMM d, yyyy')}
                     </td>
                     <td className="px-4 py-4 text-sm">
                       <StatusBadge status={request.status} />
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-900 dark:text-gray-300">
+                    <td className="px-4 py-4 text-sm text-gray-900">
                       {request.reason_for_return || 'Not specified'}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-900 dark:text-gray-300">
+                    <td className="px-4 py-4 text-sm text-gray-900">
                       ${request.order_value?.toFixed(2) || 
                          request.order_details?.purchase_price?.toFixed(2) || 
                          '0.00'}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-900 dark:text-gray-300">
+                    <td className="px-4 py-4 text-sm text-gray-900">
                       <Button 
                         variant="outline" 
                         size="sm"
-                        className="text-xs dark:border-gray-600 dark:text-gray-300"
+                        className="text-xs"
                         onClick={() => onViewRequest(request)}
                       >
                         <Eye className="h-3 w-3 mr-1" />
@@ -543,9 +502,9 @@ export function ReturnsTable({
             </table>
           ) : (
             <div className="text-center py-12">
-              <Package className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">No return requests found</h3>
-              <p className="text-gray-500 dark:text-gray-400">
+              <Package className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No return requests found</h3>
+              <p className="text-gray-500">
                 {filter.search || filter.status
                   ? 'Try adjusting your filters to see more results'
                   : 'Return requests will appear here when customers make them'}

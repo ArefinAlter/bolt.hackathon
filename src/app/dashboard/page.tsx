@@ -12,11 +12,8 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Grid, GridItem, Flex, Container } from '@/components/ui/grid';
+import { DemoToggle } from '@/components/common/DemoToggle';
 import { supabase } from '@/lib/supabase';
 
 export default function DashboardPage() {
@@ -115,234 +112,173 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Demo Mode Toggle */}
-      <div className="flex items-center space-x-4 mb-4">
-        <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-        <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
+    <div className="space-y-4">
+      {/* Demo Toggle */}
+      <div className="flex justify-end">
+        <DemoToggle 
+          isDemoMode={isDemoMode} 
+          onDemoModeChange={setIsDemoMode}
+        />
       </div>
 
-      {/* Welcome card */}
-      <Card className="border-0 shadow-md">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-2xl">Welcome to your Dashboard</CardTitle>
-          <CardDescription>
-            Manage your return requests, policies, and analytics all in one place
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Grid cols={4} gap="md" responsive={{ sm: 2, md: 4, lg: 4, xl: 4 }}>
-            <GridItem span={4} responsive={{ sm: 2, md: 1, lg: 1, xl: 1 }}>
-              <div className="bg-gray-50 rounded-lg p-4 h-full">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Total Returns</p>
-                    <p className="text-2xl font-bold">{stats.totalReturns}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                    <Package className="w-5 h-5 text-blue-600" />
-                  </div>
-                </div>
-              </div>
-            </GridItem>
-            
-            <GridItem span={4} responsive={{ sm: 2, md: 1, lg: 1, xl: 1 }}>
-              <div className="bg-gray-50 rounded-lg p-4 h-full">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Pending</p>
-                    <p className="text-2xl font-bold">{stats.pendingReturns}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-orange-600" />
-                  </div>
-                </div>
-              </div>
-            </GridItem>
-            
-            <GridItem span={4} responsive={{ sm: 2, md: 1, lg: 1, xl: 1 }}>
-              <div className="bg-gray-50 rounded-lg p-4 h-full">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Approved</p>
-                    <p className="text-2xl font-bold">{stats.approvedReturns}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
-                  </div>
-                </div>
-              </div>
-            </GridItem>
-            
-            <GridItem span={4} responsive={{ sm: 2, md: 1, lg: 1, xl: 1 }}>
-              <div className="bg-gray-50 rounded-lg p-4 h-full">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Denied</p>
-                    <p className="text-2xl font-bold">{stats.deniedReturns}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
-                    <AlertCircle className="w-5 h-5 text-red-600" />
-                  </div>
-                </div>
-              </div>
-            </GridItem>
-          </Grid>
-        </CardContent>
-      </Card>
-
-      {/* Quick actions */}
-      <Grid cols={4} gap="lg" responsive={{ sm: 1, md: 2, lg: 4, xl: 4 }}>
-        <GridItem span={4} responsive={{ sm: 1, md: 2, lg: 1, xl: 1 }}>
-          <Card className="border-0 shadow-md hover:shadow-lg transition-all h-full">
-            <CardHeader>
-              <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
-                <Package className="w-6 h-6 text-blue-600" />
-              </div>
-              <CardTitle>Return Requests</CardTitle>
-              <CardDescription>
-                View and manage customer return requests
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button 
-                className="w-full bg-primary hover:bg-primary/90 text-black"
-                onClick={() => router.push('/dashboard/requests')}
-              >
-                View Requests
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        </GridItem>
-        
-        <GridItem span={4} responsive={{ sm: 1, md: 2, lg: 1, xl: 1 }}>
-          <Card className="border-0 shadow-md hover:shadow-lg transition-all h-full">
-            <CardHeader>
-              <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mb-4">
-                <FileText className="w-6 h-6 text-green-600" />
-              </div>
-              <CardTitle>Policy Management</CardTitle>
-              <CardDescription>
-                Configure and update return policies
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button 
-                className="w-full bg-primary hover:bg-primary/90 text-black"
-                onClick={() => router.push('/dashboard/policy')}
-              >
-                Manage Policies
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        </GridItem>
-        
-        <GridItem span={4} responsive={{ sm: 1, md: 2, lg: 1, xl: 1 }}>
-          <Card className="border-0 shadow-md hover:shadow-lg transition-all h-full">
-            <CardHeader>
-              <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
-                <BarChart3 className="w-6 h-6 text-purple-600" />
-              </div>
-              <CardTitle>Analytics</CardTitle>
-              <CardDescription>
-                View detailed analytics and insights
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button 
-                className="w-full bg-primary hover:bg-primary/90 text-black"
-                onClick={() => router.push('/dashboard/analytics')}
-              >
-                View Analytics
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        </GridItem>
-        
-        <GridItem span={4} responsive={{ sm: 1, md: 2, lg: 1, xl: 1 }}>
-          <Card className="border-0 shadow-md hover:shadow-lg transition-all h-full">
-            <CardHeader>
-              <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-orange-600" />
-              </div>
-              <CardTitle>Risk Assessment</CardTitle>
-              <CardDescription>
-                Monitor customer risk profiles
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button 
-                className="w-full bg-primary hover:bg-primary/90 text-black"
-                onClick={() => router.push('/dashboard/risk-assessment')}
-              >
-                View Risk Profiles
-                <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        </GridItem>
-      </Grid>
-
-      {/* Recent activity */}
-      <Card className="border-0 shadow-md">
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>
-            Your latest return requests and policy changes
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {stats.totalReturns > 0 ? (
-            <div className="space-y-4">
-              {/* This would be populated with actual data in a real implementation */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                    <Package className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">New return request</p>
-                    <p className="text-sm text-gray-500">ORDER-12345 - Defective product</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-500">2 hours ago</p>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Policy updated</p>
-                    <p className="text-sm text-gray-500">Return window extended to 30 days</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-500">Yesterday</p>
-              </div>
+      {/* Stats Overview */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white border rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">Total Returns</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalReturns}</p>
             </div>
-          ) : (
-            <div className="text-center py-6">
-              <p className="text-gray-500">No recent activity to display</p>
-              <p className="text-sm text-gray-400 mt-1">
-                Activity will appear here as you use the platform
-              </p>
+            <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+              <Package className="w-5 h-5 text-blue-600" />
             </div>
-          )}
-        </CardContent>
-        <CardFooter>
+          </div>
+        </div>
+        
+        <div className="bg-white border rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">Pending</p>
+              <p className="text-2xl font-bold text-orange-600">{stats.pendingReturns}</p>
+            </div>
+            <div className="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center">
+              <Clock className="w-5 h-5 text-orange-600" />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white border rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">Approved</p>
+              <p className="text-2xl font-bold text-green-600">{stats.approvedReturns}</p>
+            </div>
+            <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-green-600" />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white border rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">Denied</p>
+              <p className="text-2xl font-bold text-red-600">{stats.deniedReturns}</p>
+            </div>
+            <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-red-600" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <button 
+          onClick={() => router.push('/dashboard/requests')}
+          className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-all text-left group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+              <Package className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 group-hover:text-blue-600">Return Requests</h3>
+              <p className="text-sm text-gray-500">Manage returns</p>
+            </div>
+          </div>
+        </button>
+        
+        <button 
+          onClick={() => router.push('/dashboard/policy')}
+          className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-all text-left group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+              <FileText className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 group-hover:text-green-600">Policy Management</h3>
+              <p className="text-sm text-gray-500">Configure policies</p>
+            </div>
+          </div>
+        </button>
+        
+        <button 
+          onClick={() => router.push('/dashboard/analytics')}
+          className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-all text-left group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-purple-600" />
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 group-hover:text-purple-600">Analytics</h3>
+              <p className="text-sm text-gray-500">View insights</p>
+            </div>
+          </div>
+        </button>
+        
+        <button 
+          onClick={() => router.push('/dashboard/risk-assessment')}
+          className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-all text-left group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
+              <Users className="w-5 h-5 text-orange-600" />
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 group-hover:text-orange-600">Risk Assessment</h3>
+              <p className="text-sm text-gray-500">Monitor risk</p>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="bg-white border rounded-lg p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
           <Button 
             variant="outline" 
-            className="w-full"
+            size="sm"
             onClick={() => router.push('/dashboard/requests')}
           >
-            View All Activity
+            View All
           </Button>
-        </CardFooter>
-      </Card>
+        </div>
+        
+        {stats.totalReturns > 0 ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center">
+                <Package className="w-4 h-4 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-sm">New return request</p>
+                <p className="text-xs text-gray-500">ORDER-12345 - Defective product</p>
+              </div>
+              <p className="text-xs text-gray-500">2h ago</p>
+            </div>
+            
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center">
+                <FileText className="w-4 h-4 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-sm">Policy updated</p>
+                <p className="text-xs text-gray-500">Return window extended to 30 days</p>
+              </div>
+              <p className="text-xs text-gray-500">1d ago</p>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No recent activity</p>
+            <p className="text-sm text-gray-400 mt-1">Activity will appear here as you use the platform</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -128,7 +128,7 @@ export function EvidenceUploader({
         
         <div 
           className={`mt-4 border-2 border-dashed rounded-lg p-6 text-center ${
-            dragActive ? 'border-primary bg-primary/5' : 'border-gray-300 dark:border-gray-600'
+            dragActive ? 'border-primary bg-primary/5' : 'border-gray-300'
           }`}
           onDragEnter={handleDrag}
           onDragOver={handleDrag}
@@ -144,11 +144,11 @@ export function EvidenceUploader({
             accept="image/*,.pdf,.doc,.docx"
           />
           
-          <Upload className="h-10 w-10 text-gray-900 dark:text-gray-500 mx-auto mb-3" />
-          <p className="text-gray-900 dark:text-gray-300 font-medium mb-1">
+          <Upload className="h-10 w-10 text-gray-900 mx-auto mb-3" />
+          <p className="text-gray-900 font-medium mb-1">
             Drop files here or click to upload
           </p>
-          <p className="text-gray-900 dark:text-gray-400 text-sm">
+          <p className="text-gray-900 text-sm">
             Support for images, documents, and videos up to 10MB
           </p>
           <Button
@@ -163,12 +163,12 @@ export function EvidenceUploader({
         {/* File preview */}
         {evidenceFiles.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-300 mb-2">Selected Files</h3>
+            <h3 className="text-sm font-medium text-gray-900 mb-2">Selected Files</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {evidenceFiles.map(file => (
                 <div 
                   key={file.id} 
-                  className="relative border dark:border-gray-700 rounded-md overflow-hidden"
+                  className="relative border rounded-md overflow-hidden"
                 >
                   {file.file.type.startsWith('image/') ? (
                     <div className="aspect-square relative">
@@ -179,26 +179,24 @@ export function EvidenceUploader({
                       />
                     </div>
                   ) : (
-                    <div className="aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                      <File className="h-10 w-10 text-gray-900 dark:text-gray-500" />
+                    <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                      <File className="h-8 w-8 text-gray-400" />
                     </div>
                   )}
                   
-                  <div className="p-2 bg-white dark:bg-gray-800">
-                    <p className="text-xs text-gray-900 dark:text-gray-300 truncate">{file.file.name}</p>
-                    <p className="text-xs text-gray-900 dark:text-gray-400">
-                      {(file.file.size / 1024).toFixed(0)} KB
+                  <div className="p-2 bg-white">
+                    <p className="text-xs font-medium truncate" title={file.file.name}>
+                      {file.file.name}
                     </p>
                   </div>
                   
-                  {file.status === 'uploading' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700">
-                      <div 
-                        className="h-full bg-primary" 
-                        style={{ width: `${file.upload_progress}%` }}
-                      ></div>
-                    </div>
-                  )}
+                  {/* Upload progress */}
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200">
+                    <div 
+                      className="h-full bg-primary transition-all duration-300"
+                      style={{ width: `${file.upload_progress}%` }}
+                    />
+                  </div>
                   
                   {file.status === 'error' && (
                     <div className="absolute top-0 right-0 left-0 bg-red-500 text-white text-xs px-2 py-1 flex items-center justify-between">
@@ -246,7 +244,7 @@ export function EvidenceUploader({
             Cancel
           </Button>
           <Button 
-            className="bg-primary hover:bg-primary/90 text-gray-900 dark:text-gray-100"
+            className="bg-primary hover:bg-primary/90 text-gray-900"
             onClick={handleUpload}
             disabled={isUploading || evidenceFiles.filter(f => f.status === 'pending').length === 0}
           >

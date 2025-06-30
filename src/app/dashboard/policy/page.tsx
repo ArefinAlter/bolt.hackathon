@@ -24,7 +24,8 @@ import { Policy, PolicyRule } from '@/types/policy';
 import { fetchPolicies, createPolicy, updatePolicy, activatePolicy } from '@/lib/policy';
 import { supabase } from '@/lib/supabase';
 import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@/components/ui/badge';
+import { DemoToggle } from '@/components/common/DemoToggle';
 
 export default function PolicyPage() {
   const router = useRouter();
@@ -215,64 +216,40 @@ export default function PolicyPage() {
   }
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 lg:px-8 pt-4">
+    <div className="space-y-6">
+      {/* Actions Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <DemoToggle 
+          isDemoMode={isDemoMode} 
+          onDemoModeChange={setIsDemoMode}
+        />
+        <Button 
+          className="bg-primary hover:bg-primary/90 text-black"
+          onClick={handleCreateNewPolicy}
+          disabled={activeTab === 'editor'}
+          size="sm"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Create New Policy
+        </Button>
+      </div>
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertTriangle className="h-5 w-5 text-red-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Main Content */}
       <Card className="border-0 shadow-md">
-        <CardHeader className="pb-2">
-          <Grid cols={12} gap="md">
-            <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
-            <div>
-              <CardTitle className="text-2xl">Policy Management</CardTitle>
-              <CardDescription>
-                Configure and manage your return policies
-              </CardDescription>
-            </div>
-            </GridItem>
-            <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
-              <Flex direction="col" gap="sm" responsive={{ 
-                sm: { direction: 'col' }, 
-                md: { direction: 'row', justify: 'end' },
-                lg: { direction: 'row', justify: 'end' },
-                xl: { direction: 'row', justify: 'end' }
-              }}>
-              <Button 
-                  className="bg-primary hover:bg-primary/90 text-black w-full md:w-auto"
-                onClick={handleCreateNewPolicy}
-                disabled={activeTab === 'editor'}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Create New Policy
-              </Button>
-              </Flex>
-            </GridItem>
-          </Grid>
-        </CardHeader>
-        <CardContent>
-          <Grid cols={12} gap="sm">
-            <GridItem span={12} responsive={{ sm: 12, md: 6, lg: 4, xl: 3 }}>
-              <Flex direction="row" gap="sm" align="center">
-            <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-            <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
-              </Flex>
-            </GridItem>
-          </Grid>
-          
-          {error && (
-            <Grid cols={12} gap="sm">
-              <GridItem span={12}>
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <AlertTriangle className="h-5 w-5 text-red-400" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium">{error}</p>
-                </div>
-              </div>
-            </div>
-              </GridItem>
-            </Grid>
-          )}
-          
+        <CardContent className="p-6">
           {activeTab === 'editor' ? (
             <PolicyEditor 
               policy={editingPolicy || undefined}

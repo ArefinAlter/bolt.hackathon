@@ -96,7 +96,7 @@ const pricingTiers = [
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="py-20 bg-gray-50 relative overflow-hidden">
+    <section id="pricing" className="py-20 bg-white relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute top-1/4 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 left-0 w-48 h-48 bg-secondary/5 rounded-full blur-3xl" />

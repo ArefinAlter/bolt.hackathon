@@ -1,66 +1,59 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { WifiOff, RefreshCw, Home } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { WifiOff, RefreshCw } from 'lucide-react';
+import { Logo } from '@/components/common/Logo';
 
 export default function OfflinePage() {
-  const router = useRouter();
-  
-  // Check if online and redirect
+  const [isOnline, setIsOnline] = useState(true);
+
   useEffect(() => {
-    const handleOnline = () => {
-      router.push('/');
-    };
+    setIsOnline(navigator.onLine);
     
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
     window.addEventListener('online', handleOnline);
-    
+    window.addEventListener('offline', handleOffline);
+
     return () => {
       window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
-  }, [router]);
-  
-  const handleRefresh = () => {
+  }, []);
+
+  if (isOnline) {
     window.location.reload();
-  };
-  
+    return null;
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="max-w-md w-full text-center">
-        <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-          <WifiOff className="h-10 w-10 text-red-600 dark:text-red-400" />
-        </div>
-        
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">You're Offline</h1>
-        
-        <p className="text-gray-600 dark:text-gray-400 mb-8">
-          It looks like you've lost your internet connection. Some features may be unavailable until you reconnect.
-        </p>
-        
-        <div className="space-y-4">
-          <Button
+    <div className="min-h-screen flex items-center justify-center bg-white p-4">
+      <Card className="w-full max-w-md text-center">
+        <CardHeader>
+          <div className="mb-6">
+            <Logo className="justify-center" />
+          </div>
+          <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <WifiOff className="w-8 h-8 text-gray-500" />
+          </div>
+          <CardTitle className="text-xl">You're offline</CardTitle>
+          <CardDescription>
+            Please check your internet connection and try again.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button 
+            onClick={() => window.location.reload()}
             className="w-full bg-primary hover:bg-primary/90 text-black"
-            onClick={handleRefresh}
           >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh Page
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Try Again
           </Button>
-          
-          <Button
-            variant="outline"
-            className="w-full dark:border-gray-700 dark:text-gray-300"
-            onClick={() => router.push('/')}
-          >
-            <Home className="mr-2 h-4 w-4" />
-            Go to Homepage
-          </Button>
-        </div>
-        
-        <div className="mt-8 text-sm text-gray-500 dark:text-gray-500">
-          <p>Some features may still be available offline.</p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -74,7 +74,7 @@ export function ChatMessage({
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center bg-gray-100 rounded-md px-3 py-2 text-sm text-black hover:bg-gray-200"
+                      className="flex items-center bg-white border rounded-md px-3 py-2 text-sm text-black hover:bg-gray-50"
                     >
                       <Paperclip className="h-4 w-4 mr-2" />
                       {fileName}

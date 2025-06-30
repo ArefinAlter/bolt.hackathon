@@ -13,6 +13,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { Phone, Mic, Square, RotateCcw } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Logo } from '@/components/common/Logo'
+import { DemoToggle } from '@/components/common/DemoToggle'
 
 interface CallSession {
   id: string
@@ -43,6 +46,7 @@ export default function TestVoiceCallPage() {
   const [callStats, setCallStats] = useState({ duration: 0, quality_score: 0, satisfaction_score: 0 })
   const [logs, setLogs] = useState<string[]>([])
   const { toast } = useToast()
+  const router = useRouter()
 
   const addLog = (message: string) => setLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`])
 
@@ -121,30 +125,23 @@ export default function TestVoiceCallPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
+      <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <Image
-                src="/main_logo.svg"
-                alt="Dokani"
-                width={240}
-                height={64}
-                className="h-16 w-auto dark:hidden"
-              />
-              <Image
-                src="/white_logo.svg"
-                alt="Dokani"
-                width={240}
-                height={64}
-                className="h-16 w-auto hidden dark:block"
-              />
-            </Link>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Voice Call Testing
+            <div className="flex items-center space-x-4">
+              <Logo />
+              <span className="text-sm text-gray-500">Voice Call Testing</span>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => router.push('/')}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              Back to Home
+            </Button>
           </div>
         </div>
       </header>
@@ -154,14 +151,14 @@ export default function TestVoiceCallPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Voice Call AI Test</h1>
-              <p className="text-muted-foreground">Test voice calls with AI integration and real-time processing</p>
+              <h1 className="text-3xl font-bold text-gray-900">Voice Call AI Test</h1>
+              <p className="text-gray-600">Test voice calls with AI integration and real-time processing</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-              <Label>Demo Mode</Label>
-              <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
-            </div>
+            <DemoToggle 
+              isDemoMode={isDemoMode} 
+              onDemoModeChange={setIsDemoMode}
+              showLabel={true}
+            />
           </div>
           <Tabs defaultValue="call" className="space-y-4">
             <TabsList>

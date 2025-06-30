@@ -109,7 +109,7 @@ export function BenefitsSection() {
   return (
     <>
       {/* Problem Section */}
-      <section id="benefits" className="py-20 bg-gray-50 relative overflow-hidden">
+      <section id="benefits" className="py-20 bg-white relative overflow-hidden">
         <div className="absolute top-1/4 right-0 w-64 h-64 bg-red-100 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 left-0 w-48 h-48 bg-orange-100 rounded-full blur-3xl" />
 

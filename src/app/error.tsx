@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
 export default function Error({
   error,
@@ -12,51 +12,48 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const router = useRouter();
-  
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error('Application error:', error);
+    console.error('Application Error:', error);
   }, [error]);
-  
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="max-w-md w-full text-center">
-        <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-          <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
-        </div>
-        
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Something went wrong</h1>
-        
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
-          We apologize for the inconvenience. An error has occurred in the application.
-        </p>
-        
-        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md mb-8 overflow-auto max-h-32">
-          <p className="text-sm text-gray-700 dark:text-gray-300 font-mono text-left">
-            {error.message || 'An unexpected error occurred'}
-          </p>
-        </div>
-        
-        <div className="space-y-4">
-          <Button
-            className="w-full bg-primary hover:bg-primary/90 text-black"
-            onClick={reset}
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Try Again
-          </Button>
-          
-          <Button
-            variant="outline"
-            className="w-full dark:border-gray-700 dark:text-gray-300"
-            onClick={() => router.push('/')}
-          >
-            <Home className="mr-2 h-4 w-4" />
-            Go to Homepage
-          </Button>
-        </div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-white p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="w-16 h-16 bg-red-50 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <AlertTriangle className="w-8 h-8 text-red-500" />
+          </div>
+          <CardTitle className="text-xl">Something went wrong!</CardTitle>
+          <CardDescription>
+            We encountered an unexpected error. Please try again.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {error.message && (
+            <div className="bg-white border border-gray-200 p-4 rounded-md mb-8 overflow-auto max-h-32">
+              <pre className="text-sm text-gray-800">{error.message}</pre>
+            </div>
+          )}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              onClick={() => reset()}
+              className="flex-1 bg-primary hover:bg-primary/90 text-black"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Try again
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/'}
+              className="flex-1"
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Go home
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

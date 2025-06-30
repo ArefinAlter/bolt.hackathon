@@ -28,7 +28,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/common/GlobalSearch';
 import { UserRole } from '@/types/auth';
-import { useHotkeys } from 'react-hotkeys-hook';
+import { Logo } from '@/components/common/Logo';
 
 interface SidebarProps {
   userRole: UserRole;
@@ -55,11 +55,6 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  // Register keyboard shortcuts for navigation
-  useHotkeys('g d', () => {
-    window.location.href = '/dashboard';
-  });
-
   const toggleGroup = (title: string) => {
     setExpandedGroups(prev => ({
       ...prev,
@@ -68,6 +63,9 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
   };
 
   const isActive = (href: string) => {
+    if (href === '/dashboard') {
+      return pathname === href;
+    }
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
@@ -132,31 +130,23 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
     },
     {
       title: 'Settings',
-      href: '/settings',
+      href: '/dashboard/settings',
       icon: Settings,
       role: 'both',
       shortcut: 'g s'
     }
   ];
 
+  // Always show navigation items for business role or both
   const filteredNavItems = navItems.filter(
-    item => item.role === userRole || item.role === 'both'
+    item => item.role === 'business' || item.role === 'both'
   );
 
   return (
     <>
       {/* Mobile menu button */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-center">
-          <Image
-            src="/main_logo.svg"
-            alt="Dokani"
-            width={100}
-            height={28}
-            className="h-8 w-auto"
-            style={{ width: 'auto' }}
-          />
-        </Link>
+        <Logo />
         <Button
           variant="ghost"
           size="icon"
@@ -183,142 +173,99 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
       >
         <div className="flex flex-col h-full">
           {/* Sidebar header */}
-          <div className="p-4 border-b">
-            <Link href="/" className="flex items-center">
-              <Image
-                src="/main_logo.svg"
-                alt="Dokani"
-                width={180}
-                height={48}
-                className="h-16 w-auto"
-                style={{ width: 'auto' }}
-              />
-            </Link>
+          <div className="h-16 px-6 py-4 border-b flex items-center">
+            <Logo />
           </div>
 
           {/* Mobile search */}
-          <div className="p-4 lg:hidden">
+          <div className="lg:hidden p-4 border-b">
             <GlobalSearch />
           </div>
 
-          {/* Role indicator */}
-          <div className="px-4 py-3 bg-gray-50 border-b">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <Users className="w-4 h-4 text-gray-900" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900">
-                    {userRole === 'business' ? 'Business View' : 'Customer View'}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {userRole === 'business' ? 'Managing returns' : 'Making returns'}
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onRoleSwitch}
-                className="text-xs"
-              >
-                Switch
-              </Button>
-            </div>
-          </div>
-
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto p-4">
-            <ul className="space-y-2">
-              {filteredNavItems.map((item) => {
-                const IconComponent = item.icon;
-                const isActiveItem = isActive(item.href);
-                const hasChildren = item.children && item.children.length > 0;
-                const isExpanded = expandedGroups[item.title] || false;
-
-                if (hasChildren) {
-                  return (
-                    <li key={item.title}>
-                      <button
-                        onClick={() => toggleGroup(item.title)}
-                        className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md ${
-                          isActiveItem
-                            ? 'bg-primary/10 text-primary font-medium'
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                      >
-                        <div className="flex items-center">
-                          <IconComponent className="w-4 h-4 mr-3" />
-                          {item.title}
-                        </div>
-                        {isExpanded ? (
-                          <ChevronDown className="w-4 h-4" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4" />
-                        )}
-                      </button>
-                      {isExpanded && item.children && (
-                        <ul className="ml-6 mt-2 space-y-1">
-                          {item.children.map((child) => {
-                            const ChildIconComponent = child.icon;
-                            const isActiveChild = isActive(child.href);
-                            return (
-                              <li key={child.href}>
-                                <Link
-                                  href={child.href}
-                                  className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                                    isActiveChild
-                                      ? 'bg-primary/10 text-primary font-medium'
-                                      : 'text-gray-700 hover:bg-gray-100'
-                                  }`}
-                                >
-                                  <ChildIconComponent className="w-4 h-4 mr-3" />
-                                  {child.title}
-                                </Link>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      )}
-                    </li>
-                  );
-                }
-
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+            {filteredNavItems.map((item) => {
+              if (item.children) {
+                const isExpanded = expandedGroups[item.title] ?? false;
+                const hasActiveChild = item.children.some(child => isActive(child.href));
+                
                 return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={`flex items-center justify-between px-3 py-2 text-sm rounded-md ${
-                        isActiveItem
-                          ? 'bg-primary/10 text-primary font-medium'
-                          : 'text-gray-700 hover:bg-gray-100'
+                  <div key={item.title}>
+                    <button
+                      onClick={() => toggleGroup(item.title)}
+                      className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${
+                        hasActiveChild 
+                          ? 'bg-primary text-black font-medium' 
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                     >
                       <div className="flex items-center">
-                        <IconComponent className="w-4 h-4 mr-3" />
-                        {item.title}
+                        <item.icon className="h-5 w-5 mr-3" />
+                        <span>{item.title}</span>
                       </div>
-                      {item.shortcut && (
-                        <kbd className="hidden lg:inline-flex items-center rounded border bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-600">
-                          {item.shortcut}
-                        </kbd>
-                      )}
-                    </Link>
-                  </li>
+                      {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </button>
+                    
+                    {isExpanded && (
+                      <div className="mt-2 ml-8 space-y-1">
+                        {item.children.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className={`flex items-center p-2 rounded-md text-sm transition-colors ${
+                              isActive(child.href)
+                                ? 'bg-primary text-black font-medium'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                          >
+                            <child.icon className="h-4 w-4 mr-2" />
+                            {child.title}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 );
-              })}
-            </ul>
+              }
+              
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center p-3 rounded-lg transition-colors ${
+                    isActive(item.href)
+                      ? 'bg-primary text-black font-medium'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <item.icon className="h-5 w-5 mr-3" />
+                  <span>{item.title}</span>
+                  {item.shortcut && (
+                    <span className="ml-auto text-xs text-gray-400 font-mono">
+                      {item.shortcut}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Sidebar footer */}
-          <div className="p-4 border-t">
+          {/* Footer */}
+          <div className="p-4 border-t space-y-2">
+            <Button
+              variant="outline"
+              onClick={onRoleSwitch}
+              className="w-full justify-start"
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Switch to {userRole === 'business' ? 'Customer' : 'Business'} View
+            </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start text-gray-700 hover:bg-gray-100"
               onClick={onSignOut}
+              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
             >
-              <LogOut className="w-4 h-4 mr-3" />
+              <LogOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
           </div>

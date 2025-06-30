@@ -55,7 +55,7 @@ export function ChatInput({
           {fileUploads.map(file => (
             <div 
               key={file.id} 
-              className="relative bg-gray-50 rounded-md border p-2 flex items-center"
+              className="relative bg-white border rounded-md border p-2 flex items-center"
             >
               {file.status === 'uploading' ? (
                 <div className="w-6 h-6 mr-2 flex items-center justify-center">
@@ -91,7 +91,7 @@ export function ChatInput({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary resize-none max-h-32"
+            className="w-full bg-white border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary resize-none max-h-32"
             minRows={1}
             maxRows={5}
             disabled={isSending}

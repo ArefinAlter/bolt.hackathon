@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { signIn, signUp, createProfileIfMissing } from '@/lib/auth';
 import { AuthFormData, SignUpFormData } from '@/types/auth';
+import { Logo } from '@/components/common/Logo';
 
 // Form validation schemas
 const loginSchema = z.object({
@@ -197,6 +198,7 @@ export function AuthForm({ type }: AuthFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <Logo className="justify-center mb-8" />
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">
             <FormField

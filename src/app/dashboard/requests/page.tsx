@@ -17,7 +17,8 @@ import { RequestDetailModal } from '@/components/dashboard/requests/RequestDetai
 import { ReturnRequest } from '@/types/return';
 import { supabase } from '@/lib/supabase';
 import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@/components/ui/badge';
+import { DemoToggle } from '@/components/common/DemoToggle';
 
 export default function RequestsPage() {
   const router = useRouter();
@@ -132,55 +133,34 @@ export default function RequestsPage() {
   }
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 lg:px-8 pt-4">
-      {/* Header */}
-      <Grid cols={12} gap="md">
-        <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Return Requests</h1>
-          <p className="text-gray-500">
-            Manage and process customer return requests
-          </p>
-        </div>
-        </GridItem>
-        <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
-          <Flex direction="col" gap="sm" responsive={{ 
-            sm: { direction: 'col' }, 
-            md: { direction: 'row', justify: 'end' },
-            lg: { direction: 'row', justify: 'end' },
-            xl: { direction: 'row', justify: 'end' }
-          }}>
+    <div className="space-y-6">
+      {/* Actions Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <DemoToggle 
+          isDemoMode={isDemoMode} 
+          onDemoModeChange={setIsDemoMode}
+        />
+        <div className="flex gap-2">
           <Button 
             variant="outline" 
             onClick={() => window.location.reload()}
-              className="w-full md:w-auto"
+            size="sm"
           >
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
           <Button 
-              className="bg-primary hover:bg-primary/90 text-black w-full md:w-auto"
+            className="bg-primary hover:bg-primary/90 text-black"
             onClick={() => router.push('/dashboard/requests/new')}
+            size="sm"
           >
             <Plus className="mr-2 h-4 w-4" />
             Create Manual Return
           </Button>
-          </Flex>
-        </GridItem>
-      </Grid>
-      
-      <Grid cols={12} gap="sm">
-        <GridItem span={12} responsive={{ sm: 12, md: 6, lg: 4, xl: 3 }}>
-          <Flex direction="row" gap="sm" align="center">
-        <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-        <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
-          </Flex>
-        </GridItem>
-      </Grid>
+        </div>
+      </div>
       
       {error && (
-        <Grid cols={12} gap="sm">
-          <GridItem span={12}>
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
           <div className="flex">
             <div className="flex-shrink-0">
@@ -191,29 +171,28 @@ export default function RequestsPage() {
             </div>
           </div>
         </div>
-          </GridItem>
-        </Grid>
       )}
       
       {/* Review Queue */}
-      <Grid cols={12} gap="lg">
-        <GridItem span={12}>
-      <ReviewQueue 
-            businessId={businessId || '550e8400-e29b-41d4-a716-446655440000'} 
-        onViewRequest={handleViewRequest}
-      />
-        </GridItem>
-      </Grid>
+      <div>
+        <ReviewQueue 
+          businessId={businessId || '550e8400-e29b-41d4-a716-446655440000'} 
+          onViewRequest={handleViewRequest}
+        />
+      </div>
       
-      {/* All Returns Table */}
-      <Grid cols={12} gap="lg">
-        <GridItem span={12}>
-      <ReturnsTable 
-            businessId={businessId || '550e8400-e29b-41d4-a716-446655440000'}
-        onViewRequest={handleViewRequest}
-      />
-        </GridItem>
-      </Grid>
+      {/* Returns Table */}
+      <div>
+        <ReturnsTable 
+          businessId={businessId || '550e8400-e29b-41d4-a716-446655440000'} 
+          onViewRequest={handleViewRequest}
+          initialFilter={{
+            status: undefined,
+            search: '',
+            sortBy: 'created_at'
+          }}
+        />
+      </div>
       
       {/* Request Detail Modal */}
       {selectedRequest && (

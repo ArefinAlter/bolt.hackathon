@@ -7,8 +7,8 @@ import { Header } from './Header';
 import { UserRole } from '@/types/auth';
 import { supabase } from '@/lib/supabase';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { useHotkeys } from 'react-hotkeys-hook';
 import { useToast } from '@/hooks/use-toast';
+import { Logo } from '@/components/common/Logo';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -20,13 +20,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [userRole, setUserRole] = useState<UserRole>('business');
   const [userName, setUserName] = useState('User');
   const [isLoading, setIsLoading] = useState(true);
-
-  // Register keyboard shortcuts
-  useHotkeys('g d', () => router.push('/dashboard'));
-  useHotkeys('g r', () => router.push('/dashboard/requests'));
-  useHotkeys('g p', () => router.push('/dashboard/policy'));
-  useHotkeys('g a', () => router.push('/dashboard/analytics'));
-  useHotkeys('g s', () => router.push('/settings'));
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -101,21 +94,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <LoadingSpinner size="lg" text="Loading dashboard..." />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-50">
+    <div className="min-h-screen flex bg-white">
       <Sidebar 
-        userRole={userRole} 
+        userRole={userRole || 'business'} 
         onRoleSwitch={handleRoleSwitch} 
         onSignOut={handleSignOut} 
       />
       
-      <div className="flex-1 flex flex-col min-h-screen lg:ml-64">
+      <div className="flex-1 flex flex-col min-h-screen">
         <Header 
           userRole={userRole} 
           userName={userName} 
@@ -123,12 +116,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           onSignOut={handleSignOut} 
         />
         
-        <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 pt-4">
+        <main className="flex-1 px-6 py-6 max-w-7xl mx-auto w-full">
           {children}
         </main>
         
-        <footer className="py-4 px-6 border-t bg-white">
-          <div className="text-center text-sm text-gray-500">
+        <footer className="py-3 px-6 border-t bg-white">
+          <div className="text-center text-sm text-gray-500 max-w-7xl mx-auto">
             &copy; {new Date().getFullYear()} Dokani. All rights reserved.
           </div>
         </footer>

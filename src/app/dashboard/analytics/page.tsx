@@ -5,7 +5,7 @@ import { AnalyticsDashboard } from '@/components/dashboard/AnalyticsDashboard';
 
 export default function AnalyticsPage() {
   return (
-    <div className="px-4 sm:px-6 lg:px-8 pt-4">
+    <div>
       <Grid cols={12} gap="lg">
         <GridItem span={12}>
           <AnalyticsDashboard />

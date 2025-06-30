@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { ReturnRequest } from '@/types/return';
 import { supabase } from '@/lib/supabase';
 import { Switch } from '@/components/ui/switch';
+import { DemoToggle } from '@/components/common/DemoToggle';
 
 export default function ReturnPage() {
   const router = useRouter();
@@ -187,209 +188,123 @@ export default function ReturnPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <Container>
-          <Grid cols={12} gap="md">
-            <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
-              <Flex direction="row" gap="sm" align="center">
-                <Link href="/" className="flex items-center space-x-2">
-                  <Image
-                    src="/main_logo.svg"
-                    alt="Dokani"
-                    width={240}
-                    height={64}
-                    className="h-16 w-auto"
-                    style={{ width: 'auto' }}
-                  />
-                </Link>
-              </Flex>
-            </GridItem>
-            <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
-              <Flex direction="col" gap="sm" responsive={{ 
-                sm: { direction: 'col' }, 
-                md: { direction: 'row', justify: 'end' },
-                lg: { direction: 'row', justify: 'end' },
-                xl: { direction: 'row', justify: 'end' }
-              }}>
-                <div className="text-sm text-gray-500">
-                  Return Portal
-                </div>
-              </Flex>
-            </GridItem>
-          </Grid>
-        </Container>
-      </header>
-
+    <div className="min-h-screen bg-white">
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Container>
-          <div className="space-y-6">
-            {/* Header */}
-            <Grid cols={12} gap="md">
-              <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Return Requests</h1>
-                  <p className="text-gray-500">
-                    Track and manage your return requests
-                  </p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-4">
+          {/* Header with Stats and Actions */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Return Requests</h1>
+              <p className="text-gray-500">Track and manage your return requests</p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <DemoToggle 
+                isDemoMode={isDemoMode} 
+                onDemoModeChange={setIsDemoMode}
+              />
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => router.push('/customer/chat')}
+                  size="sm"
+                >
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Chat with Support
+                </Button>
+                <Button 
+                  className="bg-primary hover:bg-primary/90 text-black"
+                  onClick={() => router.push('/return/new')}
+                  size="sm"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Return Request
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertTriangle className="h-5 w-5 text-red-400" />
                 </div>
-              </GridItem>
-              <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
-                <Flex direction="col" gap="sm" responsive={{ 
-                  sm: { direction: 'col' }, 
-                  md: { direction: 'row', justify: 'end' },
-                  lg: { direction: 'row', justify: 'end' },
-                  xl: { direction: 'row', justify: 'end' }
-                }}>
-                  <Flex direction="row" gap="sm" align="center">
-                    <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-                    <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
-                  </Flex>
-                  <Flex direction="row" gap="sm" responsive={{ 
-                    sm: { direction: 'col' }, 
-                    md: { direction: 'row' },
-                    lg: { direction: 'row' },
-                    xl: { direction: 'row' }
-                  }}>
-                    <Button 
-                      variant="outline"
-                      onClick={() => router.push('/customer/chat')}
-                      className="w-full md:w-auto"
-                    >
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      Chat with Support
-                    </Button>
-                    <Button 
-                      className="bg-primary hover:bg-primary/90 text-black w-full md:w-auto"
-                      onClick={() => router.push('/return/new')}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      New Return Request
-                    </Button>
-                  </Flex>
-                </Flex>
-              </GridItem>
-            </Grid>
+                <div className="ml-3">
+                  <p className="text-sm font-medium">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
-            {error && (
-              <Grid cols={12} gap="sm">
-                <GridItem span={12}>
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <AlertTriangle className="h-5 w-5 text-red-400" />
-                      </div>
-                      <div className="ml-3">
-                        <p className="text-sm font-medium">{error}</p>
-                      </div>
-                    </div>
-                  </div>
-                </GridItem>
-              </Grid>
-            )}
+          {/* Compact Stats Bar */}
+          <div className="bg-white border rounded-lg p-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <Package className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-500">Total</span>
+                </div>
+                <p className="text-xl font-bold text-gray-900">{returns.length}</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <Clock className="h-4 w-4 text-yellow-500" />
+                  <span className="text-sm text-gray-500">Pending</span>
+                </div>
+                <p className="text-xl font-bold text-yellow-600">{getStatusCount('pending_triage') + getStatusCount('pending_review')}</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span className="text-sm text-gray-500">Approved</span>
+                </div>
+                <p className="text-xl font-bold text-green-600">{getStatusCount('approved')}</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <XCircle className="h-4 w-4 text-red-500" />
+                  <span className="text-sm text-gray-500">Denied</span>
+                </div>
+                <p className="text-xl font-bold text-red-600">{getStatusCount('denied')}</p>
+              </div>
+            </div>
+          </div>
 
-            {/* Stats */}
-            <Grid cols={12} gap="md">
-              <GridItem span={12} responsive={{ sm: 6, md: 3, lg: 3, xl: 3 }}>
-                <Card className="border-0 shadow-md">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-500">Total</p>
-                        <p className="text-2xl font-bold">{returns.length}</p>
-                      </div>
-                      <Package className="h-8 w-8 text-gray-400" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </GridItem>
-              
-              <GridItem span={12} responsive={{ sm: 6, md: 3, lg: 3, xl: 3 }}>
-                <Card className="border-0 shadow-md">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-500">Pending</p>
-                        <p className="text-2xl font-bold">{getStatusCount('pending_triage') + getStatusCount('pending_review')}</p>
-                      </div>
-                      <Clock className="h-8 w-8 text-yellow-400" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </GridItem>
-              
-              <GridItem span={12} responsive={{ sm: 6, md: 3, lg: 3, xl: 3 }}>
-                <Card className="border-0 shadow-md">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-500">Approved</p>
-                        <p className="text-2xl font-bold">{getStatusCount('approved')}</p>
-                      </div>
-                      <CheckCircle className="h-8 w-8 text-green-400" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </GridItem>
-              
-              <GridItem span={12} responsive={{ sm: 6, md: 3, lg: 3, xl: 3 }}>
-                <Card className="border-0 shadow-md">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-500">Denied</p>
-                        <p className="text-2xl font-bold">{getStatusCount('denied')}</p>
-                      </div>
-                      <XCircle className="h-8 w-8 text-red-400" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </GridItem>
-            </Grid>
-
-            {/* Filters */}
-            <Grid cols={12} gap="md">
-              <GridItem span={12}>
-                <Card className="border-0 shadow-md">
-                  <CardHeader>
-                    <CardTitle>Filters</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Grid cols={12} gap="md">
-                      <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input
-                            placeholder="Search by email, order ID, or reason..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
-                          />
-                        </div>
-                      </GridItem>
-                      <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
-                        <Flex direction="row" gap="sm" align="center">
-                          <Filter className="h-4 w-4 text-gray-400" />
-                          <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary w-full"
-                          >
-                            <option value="all">All Status</option>
-                            <option value="pending_triage">Pending Triage</option>
-                            <option value="pending_review">Pending Review</option>
-                            <option value="approved">Approved</option>
-                            <option value="denied">Denied</option>
-                          </select>
-                        </Flex>
-                      </GridItem>
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </GridItem>
-            </Grid>
+          {/* Compact Filters */}
+          <div className="bg-white border rounded-lg p-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search by email, order ID, or reason..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-white"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 min-w-[200px]">
+                <Filter className="h-4 w-4 text-gray-400" />
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="bg-white border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary w-full text-gray-900"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending_triage">Pending Triage</option>
+                  <option value="pending_review">Pending Review</option>
+                  <option value="approved">Approved</option>
+                  <option value="denied">Denied</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
             {/* Returns List */}
             <div className="space-y-4">
@@ -467,9 +382,8 @@ export default function ReturnPage() {
                   </Card>
                 ))
               )}
-            </div>
           </div>
-        </Container>
+        </div>
       </main>
     </div>
   );

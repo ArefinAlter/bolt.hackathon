@@ -47,7 +47,7 @@ export function FilePreview({ isOpen, onClose, fileUrl, fileName }: FilePreviewP
               className="max-h-[60vh] max-w-full object-contain rounded-md"
             />
           ) : (
-            <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-md">
+            <div className="flex flex-col items-center justify-center p-8 bg-white border rounded-md">
               <div className="text-6xl mb-4">📄</div>
               <p className="text-lg font-medium text-gray-900">{fileName}</p>
               <p className="text-sm text-gray-500 mt-2">

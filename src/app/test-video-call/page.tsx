@@ -13,6 +13,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { Video, Mic, Square, RotateCcw, Camera, CameraOff } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Logo } from '@/components/common/Logo'
+import { DemoToggle } from '@/components/common/DemoToggle'
 
 interface VideoCallSession {
   id: string
@@ -44,6 +47,7 @@ export default function TestVideoCallPage() {
   const [callStats, setCallStats] = useState({ duration: 0, quality_score: 0, satisfaction_score: 0, video_quality: 'HD' })
   const [logs, setLogs] = useState<string[]>([])
   const { toast } = useToast()
+  const router = useRouter()
 
   const addLog = (message: string) => setLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`])
 
@@ -122,30 +126,23 @@ export default function TestVideoCallPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
+      <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <Image
-                src="/main_logo.svg"
-                alt="Dokani"
-                width={240}
-                height={64}
-                className="h-16 w-auto dark:hidden"
-              />
-              <Image
-                src="/white_logo.svg"
-                alt="Dokani"
-                width={240}
-                height={64}
-                className="h-16 w-auto hidden dark:block"
-              />
-            </Link>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Video Call Testing
+            <div className="flex items-center space-x-4">
+              <Logo />
+              <span className="text-sm text-gray-500">Video Call Testing</span>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => router.push('/')}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              Back to Home
+            </Button>
           </div>
         </div>
       </header>
@@ -158,11 +155,11 @@ export default function TestVideoCallPage() {
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Video Call AI Test</h1>
               <p className="text-muted-foreground">Test video calls with AI integration and real-time processing</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-              <Label>Demo Mode</Label>
-              <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
-            </div>
+            <DemoToggle 
+              isDemoMode={isDemoMode} 
+              onDemoModeChange={setIsDemoMode}
+              showLabel={true}
+            />
           </div>
           <Tabs defaultValue="call" className="space-y-4">
             <TabsList>
@@ -209,33 +206,33 @@ export default function TestVideoCallPage() {
                 <CardContent>
                   <div className="space-y-4 max-h-96 overflow-y-auto">
                     {transcripts.length === 0 ? (<p className="text-muted-foreground">No transcripts yet. Start a video call to see conversation history.</p>) : (
-                      transcripts.map((transcript, index) => (
-                        <div key={index} className={`p-3 rounded-lg ${transcript.speaker === 'user' ? 'bg-blue-50 border border-blue-200 ml-8' : 'bg-gray-50 border border-gray-200 mr-8'}`}>
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-medium text-sm">{transcript.speaker === 'user' ? 'You' : 'AI Agent'}</span>
-                            <span className="text-xs text-muted-foreground">{new Date(transcript.created_at).toLocaleTimeString()}</span>
+                                              transcripts.map((transcript, index) => (
+                          <div key={index} className={`p-3 rounded-lg ${transcript.speaker === 'user' ? 'bg-blue-50 border border-blue-200 ml-8' : 'bg-gray-50 border border-gray-200 mr-8'}`}>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium text-sm">{transcript.speaker === 'user' ? 'You' : 'AI Agent'}</span>
+                              <span className="text-xs text-gray-500">{new Date(transcript.created_at).toLocaleTimeString()}</span>
+                            </div>
+                            <p className="text-sm">{transcript.message}</p>
                           </div>
-                          <p className="text-sm">{transcript.message}</p>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="logs" className="space-y-4">
-              <Card>
-                <CardHeader><CardTitle>System Logs</CardTitle><CardDescription>Real-time system activity and events</CardDescription></CardHeader>
-                <CardContent>
-                  <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
-                    {logs.length === 0 ? (<p>No logs yet. Start a video call to see activity.</p>) : (logs.map((log, index) => (<div key={index} className="mb-1">{log}</div>)))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </main>
-    </div>
-  )
-} 
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="logs" className="space-y-4">
+                <Card>
+                  <CardHeader><CardTitle>System Logs</CardTitle><CardDescription>Real-time system activity and events</CardDescription></CardHeader>
+                  <CardContent>
+                    <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
+                      {logs.length === 0 ? (<p>No logs yet. Start a video call to see activity.</p>) : (logs.map((log, index) => (<div key={index} className="mb-1">{log}</div>)))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </main>
+      </div>
+    )
+  }

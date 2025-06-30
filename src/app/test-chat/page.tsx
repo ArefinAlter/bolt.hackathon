@@ -6,12 +6,15 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
+import { Logo } from '@/components/common/Logo';
 
 export default function TestChatPage() {
   const [message, setMessage] = useState('');
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const testChatMessage = async () => {
     setLoading(true);
@@ -74,30 +77,23 @@ export default function TestChatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
+      <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <Image
-                src="/main_logo.svg"
-                alt="Dokani"
-                width={240}
-                height={64}
-                className="h-16 w-auto dark:hidden"
-              />
-              <Image
-                src="/white_logo.svg"
-                alt="Dokani"
-                width={240}
-                height={64}
-                className="h-16 w-auto hidden dark:block"
-              />
-            </Link>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Chat Testing
+            <div className="flex items-center space-x-4">
+              <Logo />
+              <span className="text-sm text-gray-500">Chat Testing</span>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => router.push('/')}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              Back to Home
+            </Button>
           </div>
         </div>
       </header>
