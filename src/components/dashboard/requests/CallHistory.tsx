@@ -19,15 +19,43 @@ import {
 
 interface CallRecord {
   id: string;
-  conversation_id: string;
-  agent_id: string;
-  status: 'completed' | 'failed' | 'in_progress';
+  chat_session_id: string;
+  call_type: 'voice' | 'video' | 'test';
+  provider: 'elevenlabs' | 'tavus' | 'test';
+  external_session_id: string;
+  status: 'initiated' | 'connecting' | 'active' | 'ended' | 'failed';
   duration_seconds: number;
-  messages_count: number;
-  satisfaction_score?: number;
+  provider_data: any;
   created_at: string;
-  transcript_summary?: string;
-  call_successful?: string;
+  ended_at: string;
+  elevenlabs_agent_id?: string;
+  elevenlabs_conversation_id?: string;
+  tavus_replica_id?: string;
+  tavus_conversation_id?: string;
+  session_url: string;
+  webhook_data: {
+    satisfaction_score: number;
+    call_successful: string;
+    duration_seconds: number;
+    messages_count: number;
+  };
+  is_active: boolean;
+  persona_config_id: string;
+  call_quality_score: number;
+  customer_feedback: {
+    satisfaction: number;
+    comments: string;
+  };
+  streaming_enabled: boolean;
+  websocket_url: string;
+  stream_processor_urls: string[];
+  streaming_config: any;
+  real_time_events: any[];
+  connection_count: number;
+  last_stream_activity: string;
+  stream_quality_metrics: any;
+  ai_conversation_state_id: string;
+  updated_at: string;
 }
 
 interface CallHistoryProps {
@@ -36,6 +64,7 @@ interface CallHistoryProps {
 }
 
 export function CallHistory({ businessId, isDemoMode = false }: CallHistoryProps) {
+  console.log('CallHistory rendered', { businessId, isDemoMode });
   const [calls, setCalls] = useState<CallRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,72 +72,63 @@ export function CallHistory({ businessId, isDemoMode = false }: CallHistoryProps
   const [selectedCall, setSelectedCall] = useState<CallRecord | null>(null);
 
   useEffect(() => {
-    loadCallHistory();
-  }, [businessId]);
+    // Only load data if businessId is available
+    if (businessId) {
+      loadCallHistory();
+    }
+  }, [businessId]); // Only depend on businessId
 
   const loadCallHistory = async () => {
     try {
       setIsLoading(true);
+      console.log('Loading call history for businessId:', businessId, 'isDemoMode:', isDemoMode);
       
       if (isDemoMode) {
-        // Demo data
-        const demoCalls: CallRecord[] = [
-          {
-            id: '1',
-            conversation_id: 'conv_001',
-            agent_id: 'agent_001',
-            status: 'completed',
-            duration_seconds: 245,
-            messages_count: 12,
-            satisfaction_score: 4.2,
-            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            transcript_summary: 'Customer requested return for damaged item. Agent processed return successfully.',
-            call_successful: 'success'
-          },
-          {
-            id: '2',
-            conversation_id: 'conv_002',
-            agent_id: 'agent_001',
-            status: 'completed',
-            duration_seconds: 180,
-            messages_count: 8,
-            satisfaction_score: 3.8,
-            created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-            transcript_summary: 'Customer inquired about shipping status. Agent provided tracking information.',
-            call_successful: 'success'
-          },
-          {
-            id: '3',
-            conversation_id: 'conv_003',
-            agent_id: 'agent_002',
-            status: 'failed',
-            duration_seconds: 45,
-            messages_count: 3,
-            satisfaction_score: 1.5,
-            created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-            transcript_summary: 'Call disconnected due to poor connection.',
-            call_successful: 'failed'
-          }
-        ];
-        setCalls(demoCalls);
+        // Use the new API endpoint for demo mode
+        const url = `/api/call-history?demo_mode=true&business_id=${businessId}`;
+        console.log('Making API call to:', url);
+        const response = await fetch(url);
+        console.log('Call history response status:', response.status);
+        console.log('Call history response headers:', Object.fromEntries(response.headers.entries()));
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('API response not ok:', errorText);
+          throw new Error(`Failed to fetch call history: ${response.status} ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Call history data received:', data);
+        console.log('Call history data.data:', data.data);
+        console.log('Call history data.data length:', data.data?.length);
+        
+        if (Array.isArray(data.data)) {
+          setCalls(data.data);
+          console.log('Successfully set calls:', data.data.length, 'calls');
+        } else {
+          console.error('Data.data is not an array:', data.data);
+          setCalls([]);
+        }
       } else {
         // TODO: Implement real API call
         const response = await fetch(`/api/call-history?business_id=${businessId}`);
         if (response.ok) {
           const data = await response.json();
-          setCalls(data.calls || []);
+          setCalls(data.data || []);
         }
       }
     } catch (error) {
       console.error('Error loading call history:', error);
+      setCalls([]); // Set empty array on error
     } finally {
       setIsLoading(false);
+      console.log('Finished loading call history, isLoading set to false');
     }
   };
 
   const filteredCalls = calls.filter(call => {
-    const matchesSearch = call.conversation_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         call.transcript_summary?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = call.external_session_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (call.webhook_data?.satisfaction_score?.toString() || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || call.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -124,16 +144,21 @@ export function CallHistory({ businessId, isDemoMode = false }: CallHistoryProps
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <Badge variant="default" className="bg-green-100 text-green-800">Completed</Badge>;
-      case 'failed':
-        return <Badge variant="destructive">Failed</Badge>;
-      case 'in_progress':
-        return <Badge variant="secondary">In Progress</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
+    const statusConfig = {
+      'ended': { label: 'Completed', color: 'bg-green-100 text-green-800' },
+      'failed': { label: 'Failed', color: 'bg-red-100 text-red-800' },
+      'active': { label: 'In Progress', color: 'bg-blue-100 text-blue-800' },
+      'connecting': { label: 'Connecting', color: 'bg-yellow-100 text-yellow-800' },
+      'initiated': { label: 'Initiated', color: 'bg-gray-100 text-gray-800' }
+    };
+    
+    const config = statusConfig[status as keyof typeof statusConfig] || { label: status, color: 'bg-gray-100 text-gray-800' };
+    
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
+        {config.label}
+      </span>
+    );
   };
 
   const getSatisfactionColor = (score?: number) => {
@@ -182,9 +207,11 @@ export function CallHistory({ businessId, isDemoMode = false }: CallHistoryProps
                 className="border rounded-md px-3 py-2 text-sm"
               >
                 <option value="all">All Status</option>
-                <option value="completed">Completed</option>
+                <option value="ended">Completed</option>
                 <option value="failed">Failed</option>
-                <option value="in_progress">In Progress</option>
+                <option value="active">In Progress</option>
+                <option value="connecting">Connecting</option>
+                <option value="initiated">Initiated</option>
               </select>
             </div>
           </div>
@@ -213,7 +240,7 @@ export function CallHistory({ businessId, isDemoMode = false }: CallHistoryProps
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
                       <Phone className="h-5 w-5 text-blue-600" />
-                      <span className="font-medium">Conversation {call.conversation_id}</span>
+                      <span className="font-medium">Conversation {call.external_session_id}</span>
                       {getStatusBadge(call.status)}
                     </div>
                     
@@ -228,7 +255,7 @@ export function CallHistory({ businessId, isDemoMode = false }: CallHistoryProps
                       <div className="flex items-center space-x-2">
                         <MessageSquare className="h-4 w-4 text-gray-400" />
                         <span className="text-sm text-gray-600">
-                          {call.messages_count} messages
+                          {call.webhook_data?.messages_count || 0} messages
                         </span>
                       </div>
                       
@@ -239,19 +266,19 @@ export function CallHistory({ businessId, isDemoMode = false }: CallHistoryProps
                         </span>
                       </div>
                       
-                      {call.satisfaction_score && (
+                      {call.customer_feedback?.satisfaction && (
                         <div className="flex items-center space-x-2">
                           <User className="h-4 w-4 text-gray-400" />
-                          <span className={`text-sm font-medium ${getSatisfactionColor(call.satisfaction_score)}`}>
-                            {call.satisfaction_score}/5
+                          <span className={`text-sm font-medium ${getSatisfactionColor(call.customer_feedback.satisfaction)}`}>
+                            {call.customer_feedback.satisfaction}/5
                           </span>
                         </div>
                       )}
                     </div>
                     
-                    {call.transcript_summary && (
+                    {call.customer_feedback?.comments && (
                       <p className="text-sm text-gray-600 mb-3">
-                        {call.transcript_summary}
+                        {call.customer_feedback.comments}
                       </p>
                     )}
                   </div>
@@ -292,7 +319,7 @@ export function CallHistory({ businessId, isDemoMode = false }: CallHistoryProps
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Conversation ID</label>
-                  <p className="text-sm">{selectedCall.conversation_id}</p>
+                  <p className="text-sm">{selectedCall.external_session_id}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Status</label>
@@ -304,26 +331,26 @@ export function CallHistory({ businessId, isDemoMode = false }: CallHistoryProps
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Messages</label>
-                  <p className="text-sm">{selectedCall.messages_count}</p>
+                  <p className="text-sm">{selectedCall.webhook_data?.messages_count || 0}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Date</label>
                   <p className="text-sm">{formatDate(selectedCall.created_at)}</p>
                 </div>
-                {selectedCall.satisfaction_score && (
+                {selectedCall.customer_feedback?.satisfaction && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Satisfaction</label>
-                    <p className={`text-sm font-medium ${getSatisfactionColor(selectedCall.satisfaction_score)}`}>
-                      {selectedCall.satisfaction_score}/5
+                    <p className={`text-sm font-medium ${getSatisfactionColor(selectedCall.customer_feedback.satisfaction)}`}>
+                      {selectedCall.customer_feedback.satisfaction}/5
                     </p>
                   </div>
                 )}
               </div>
               
-              {selectedCall.transcript_summary && (
+              {selectedCall.customer_feedback?.comments && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Summary</label>
-                  <p className="text-sm mt-1">{selectedCall.transcript_summary}</p>
+                  <label className="text-sm font-medium text-gray-500">Comments</label>
+                  <p className="text-sm mt-1">{selectedCall.customer_feedback.comments}</p>
                 </div>
               )}
               

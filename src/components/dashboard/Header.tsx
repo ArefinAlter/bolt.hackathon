@@ -66,6 +66,7 @@ export function Header({ userRole, userName, onRoleSwitch, onSignOut }: HeaderPr
               width={120}
               height={32}
               className="h-8 w-auto dark:hidden"
+              style={{ width: 'auto' }}
             />
             <Image
               src="/white_logo.svg"
@@ -73,6 +74,7 @@ export function Header({ userRole, userName, onRoleSwitch, onSignOut }: HeaderPr
               width={120}
               height={32}
               className="h-8 w-auto hidden dark:block"
+              style={{ width: 'auto' }}
             />
           </Link>
           <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>

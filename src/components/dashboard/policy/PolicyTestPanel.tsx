@@ -250,7 +250,7 @@ export function PolicyTestPanel({ policy, businessId }: PolicyTestPanelProps) {
                 <p className="text-sm text-gray-700">{testResult.reasoning}</p>
               </div>
               
-              {testResult.policy_violations.length > 0 && (
+              {testResult.policy_violations && testResult.policy_violations.length > 0 && (
                 <div>
                   <h3 className="font-medium text-gray-900 mb-1">Policy Violations</h3>
                   <ul className="list-disc list-inside text-sm text-gray-700">
@@ -261,7 +261,7 @@ export function PolicyTestPanel({ policy, businessId }: PolicyTestPanelProps) {
                 </div>
               )}
               
-              {testResult.risk_factors.length > 0 && (
+              {testResult.risk_factors && testResult.risk_factors.length > 0 && (
                 <div>
                   <h3 className="font-medium text-gray-900 mb-1">Risk Factors</h3>
                   <ul className="list-disc list-inside text-sm text-gray-700">

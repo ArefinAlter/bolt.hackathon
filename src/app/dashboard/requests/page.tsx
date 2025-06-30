@@ -38,21 +38,33 @@ export default function RequestsPage() {
           return;
         }
         
-        // Get user profile to get business_id
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('business_id')
-          .eq('id', session.user.id)
-          .single();
+        let currentBusinessId: string;
         
-        if (profileError || !profile) {
-          console.error('Profile not found:', profileError);
-          setError('Unable to load your profile. Please try logging out and back in.');
-          setIsLoading(false);
-          return;
+        if (isDemoMode) {
+          // Always use demo business ID in demo mode
+          currentBusinessId = '550e8400-e29b-41d4-a716-446655440000';
+          setBusinessId('550e8400-e29b-41d4-a716-446655440000');
+        } else {
+          // Get user profile to get business_id for live mode
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('business_id')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (profileError || !profile) {
+            console.error('Profile not found:', profileError);
+            setError('Unable to load your profile. Please try logging out and back in.');
+            setIsLoading(false);
+            return;
+          }
+          
+          currentBusinessId = profile.business_id;
+          setBusinessId(profile.business_id);
         }
         
-        const response = await fetch(`/api/request-mcp-server?demo_mode=${isDemoMode}`, {
+        // Use the correct API endpoint
+        const response = await fetch(`/api/requests?demo_mode=${isDemoMode}&business_id=${currentBusinessId}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
@@ -75,7 +87,7 @@ export default function RequestsPage() {
     };
     
     fetchRequests();
-  }, [router, isDemoMode]);
+  }, [router, isDemoMode]); // Removed businessId from dependencies
 
   const handleViewRequest = (request: ReturnRequest) => {
     setSelectedRequest(request);
@@ -98,7 +110,7 @@ export default function RequestsPage() {
     );
   }
 
-  if (!businessId) {
+  if (!businessId && !isDemoMode) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
@@ -166,13 +178,13 @@ export default function RequestsPage() {
       
       {/* Review Queue */}
       <ReviewQueue 
-        businessId={businessId} 
+        businessId={businessId || '550e8400-e29b-41d4-a716-446655440000'} 
         onViewRequest={handleViewRequest}
       />
       
       {/* All Returns Table */}
       <ReturnsTable 
-        businessId={businessId}
+        businessId={businessId || '550e8400-e29b-41d4-a716-446655440000'}
         onViewRequest={handleViewRequest}
       />
       

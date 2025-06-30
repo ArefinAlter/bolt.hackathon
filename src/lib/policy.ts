@@ -198,6 +198,41 @@ export async function testPolicy(
   }
 ): Promise<PolicyTestResult> {
   try {
+    // Check if we're in demo mode
+    const isDemoMode = businessId === '550e8400-e29b-41d4-a716-446655440000';
+    
+    if (isDemoMode) {
+      // Return mock test result for demo mode
+      const mockResult: PolicyTestResult = {
+        decision: 'auto_approve',
+        reasoning: 'Order value is within acceptable range and customer has low risk score. Return reason is valid and evidence is provided.',
+        policy_violations: [],
+        risk_factors: ['Customer has previous return history'],
+        confidence: 0.85
+      };
+      
+      // Simulate some policy violations based on test case
+      if (testCase.daysSincePurchase > rules.return_window_days) {
+        mockResult.policy_violations.push('Return window exceeded');
+        mockResult.decision = 'auto_deny';
+        mockResult.confidence = 0.95;
+      }
+      
+      if (testCase.orderValue > 1000 && testCase.customerRiskScore > 0.7) {
+        mockResult.risk_factors.push('High-value order from high-risk customer');
+        mockResult.decision = 'human_review';
+        mockResult.confidence = 0.75;
+      }
+      
+      if (!rules.acceptable_reasons.includes(testCase.reason)) {
+        mockResult.policy_violations.push('Return reason not acceptable');
+        mockResult.decision = 'auto_deny';
+        mockResult.confidence = 0.90;
+      }
+      
+      return mockResult;
+    }
+    
     // Call the triage-agent function to test the policy
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -224,10 +259,27 @@ export async function testPolicy(
     }
     
     const data = await response.json();
-    return data.decision;
+    
+    // Ensure the response has the correct structure
+    const result: PolicyTestResult = {
+      decision: data.decision || 'human_review',
+      reasoning: data.reasoning || 'No reasoning provided',
+      policy_violations: data.policy_violations || [],
+      risk_factors: data.risk_factors || [],
+      confidence: data.confidence || 0.5
+    };
+    
+    return result;
   } catch (error) {
     console.error('Error testing policy:', error);
-    throw error;
+    // Return a fallback result instead of throwing
+    return {
+      decision: 'human_review',
+      reasoning: 'Error occurred during policy testing. Manual review required.',
+      policy_violations: ['Policy test failed'],
+      risk_factors: ['System error'],
+      confidence: 0.0
+    };
   }
 }
 

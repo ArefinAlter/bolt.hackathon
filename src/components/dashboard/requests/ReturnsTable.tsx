@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Package, 
@@ -57,46 +57,79 @@ export function ReturnsTable({
   });
   const [selectedRequests, setSelectedRequests] = useState<number[]>([]);
 
-  // Register keyboard shortcuts
-  useHotkeys('r', () => handleRefresh());
-  useHotkeys('f', () => document.getElementById('search-input')?.focus());
-  useHotkeys('n r', () => router.push('/dashboard/requests/new'));
-
-  useEffect(() => {
-    loadReturnRequests();
-    
-    // Subscribe to real-time updates
-    const unsubscribe = subscribeToReturnRequests(businessId, (payload) => {
-      // Reload data when changes occur
-      loadReturnRequests();
-      
-      // Show toast notification
-      toast({
-        title: "Return request updated",
-        description: `A return request has been ${payload.eventType === 'INSERT' ? 'created' : 'updated'}`,
-        duration: 3000,
-      });
-    });
-    
-    return () => {
-      unsubscribe();
-    };
-  }, [businessId, filter, toast]);
-
-  const loadReturnRequests = async () => {
+  const loadReturnRequests = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const data = await fetchReturnRequests(businessId, filter);
-      setRequests(data);
+      // Check if we're in demo mode by checking if businessId is the demo ID
+      const isDemoMode = businessId === '550e8400-e29b-41d4-a716-446655440000';
+      
+      if (isDemoMode) {
+        // Use the API endpoint for demo mode
+        const response = await fetch(`/api/requests?demo_mode=true&business_id=${businessId}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch return requests');
+        }
+        
+        const data = await response.json();
+        setRequests(data.data || []);
+      } else {
+        // Use the existing function for live mode
+        const data = await fetchReturnRequests(businessId, filter);
+        setRequests(data);
+      }
     } catch (error) {
       console.error('Error loading return requests:', error);
       setError('Failed to load return requests');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [businessId, filter]);
+
+  const handleRefresh = useCallback(() => {
+    loadReturnRequests();
+    toast({
+      title: "Refreshed",
+      description: "Return requests have been refreshed",
+      duration: 2000,
+    });
+  }, [loadReturnRequests, toast]);
+
+  // Register keyboard shortcuts
+  useHotkeys('r', handleRefresh);
+  useHotkeys('f', () => document.getElementById('search-input')?.focus());
+  useHotkeys('n r', () => router.push('/dashboard/requests/new'));
+
+  useEffect(() => {
+    // Only load data if businessId is available
+    if (businessId) {
+      loadReturnRequests();
+    }
+    
+    // Only subscribe to real-time updates if not in demo mode
+    const isDemoMode = businessId === '550e8400-e29b-41d4-a716-446655440000';
+    
+    if (!isDemoMode && businessId) {
+      // Subscribe to real-time updates
+      const unsubscribe = subscribeToReturnRequests(businessId, (payload) => {
+        // Reload data when changes occur
+        loadReturnRequests();
+        
+        // Show toast notification
+        toast({
+          title: "Return request updated",
+          description: `A return request has been ${payload.eventType === 'INSERT' ? 'created' : 'updated'}`,
+          duration: 3000,
+        });
+      });
+      
+      return () => {
+        unsubscribe();
+      };
+    }
+  }, [businessId]);
 
   const handleSort = (field: string) => {
     setFilter(prev => ({
@@ -118,15 +151,6 @@ export function ReturnsTable({
       ...prev,
       search: term
     }));
-  };
-
-  const handleRefresh = () => {
-    loadReturnRequests();
-    toast({
-      title: "Refreshed",
-      description: "Return requests have been refreshed",
-      duration: 2000,
-    });
   };
 
   const handleExport = () => {

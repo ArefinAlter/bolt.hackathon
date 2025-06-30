@@ -154,6 +154,7 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
             width={100}
             height={28}
             className="h-8 w-auto"
+            style={{ width: 'auto' }}
           />
         </Link>
         <Button
@@ -190,6 +191,7 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
                 width={180}
                 height={48}
                 className="h-16 w-auto dark:hidden"
+                style={{ width: 'auto' }}
               />
               <Image
                 src="/white_logo.svg"
@@ -197,6 +199,7 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
                 width={180}
                 height={48}
                 className="h-16 w-auto hidden dark:block"
+                style={{ width: 'auto' }}
               />
             </Link>
           </div>

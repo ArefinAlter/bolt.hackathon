@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Clock, 
   CheckCircle, 
@@ -26,42 +26,68 @@ export function ReviewQueue({ businessId, onViewRequest }: ReviewQueueProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadPendingRequests();
-    
-    // Subscribe to real-time updates
-    const unsubscribe = subscribeToReturnRequests(businessId, (payload) => {
-      // Reload data when changes occur
-      loadPendingRequests();
-    });
-    
-    return () => {
-      unsubscribe();
-    };
-  }, [businessId]);
-
-  const loadPendingRequests = async () => {
+  const loadPendingRequests = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const data = await fetchReturnRequests(businessId, {
-        status: 'pending_review',
-        sortBy: 'created_at',
-        sortDirection: 'asc'
-      });
-      setPendingRequests(data);
+      // Check if we're in demo mode by checking if businessId is the demo ID
+      const isDemoMode = businessId === '550e8400-e29b-41d4-a716-446655440000';
+      
+      if (isDemoMode) {
+        // Use the API endpoint for demo mode
+        const response = await fetch(`/api/requests?demo_mode=true&business_id=${businessId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch return requests');
+        }
+        const data = await response.json();
+        // Filter for pending requests only
+        const pendingRequests = (data.data || []).filter((request: any) => 
+          request.status === 'pending_review' || request.status === 'pending_triage'
+        );
+        setPendingRequests(pendingRequests);
+      } else {
+        // Use the existing function for live mode
+        const data = await fetchReturnRequests(businessId, {
+          status: 'pending_review',
+          sortBy: 'created_at',
+          sortDirection: 'asc'
+        });
+        setPendingRequests(data);
+      }
     } catch (error) {
       console.error('Error loading pending requests:', error);
       setError('Failed to load pending requests');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [businessId]);
 
-  const handleRefresh = () => {
+  useEffect(() => {
+    // Only load data if businessId is available
+    if (businessId) {
+      loadPendingRequests();
+    }
+    
+    // Only subscribe to real-time updates if not in demo mode
+    const isDemoMode = businessId === '550e8400-e29b-41d4-a716-446655440000';
+    
+    if (!isDemoMode && businessId) {
+      // Subscribe to real-time updates
+      const unsubscribe = subscribeToReturnRequests(businessId, (payload) => {
+        // Reload data when changes occur
+        loadPendingRequests();
+      });
+      
+      return () => {
+        unsubscribe();
+      };
+    }
+  }, [businessId]);
+
+  const handleRefresh = useCallback(() => {
     loadPendingRequests();
-  };
+  }, [loadPendingRequests]);
 
   return (
     <Card className="border-0 shadow-md">
