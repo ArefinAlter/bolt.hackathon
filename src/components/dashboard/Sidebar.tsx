@@ -146,7 +146,7 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
   return (
     <>
       {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white dark:bg-gray-900 border-b dark:border-gray-800 px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b px-4 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center">
           <Image
             src="/main_logo.svg"
@@ -177,28 +177,20 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
 
       {/* Sidebar */}
       <aside 
-        className={`fixed top-0 left-0 z-30 h-full w-64 bg-white dark:bg-gray-900 border-r dark:border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-30 h-full w-64 bg-white border-r shadow-md transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:static lg:h-screen lg:w-64 flex-shrink-0`}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar header */}
-          <div className="p-4 border-b dark:border-gray-800">
+          <div className="p-4 border-b">
             <Link href="/" className="flex items-center">
               <Image
                 src="/main_logo.svg"
                 alt="Dokani"
                 width={180}
                 height={48}
-                className="h-16 w-auto dark:hidden"
-                style={{ width: 'auto' }}
-              />
-              <Image
-                src="/white_logo.svg"
-                alt="Dokani"
-                width={180}
-                height={48}
-                className="h-16 w-auto hidden dark:block"
+                className="h-16 w-auto"
                 style={{ width: 'auto' }}
               />
             </Link>
@@ -210,7 +202,7 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
           </div>
 
           {/* Role indicator */}
-          <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b dark:border-gray-700">
+          <div className="px-4 py-3 bg-gray-50 border-b">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -221,10 +213,10 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
                   )}
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <p className="text-sm font-medium text-gray-900">
                     {userRole === 'business' ? 'Business View' : 'Customer View'}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500">
                     {userRole === 'business' ? 'Managing returns' : 'Making returns'}
                   </p>
                 </div>
@@ -251,8 +243,8 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
                         onClick={() => toggleGroup(item.title)}
                         className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md font-medium ${
                           isActive(item.href)
-                            ? 'bg-primary/10 text-primary dark:bg-primary/20'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
                         <div className="flex items-center">
@@ -273,8 +265,8 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
                                 href={child.href}
                                 className={`flex items-center px-3 py-2 text-sm rounded-md ${
                                   isActive(child.href)
-                                    ? 'bg-primary/10 text-primary dark:bg-primary/20 font-medium'
-                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                                    ? 'bg-primary/10 text-primary font-medium'
+                                    : 'text-gray-700 hover:bg-gray-100'
                                 }`}
                               >
                                 <child.icon className="h-4 w-4 mr-3" />
@@ -290,8 +282,8 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
                       href={item.href}
                       className={`flex items-center justify-between px-3 py-2 text-sm rounded-md ${
                         isActive(item.href)
-                          ? 'bg-primary/10 text-primary dark:bg-primary/20 font-medium'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                          ? 'bg-primary/10 text-primary font-medium'
+                          : 'text-gray-700 hover:bg-gray-100'
                       }`}
                     >
                       <div className="flex items-center">
@@ -311,10 +303,10 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
           </nav>
 
           {/* Sidebar footer */}
-          <div className="p-4 border-t dark:border-gray-800">
+          <div className="p-4 border-t">
             <Button
               variant="ghost"
-              className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="w-full justify-start text-gray-700 hover:bg-gray-100"
               onClick={onSignOut}
             >
               <LogOut className="h-5 w-5 mr-3" />

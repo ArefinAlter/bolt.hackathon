@@ -97,7 +97,7 @@ export default function CallHistoryPage() {
   console.log('CallHistoryPage', { businessId, isDemoMode, user });
 
   return (
-    <Container>
+    <div className="px-4 sm:px-6 lg:px-8 pt-4">
       <Grid cols={12} gap="lg">
         <GridItem span={12}>
           <CallHistory 
@@ -106,6 +106,6 @@ export default function CallHistoryPage() {
           />
         </GridItem>
       </Grid>
-    </Container>
+    </div>
   );
 } 

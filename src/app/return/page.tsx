@@ -187,9 +187,9 @@ export default function ReturnPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
+      <header className="bg-white border-b">
         <Container>
           <Grid cols={12} gap="md">
             <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
@@ -200,15 +200,7 @@ export default function ReturnPage() {
                     alt="Dokani"
                     width={240}
                     height={64}
-                    className="h-16 w-auto dark:hidden"
-                    style={{ width: 'auto' }}
-                  />
-                  <Image
-                    src="/white_logo.svg"
-                    alt="Dokani"
-                    width={240}
-                    height={64}
-                    className="h-16 w-auto hidden dark:block"
+                    className="h-16 w-auto"
                     style={{ width: 'auto' }}
                   />
                 </Link>
@@ -221,7 +213,7 @@ export default function ReturnPage() {
                 lg: { direction: 'row', justify: 'end' },
                 xl: { direction: 'row', justify: 'end' }
               }}>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="text-sm text-gray-500">
                   Return Portal
                 </div>
               </Flex>
@@ -238,8 +230,8 @@ export default function ReturnPage() {
             <Grid cols={12} gap="md">
               <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Return Requests</h1>
-                  <p className="text-gray-500 dark:text-gray-400">
+                  <h1 className="text-2xl font-bold text-gray-900">Return Requests</h1>
+                  <p className="text-gray-500">
                     Track and manage your return requests
                   </p>
                 </div>
@@ -405,8 +397,8 @@ export default function ReturnPage() {
                 <Card className="border-0 shadow-md">
                   <CardContent className="p-8 text-center">
                     <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No return requests found</h3>
-                    <p className="text-gray-500 dark:text-gray-400 mb-4">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No return requests found</h3>
+                    <p className="text-gray-500 mb-4">
                       {searchTerm || filterStatus !== 'all' 
                         ? 'Try adjusting your search or filters'
                         : 'Get started by creating your first return request'
@@ -430,7 +422,7 @@ export default function ReturnPage() {
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            <h3 className="text-lg font-semibold text-gray-900">
                               {returnRequest.public_id}
                             </h3>
                             {getStatusBadge(returnRequest.status)}

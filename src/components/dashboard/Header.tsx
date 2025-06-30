@@ -55,7 +55,7 @@ export function Header({ userRole, userName, onRoleSwitch, onSignOut }: HeaderPr
   };
 
   return (
-    <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
+    <header className="bg-white border-b">
       <div className="h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Left: Logo and Page title */}
         <div className="flex items-center space-x-4">
@@ -65,20 +65,12 @@ export function Header({ userRole, userName, onRoleSwitch, onSignOut }: HeaderPr
               alt="Dokani"
               width={120}
               height={32}
-              className="h-8 w-auto dark:hidden"
-              style={{ width: 'auto' }}
-            />
-            <Image
-              src="/white_logo.svg"
-              alt="Dokani"
-              width={120}
-              height={32}
-              className="h-8 w-auto hidden dark:block"
+              className="h-8 w-auto"
               style={{ width: 'auto' }}
             />
           </Link>
-          <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          <div className="h-6 w-px bg-gray-300"></div>
+          <h1 className="text-xl font-semibold text-gray-900">
             {getPageTitle()}
           </h1>
         </div>
@@ -89,86 +81,55 @@ export function Header({ userRole, userName, onRoleSwitch, onSignOut }: HeaderPr
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center space-x-4">
-          {/* Theme toggle */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                {theme === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setTheme('light')}>
-                <Sun className="mr-2 h-4 w-4" />
-                <span>Light</span>
+        <KeyboardShortcutsHelp />
+        <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700">
+          <Bell className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700">
+          <HelpCircle className="h-5 w-5" />
+        </Button>
+        {/* Profile dropdown */}
+        <DropdownMenu open={isProfileMenuOpen} onOpenChange={setIsProfileMenuOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="flex items-center space-x-2 text-gray-700"
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userName}`} alt={userName} />
+                <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <span className="hidden sm:block text-sm font-medium">
+                {userName}
+              </span>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end">
+            <div className="p-3 border-b">
+              <p className="text-sm font-medium text-gray-900">{userName}</p>
+              <p className="text-xs text-gray-500">
+                {userRole === 'business' ? 'Business Account' : 'Customer Account'}
+              </p>
+            </div>
+            <DropdownMenuItem onClick={onRoleSwitch}>
+              <User className="h-4 w-4 mr-3" />
+              Switch to {userRole === 'business' ? 'Customer' : 'Business'} View
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <Link href="/settings">
+              <DropdownMenuItem>
+                <Settings className="h-4 w-4 mr-3" />
+                Settings
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme('dark')}>
-                <Moon className="mr-2 h-4 w-4" />
-                <span>Dark</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme('system')}>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>System</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Keyboard shortcuts */}
-          <KeyboardShortcutsHelp />
-
-          {/* Notifications */}
-          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-            <Bell className="h-5 w-5" />
-          </Button>
-
-          {/* Help */}
-          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-            <HelpCircle className="h-5 w-5" />
-          </Button>
-
-          {/* Profile dropdown */}
-          <DropdownMenu open={isProfileMenuOpen} onOpenChange={setIsProfileMenuOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="flex items-center space-x-2 text-gray-700 dark:text-gray-300"
-              >
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userName}`} alt={userName} />
-                  <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <span className="hidden sm:block text-sm font-medium">
-                  {userName}
-                </span>
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end">
-              <div className="p-3 border-b">
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{userName}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {userRole === 'business' ? 'Business Account' : 'Customer Account'}
-                </p>
-              </div>
-              <DropdownMenuItem onClick={onRoleSwitch}>
-                <User className="h-4 w-4 mr-3" />
-                Switch to {userRole === 'business' ? 'Customer' : 'Business'} View
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <Link href="/settings">
-                <DropdownMenuItem>
-                  <Settings className="h-4 w-4 mr-3" />
-                  Settings
-                </DropdownMenuItem>
-              </Link>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onSignOut}>
-                <LogOut className="h-4 w-4 mr-3" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+            </Link>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onSignOut}>
+              <LogOut className="h-4 w-4 mr-3" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

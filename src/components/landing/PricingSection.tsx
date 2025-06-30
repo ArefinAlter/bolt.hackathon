@@ -96,7 +96,7 @@ const pricingTiers = [
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="py-20 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
+    <section id="pricing" className="py-20 bg-gray-50 relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute top-1/4 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 left-0 w-48 h-48 bg-secondary/5 rounded-full blur-3xl" />
@@ -108,11 +108,11 @@ export function PricingSection() {
             <Star className="w-4 h-4 mr-2" />
             Transparent Pricing
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
             Revolutionary Return Automation at{' '}
             <span className="gradient-text">Fraction of the Cost</span>
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Starting at just $99/month vs $40K-60K/year for agents. Scale from basic AI triage to full enterprise automation with up to 3,200% ROI.
           </p>
         </div>
@@ -124,7 +124,7 @@ export function PricingSection() {
             return (
               <Card 
                 key={tier.id} 
-                className={`relative border-0 shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in bg-white dark:bg-gray-800 ${
+                className={`relative border-0 shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in bg-white ${
                   tier.popular 
                     ? 'ring-2 ring-primary scale-105 lg:scale-110' 
                     : 'hover:-translate-y-2'
@@ -133,7 +133,7 @@ export function PricingSection() {
               >
                 {tier.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                    <div className="bg-gradient-to-r from-primary to-secondary text-gray-900 dark:text-gray-100 px-4 py-1 rounded-full text-sm font-medium flex items-center">
+                    <div className="bg-gradient-to-r from-primary to-secondary text-gray-900 px-4 py-1 rounded-full text-sm font-medium flex items-center">
                       <Star className="w-4 h-4 mr-1" />
                       Most Popular
                     </div>
@@ -152,17 +152,17 @@ export function PricingSection() {
                   <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                     <IconComponent className="w-6 h-6 text-primary" />
                   </div>
-                  <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  <CardTitle className="text-xl font-bold text-gray-900">
                     {tier.name}
                   </CardTitle>
-                  <CardDescription className="text-gray-600 dark:text-gray-400 mt-2 text-sm">
+                  <CardDescription className="text-gray-600 mt-2 text-sm">
                     {tier.description}
                   </CardDescription>
                   <div className="mt-4">
-                    <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                    <span className="text-3xl font-bold">
                       ${tier.price}
                     </span>
-                    <span className="text-gray-600 dark:text-gray-400 ml-1">/{tier.period}</span>
+                    <span className="text-gray-600 ml-1">/{tier.period}</span>
                   </div>
                 </CardHeader>
 
@@ -171,7 +171,7 @@ export function PricingSection() {
                     {tier.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-start">
                         <Check className="w-4 h-4 text-success mr-3 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
+                        <span className="text-sm text-gray-700">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -182,7 +182,7 @@ export function PricingSection() {
                     <Button 
                       className={`w-full ${
                         tier.popular 
-                          ? 'bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-gray-900 dark:text-gray-100' 
+                          ? 'bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-gray-900' 
                           : 'bg-gray-900 hover:bg-gray-800 text-white'
                       }`}
                       size="lg"
@@ -200,9 +200,9 @@ export function PricingSection() {
         <div className="text-center mt-12">
           <div className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
             <Check className="w-5 h-5 text-primary mr-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">14-day free trial • No setup fees • Cancel anytime</span>
+            <span className="text-sm font-medium text-gray-900">14-day free trial • No setup fees • Cancel anytime</span>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
+          <p className="text-sm text-gray-600 mt-4">
             Need a custom plan? <Link href="/contact" className="text-primary hover:underline font-medium">Contact our sales team</Link>
           </p>
         </div>

@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Grid, GridItem, Flex, Container } from '@/components/ui/grid';
+import { Grid, GridItem, Flex } from '@/components/ui/grid';
 import { PolicyEditor } from '@/components/dashboard/policy/PolicyEditor';
 import { PolicyTimeline } from '@/components/dashboard/policy/PolicyTimeline';
 import { PolicyTestPanel } from '@/components/dashboard/policy/PolicyTestPanel';
@@ -215,7 +215,7 @@ export default function PolicyPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 lg:px-8 pt-4">
       <Card className="border-0 shadow-md">
         <CardHeader className="pb-2">
           <Grid cols={12} gap="md">

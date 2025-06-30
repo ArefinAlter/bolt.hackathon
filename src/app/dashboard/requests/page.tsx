@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Grid, GridItem, Flex, Container } from '@/components/ui/grid';
+import { Grid, GridItem, Flex } from '@/components/ui/grid';
 import { ReturnsTable } from '@/components/dashboard/requests/ReturnsTable';
 import { ReviewQueue } from '@/components/dashboard/requests/ReviewQueue';
 import { RequestDetailModal } from '@/components/dashboard/requests/RequestDetailModal';
@@ -132,7 +132,7 @@ export default function RequestsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 lg:px-8 pt-4">
       {/* Header */}
       <Grid cols={12} gap="md">
         <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>

@@ -353,9 +353,9 @@ export default function TestAuthPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
+      <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <Link href="/" className="flex items-center space-x-2">
@@ -364,17 +364,10 @@ export default function TestAuthPage() {
                 alt="Dokani"
                 width={240}
                 height={64}
-                className="h-16 w-auto dark:hidden"
-              />
-              <Image
-                src="/white_logo.svg"
-                alt="Dokani"
-                width={240}
-                height={64}
-                className="h-16 w-auto hidden dark:block"
+                className="h-16 w-auto"
               />
             </Link>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-gray-500">
               Authentication Testing
             </div>
           </div>
@@ -385,8 +378,8 @@ export default function TestAuthPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Authentication Test Page</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-2">
+            <h1 className="text-3xl font-bold text-gray-900">Authentication Test Page</h1>
+            <p className="text-gray-500 mt-2">
               Debug and test authentication functionality
             </p>
           </div>

@@ -211,7 +211,7 @@ export default function RiskAssessmentPage() {
   const stats = getRiskStats();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 lg:px-8 pt-4">
       <Grid cols={12} gap="sm">
         <GridItem span={12} responsive={{ sm: 12, md: 6, lg: 4, xl: 3 }}>
           <Flex direction="row" gap="sm" align="center">

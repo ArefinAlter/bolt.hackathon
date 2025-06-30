@@ -45,7 +45,7 @@ export function TestimonialSlider() {
   }
 
   return (
-    <section className="py-16 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
+    <section className="py-16 bg-gray-50 relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute top-1/4 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 right-0 w-48 h-48 bg-secondary/5 rounded-full blur-3xl" />
@@ -53,11 +53,11 @@ export function TestimonialSlider() {
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
             Industry Insights &{' '}
             <span className="gradient-text">Market Data</span>
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Trusted research and statistics that validate the need for intelligent return automation
           </p>
         </div>
@@ -65,7 +65,7 @@ export function TestimonialSlider() {
         {/* Testimonial slider */}
         <div className="relative">
           {/* Main testimonial card */}
-          <Card className="border-0 shadow-xl bg-white dark:bg-gray-800 relative overflow-hidden">
+          <Card className="border-0 shadow-xl bg-white relative overflow-hidden">
             <CardContent className="p-12">
               <div className="flex flex-col items-center text-center">
                 {/* Quote icon */}
@@ -74,16 +74,16 @@ export function TestimonialSlider() {
                 </div>
 
                 {/* Quote text */}
-                <blockquote className="text-2xl sm:text-3xl font-medium text-gray-900 dark:text-gray-100 mb-8 leading-relaxed max-w-4xl">
+                <blockquote className="text-2xl sm:text-3xl font-medium text-gray-900 mb-8 leading-relaxed max-w-4xl">
                   "{testimonials[currentIndex].quote}"
                 </blockquote>
 
                 {/* Source */}
                 <div className="text-center">
-                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  <div className="text-lg font-semibold">
                     {testimonials[currentIndex].source}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="text-sm">
                     Industry Research
                   </div>
                 </div>
@@ -94,16 +94,16 @@ export function TestimonialSlider() {
           {/* Navigation buttons */}
           <button
             onClick={prevSlide}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-300 group"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-300 group"
           >
-            <ChevronLeft className="w-6 h-6 text-gray-600 dark:text-gray-400 group-hover:text-primary transition-colors" />
+            <ChevronLeft className="w-6 h-6 text-gray-600 group-hover:text-primary transition-colors" />
           </button>
 
           <button
             onClick={nextSlide}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-300 group"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-300 group"
           >
-            <ChevronRight className="w-6 h-6 text-gray-600 dark:text-gray-400 group-hover:text-primary transition-colors" />
+            <ChevronRight className="w-6 h-6 text-gray-600 group-hover:text-primary transition-colors" />
           </button>
 
           {/* Dots indicator */}
@@ -115,7 +115,7 @@ export function TestimonialSlider() {
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   index === currentIndex 
                     ? 'bg-primary w-8' 
-                    : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
+                    : 'bg-gray-300 hover:bg-gray-400'
                 }`}
               />
             ))}
@@ -126,15 +126,15 @@ export function TestimonialSlider() {
         <div className="grid md:grid-cols-3 gap-6 mt-12">
           <div className="text-center">
             <div className="text-2xl font-bold text-primary mb-2">65%</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Customers affected by poor returns</div>
+            <div className="text-sm">Customers affected by poor returns</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-success mb-2">70%</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Port delays reduced by digitization</div>
+            <div className="text-sm">Port delays reduced by digitization</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-secondary mb-2">16.9%</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Average ecommerce return rate</div>
+            <div className="text-sm">Average ecommerce return rate</div>
           </div>
         </div>
       </div>

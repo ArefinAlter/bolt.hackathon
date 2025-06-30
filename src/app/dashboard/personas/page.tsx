@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Grid, GridItem, Flex, Container } from '@/components/ui/grid';
+import { Grid, GridItem, Flex } from '@/components/ui/grid';
 import { VoicePersonaCreator } from '@/components/dashboard/personas/VoicePersonaCreator';
 import { VideoPersonaCreator } from '@/components/dashboard/personas/VideoPersonaCreator';
 import { PersonaCard } from '@/components/dashboard/personas/PersonaCard';
@@ -138,7 +138,7 @@ export default function PersonasPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 lg:px-8 pt-4">
       {/* Header */}
       <Grid cols={12} gap="md">
         <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>

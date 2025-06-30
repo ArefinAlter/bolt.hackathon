@@ -101,14 +101,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <LoadingSpinner size="lg" text="Loading dashboard..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-50">
       <Sidebar 
         userRole={userRole} 
         onRoleSwitch={handleRoleSwitch} 
@@ -123,12 +123,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           onSignOut={handleSignOut} 
         />
         
-        <main className="flex-1 w-full pl-2 pr-4 pt-4">
+        <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 pt-4">
           {children}
         </main>
         
-        <footer className="py-4 px-6 border-t bg-white dark:bg-gray-900 dark:border-gray-800">
-          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+        <footer className="py-4 px-6 border-t bg-white">
+          <div className="text-center text-sm text-gray-500">
             &copy; {new Date().getFullYear()} Dokani. All rights reserved.
           </div>
         </footer>

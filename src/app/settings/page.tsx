@@ -124,9 +124,9 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
+      <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <Link href="/" className="flex items-center space-x-2">
@@ -135,17 +135,10 @@ export default function SettingsPage() {
                 alt="Dokani"
                 width={240}
                 height={64}
-                className="h-16 w-auto dark:hidden"
-              />
-              <Image
-                src="/white_logo.svg"
-                alt="Dokani"
-                width={240}
-                height={64}
-                className="h-16 w-auto hidden dark:block"
+                className="h-16 w-auto"
               />
             </Link>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-gray-500">
               Settings
             </div>
           </div>
@@ -157,8 +150,8 @@ export default function SettingsPage() {
         <div className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
-              <p className="text-gray-500 dark:text-gray-400">
+              <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+              <p className="text-gray-500">
                 Manage your account settings and preferences
               </p>
             </div>
