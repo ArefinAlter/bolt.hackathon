@@ -22,10 +22,21 @@ Deno.serve(async (req) => {
 
     // Demo mode - return mock upload data
     if (demo_mode) {
+      // Create appropriate demo URL based on file type
+      let demoUrl = 'https://via.placeholder.com/400x300/4F46E5/FFFFFF?text=Demo+Image';
+      
+      if (file_type === 'voice_sample') {
+        demoUrl = 'https://via.placeholder.com/400x200/10B981/FFFFFF?text=Voice+Sample';
+      } else if (file_type === 'video_sample') {
+        demoUrl = 'https://via.placeholder.com/400x300/7C3AED/FFFFFF?text=Video+Sample';
+      } else if (file_type === 'evidence_video') {
+        demoUrl = 'https://via.placeholder.com/400x300/DC2626/FFFFFF?text=Evidence+Video';
+      }
+      
       const mockUploadData = {
         success: true,
         file_id: 'demo-file-123',
-        file_url: 'https://demo.example.com/uploads/demo-file.jpg',
+        file_url: demoUrl,
         file_path: `${business_id || 'demo-business'}/${file_type || 'evidence_photo'}/demo_${file_name || 'file.jpg'}`,
         message: 'File uploaded successfully (demo mode)',
         demo_mode: true
@@ -58,16 +69,28 @@ Deno.serve(async (req) => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
     const filePath = `${business_id}/${file_type}/${timestamp}_${file_name}`
 
-    // Upload to Supabase Storage
+    // Convert base64 to bytes for upload
+    const base64Data = file_data
+    const binaryString = atob(base64Data)
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i)
+    }
+
+    // Upload to Supabase Storage using service role
     const { data: uploadData, error: uploadError } = await supabaseClient.storage
       .from('uploads')
-      .upload(filePath, file_data, {
+      .upload(filePath, bytes, {
         contentType: getContentType(file_name),
         upsert: false
       })
 
     if (uploadError) {
-      throw uploadError
+      console.error('Upload error:', uploadError)
+      return new Response(
+        JSON.stringify({ error: `Storage upload failed: ${uploadError.message}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
     }
 
     // Get public URL
@@ -85,7 +108,7 @@ Deno.serve(async (req) => {
           file_name,
           file_path: filePath,
           file_url: urlData.publicUrl,
-          file_size: file_data.length,
+          file_size: bytes.length,
           metadata: file_metadata || {},
           uploaded_at: new Date().toISOString()
         }
@@ -94,7 +117,14 @@ Deno.serve(async (req) => {
       .single()
 
     if (dbError) {
-      throw dbError
+      console.error('Database error:', dbError)
+      // Try to clean up the uploaded file if database insert fails
+      await supabaseClient.storage.from('uploads').remove([filePath])
+      
+      return new Response(
+        JSON.stringify({ error: `Database insert failed: ${dbError.message}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
     }
 
     return new Response(

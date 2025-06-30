@@ -55,7 +55,7 @@ export function GlobalSearch() {
       try {
         // In a real implementation, this would call an API
         // For demo purposes, we'll use mock data
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Removed artificial delay for better performance
         
         const mockResults: SearchResult[] = [
           {

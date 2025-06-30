@@ -43,6 +43,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Logo } from '@/components/common/Logo';
 import { DemoToggle } from '@/components/common/DemoToggle';
+import { ChatInput } from '@/components/customer/ChatInput';
 
 export default function CustomerChatPage() {
   const router = useRouter();
@@ -63,7 +64,6 @@ export default function CustomerChatPage() {
   const [isDemoMode, setIsDemoMode] = useState(true);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
     const initializeChat = async () => {
@@ -156,7 +156,8 @@ export default function CustomerChatPage() {
                       : f
                   )
                 );
-              }
+              },
+              isDemoMode
             );
             
             fileUrls.push(fileUrl);
@@ -248,11 +249,6 @@ export default function CustomerChatPage() {
     const newUploads = Array.from(files).map(file => createLocalFileUpload(file));
     
     setFileUploads(prev => [...prev, ...newUploads]);
-    
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
   
   const handleRemoveFile = (id: string) => {
@@ -414,6 +410,10 @@ export default function CustomerChatPage() {
                           src={url} 
                           alt="Attachment" 
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Replace broken image with placeholder
+                            e.currentTarget.src = 'https://via.placeholder.com/80x80/6B7280/FFFFFF?text=Image';
+                          }}
                         />
                       </div>
                     ) : (
@@ -615,110 +615,20 @@ export default function CustomerChatPage() {
           
         </div>
         
-        {/* Fixed input area at bottom */}
+        {/* Fixed input area at bottom - using ChatInput component with fixed positioning */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-10 backdrop-blur-sm bg-white/95" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}>
-          {/* File uploads preview */}
-          {fileUploads.length > 0 && (
-            <div className="bg-gray-50 border-t p-2 flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-              <div className="max-w-4xl mx-auto w-full flex flex-wrap gap-2">
-                {fileUploads.map(file => (
-                  <div 
-                    key={file.id} 
-                    className="relative bg-white rounded-md border p-2 flex items-center"
-                  >
-                    {file.status === 'uploading' ? (
-                      <div className="w-6 h-6 mr-2 flex items-center justify-center">
-                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                      </div>
-                    ) : file.status === 'error' ? (
-                      <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
-                    ) : (
-                      <Paperclip className="h-4 w-4 mr-2 text-black" />
-                    )}
-                    
-                    <span className="text-sm truncate max-w-[150px]">{file.file.name}</span>
-                    
-                    <button 
-                      className="ml-2 text-black hover:text-gray-600"
-                      onClick={() => handleRemoveFile(file.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                    
-                    {file.status === 'uploading' && (
-                      <div className="absolute bottom-0 left-0 h-1 bg-primary" style={{ width: `${file.upload_progress}%` }}></div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Input area */}
-          <div className="p-4">
-            <div className="max-w-4xl mx-auto">
-            <div className="flex items-end space-x-2">
-              <div className="flex-1 relative">
-                <TextareaAutosize
-                  placeholder="Type your message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  className="w-full bg-white border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary resize-none max-h-24"
-                  minRows={1}
-                  maxRows={2}
-                  disabled={isSending}
-                />
-              </div>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" disabled={isSending}>
-                    <Paperclip className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
-                    <ImageIcon className="h-4 w-4 mr-2" />
-                    <span>Upload Image</span>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      multiple
-                    />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
-                    <Paperclip className="h-4 w-4 mr-2" />
-                    <span>Upload File</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              
-              <Button 
-                className="bg-primary hover:bg-primary/90 text-black"
-                onClick={handleSendMessage}
-                disabled={isSending || (!newMessage.trim() && fileUploads.length === 0)}
-              >
-                {isSending ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Send className="h-5 w-5" />
-                )}
-              </Button>
-            </div>
-            </div>
-          </div>
+          <ChatInput
+            message={newMessage}
+            setMessage={setNewMessage}
+            onSendMessage={handleSendMessage}
+            onFileUpload={handleFileUpload}
+            onRemoveFile={handleRemoveFile}
+            fileUploads={fileUploads}
+            isSending={isSending}
+          />
         </div>
       </div>
-      
+
       {/* File preview dialog */}
       <Dialog open={showFilePreview} onOpenChange={setShowFilePreview}>
         <DialogContent className="max-w-3xl">
@@ -735,6 +645,10 @@ export default function CustomerChatPage() {
                 src={selectedFile.preview_url} 
                 alt="Preview" 
                 className="max-h-[60vh] max-w-full object-contain rounded-md"
+                onError={(e) => {
+                  // Replace broken image with placeholder
+                  e.currentTarget.src = 'https://via.placeholder.com/400x300/6B7280/FFFFFF?text=Image+Not+Available';
+                }}
               />
             )}
           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
@@ -21,6 +21,30 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [userName, setUserName] = useState('User');
   const [isLoading, setIsLoading] = useState(true);
 
+  // Memoize handlers to prevent unnecessary re-renders
+  const handleRoleSwitch = useCallback(() => {
+    const newRole = userRole === 'business' ? 'customer' : 'business';
+    localStorage.setItem('userRole', newRole);
+    setUserRole(newRole);
+    
+    toast({
+      title: "View switched",
+      description: `You are now viewing as a ${newRole === 'business' ? 'Business' : 'Customer'}`,
+      duration: 3000,
+    });
+    
+    if (newRole === 'business') {
+      router.push('/dashboard');
+    } else {
+      router.push('/return');
+    }
+  }, [userRole, router, toast]);
+
+  const handleSignOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem('userRole');
+    router.push('/');
+  }, [router]);
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -67,30 +91,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     
     loadUserData();
   }, [router]);
-
-  const handleRoleSwitch = () => {
-    const newRole = userRole === 'business' ? 'customer' : 'business';
-    localStorage.setItem('userRole', newRole);
-    setUserRole(newRole);
-    
-    toast({
-      title: "View switched",
-      description: `You are now viewing as a ${newRole === 'business' ? 'Business' : 'Customer'}`,
-      duration: 3000,
-    });
-    
-    if (newRole === 'business') {
-      router.push('/dashboard');
-    } else {
-      router.push('/return');
-    }
-  };
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem('userRole');
-    router.push('/');
-  };
 
   if (isLoading) {
     return (
