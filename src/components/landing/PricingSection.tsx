@@ -196,37 +196,6 @@ export function PricingSection() {
           })}
         </div>
 
-        {/* Feature comparison */}
-        <div className="mt-16 bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              Feature Comparison
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              See how our features scale across different business needs
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary mb-2">Starter</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Perfect for small businesses</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary mb-2">Professional</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Growing businesses</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary mb-2">Business</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Established companies</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary mb-2">Enterprise</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Large enterprises</div>
-            </div>
-          </div>
-        </div>
-
         {/* Bottom CTA */}
         <div className="text-center mt-12">
           <div className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
