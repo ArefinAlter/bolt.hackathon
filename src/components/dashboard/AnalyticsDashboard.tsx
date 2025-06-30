@@ -164,36 +164,32 @@ export function AnalyticsDashboard() {
         <StatCard
           title="Total Returns"
           value={analyticsData.returns?.total_returns || 0}
-          icon={<Package className="h-5 w-5 text-primary" />}
+          icon={Package}
           trend={analyticsData.returns?.trend ? {
-            value: `${analyticsData.returns.trend.change_percentage}%`,
+            value: parseFloat(analyticsData.returns.trend.change_percentage),
             isPositive: parseFloat(analyticsData.returns.trend.change_percentage) > 0
           } : undefined}
-          isLoading={isLoading}
         />
         
         <StatCard
           title="Approval Rate"
           value={`${analyticsData.returns?.approval_rate || 0}%`}
-          icon={<CheckCircle className="h-5 w-5 text-green-600" />}
+          icon={CheckCircle}
           description="Returns approved vs. total"
-          isLoading={isLoading}
         />
         
         <StatCard
           title="AI Accuracy"
           value={`${analyticsData.ai_accuracy?.accuracy_rate || 0}%`}
-          icon={<Brain className="h-5 w-5 text-blue-600" />}
+          icon={Brain}
           description="Correct AI decisions"
-          isLoading={isLoading}
         />
         
         <StatCard
           title="Customer Satisfaction"
           value={`${analyticsData.satisfaction?.satisfaction_score || 0}%`}
-          icon={<Users className="h-5 w-5 text-purple-600" />}
+          icon={Users}
           description="Based on sentiment analysis"
-          isLoading={isLoading}
         />
       </div>
 
@@ -202,33 +198,29 @@ export function AnalyticsDashboard() {
         <StatCard
           title="Voice Conversations"
           value={analyticsData.elevenlabs_analytics?.conversations_count || 0}
-          icon={<Phone className="h-5 w-5 text-blue-600" />}
+          icon={Phone}
           description="Total voice calls handled"
-          isLoading={isLoading}
         />
         
         <StatCard
           title="Voice Satisfaction"
           value={`${analyticsData.elevenlabs_analytics?.satisfaction_score || 0}%`}
-          icon={<Volume2 className="h-5 w-5 text-green-600" />}
+          icon={Volume2}
           description="Voice call satisfaction"
-          isLoading={isLoading}
         />
         
         <StatCard
           title="Avg Response Time"
           value={`${analyticsData.elevenlabs_analytics?.average_response_time?.toFixed(1) || 0}s`}
-          icon={<Clock className="h-5 w-5 text-yellow-600" />}
+          icon={Clock}
           description="ElevenLabs response time"
-          isLoading={isLoading}
         />
         
         <StatCard
           title="Escalation Rate"
           value={`${analyticsData.elevenlabs_analytics?.escalation_rate?.toFixed(1) || 0}%`}
-          icon={<AlertTriangle className="h-5 w-5 text-red-600" />}
+          icon={AlertTriangle}
           description="Calls escalated to human"
-          isLoading={isLoading}
         />
       </div>
 
