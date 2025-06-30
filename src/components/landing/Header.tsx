@@ -37,7 +37,7 @@ export function Header() {
               Pricing
             </Link>
             <Link href="#stack" className="text-gray-900 hover:text-gray-700 transition-colors">
-              Tech Stack
+              Platforms
             </Link>
           </nav>
 
@@ -94,7 +94,7 @@ export function Header() {
                 className="block px-3 py-2 text-gray-900 hover:text-gray-700"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Tech Stack
+                Platforms
               </Link>
             </nav>
             <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">

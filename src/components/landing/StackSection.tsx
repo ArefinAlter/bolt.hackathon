@@ -2,51 +2,33 @@
 
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
-import { Zap, Shield, Code, Database, Cloud, Cpu, Globe, Lock } from 'lucide-react'
+import { Zap, Shield } from 'lucide-react'
 
-const frontendStack = [
+const platformLogos = [
   {
-    name: 'React & Next.js',
-    description: 'Modern frontend framework with server-side rendering',
-    icon: Code
+    name: 'Shopify',
+    logo: '/shopify.svg',
+    alt: 'Shopify Integration'
   },
   {
-    name: 'TypeScript',
-    description: 'Type-safe JavaScript for better development',
-    icon: Code
+    name: 'WooCommerce',
+    logo: '/woocommerce.png',
+    alt: 'WooCommerce Integration'
   },
   {
-    name: 'Tailwind CSS',
-    description: 'Utility-first CSS framework for rapid UI development',
-    icon: Code
+    name: 'WhatsApp',
+    logo: '/Whatsapp.svg',
+    alt: 'WhatsApp Business Integration'
   },
   {
-    name: 'Responsive Design',
-    description: 'Mobile-first approach for all devices',
-    icon: Globe
-  }
-]
-
-const backendStack = [
-  {
-    name: 'Supabase',
-    description: 'Open source Firebase alternative with PostgreSQL',
-    icon: Database
+    name: 'Telegram',
+    logo: '/telegram.svg',
+    alt: 'Telegram Integration'
   },
   {
-    name: 'Edge Functions',
-    description: 'Serverless functions for real-time processing',
-    icon: Cloud
-  },
-  {
-    name: 'AI Integration',
-    description: 'OpenAI, ElevenLabs, and custom ML models',
-    icon: Cpu
-  },
-  {
-    name: 'Security',
-    description: 'SOC 2 compliant with enterprise-grade security',
-    icon: Lock
+    name: 'Messenger',
+    logo: '/messenger.svg',
+    alt: 'Facebook Messenger Integration'
   }
 ]
 
@@ -62,78 +44,48 @@ export function StackSection() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
             <Zap className="w-4 h-4 mr-2" />
-            Built for Scale
+            Platform Integrations
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Enterprise-Grade{' '}
-            <span className="gradient-text">Technology Stack</span>
+            Seamless{' '}
+            <span className="gradient-text">Ecommerce & Messaging</span>
           </h2>
           <p className="text-xl text-gray-900 max-w-3xl mx-auto">
-            Built on modern, scalable technologies that power the world's most demanding applications
+            Integrates with your existing platforms to provide AI-powered customer service and return management
           </p>
         </div>
 
-        {/* Frontend Stack */}
-        <div className="mb-16">
-          <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">
-            Frontend & User Experience
-          </h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {frontendStack.map((tech, index) => (
-              <Card 
-                key={tech.name} 
-                className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-2 animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <tech.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">
-                    {tech.name}
-                  </h4>
-                  <p className="text-sm text-gray-900">
-                    {tech.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Backend Stack */}
-        <div className="mb-16">
-          <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">
-            Backend & Infrastructure
-          </h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {backendStack.map((tech, index) => (
-              <Card 
-                key={tech.name} 
-                className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-2 animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-secondary/10 to-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <tech.icon className="w-6 h-6 text-secondary" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">
-                    {tech.name}
-                  </h4>
-                  <p className="text-sm text-gray-900">
-                    {tech.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        {/* Platform Logos Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 mb-16">
+          {platformLogos.map((platform, index) => (
+            <Card 
+              key={platform.name} 
+              className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-2 animate-fade-in bg-white"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <Image
+                    src={platform.logo}
+                    alt={platform.alt}
+                    width={64}
+                    height={64}
+                    className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform"
+                  />
+                </div>
+                <h4 className="font-semibold text-gray-900">
+                  {platform.name}
+                </h4>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Bottom CTA */}
         <div className="text-center">
           <div className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
             <Shield className="w-5 h-5 text-primary mr-2" />
-            <span className="text-sm font-medium text-gray-900">Enterprise-grade security & compliance</span>
+            <span className="text-sm font-medium text-gray-900">Enterprise-grade integrations & security</span>
           </div>
         </div>
       </div>
