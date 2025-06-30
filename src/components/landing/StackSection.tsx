@@ -2,144 +2,138 @@
 
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
+import { Zap, Shield, Code, Database, Cloud, Cpu, Globe, Lock } from 'lucide-react'
 
-const integrations = [
+const frontendStack = [
   {
-    id: 'shopify',
-    name: 'Shopify',
-    logo: '/shopify.svg',
-    description: 'Seamless integration with Shopify stores',
-    category: 'ecommerce'
+    name: 'React & Next.js',
+    description: 'Modern frontend framework with server-side rendering',
+    icon: Code
   },
   {
-    id: 'woocommerce',
-    name: 'WooCommerce',
-    logo: '/woocommerce.png',
-    description: 'Native WordPress e-commerce support',
-    category: 'ecommerce'
+    name: 'TypeScript',
+    description: 'Type-safe JavaScript for better development',
+    icon: Code
   },
   {
-    id: 'whatsapp',
-    name: 'WhatsApp',
-    logo: '/Whatsapp.svg',
-    description: 'Direct customer communication',
-    category: 'messaging'
+    name: 'Tailwind CSS',
+    description: 'Utility-first CSS framework for rapid UI development',
+    icon: Code
   },
   {
-    id: 'instagram',
-    name: 'Instagram',
-    logo: '/instagram.svg',
-    description: 'Social commerce integration',
-    category: 'messaging'
+    name: 'Responsive Design',
+    description: 'Mobile-first approach for all devices',
+    icon: Globe
+  }
+]
+
+const backendStack = [
+  {
+    name: 'Supabase',
+    description: 'Open source Firebase alternative with PostgreSQL',
+    icon: Database
   },
   {
-    id: 'messenger',
-    name: 'Messenger',
-    logo: '/messenger.svg',
-    description: 'Facebook Messenger support',
-    category: 'messaging'
+    name: 'Edge Functions',
+    description: 'Serverless functions for real-time processing',
+    icon: Cloud
   },
   {
-    id: 'telegram',
-    name: 'Telegram',
-    logo: '/telegram.svg',
-    description: 'Secure messaging platform',
-    category: 'messaging'
+    name: 'AI Integration',
+    description: 'OpenAI, ElevenLabs, and custom ML models',
+    icon: Cpu
+  },
+  {
+    name: 'Security',
+    description: 'SOC 2 compliant with enterprise-grade security',
+    icon: Lock
   }
 ]
 
 export function StackSection() {
   return (
-    <section id="stack" className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="stack" className="py-20 bg-gray-50 relative overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute top-1/4 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 right-0 w-48 h-48 bg-secondary/5 rounded-full blur-3xl" />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Built with Modern Technology
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+            <Zap className="w-4 h-4 mr-2" />
+            Built for Scale
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            Enterprise-Grade{' '}
+            <span className="gradient-text">Technology Stack</span>
           </h2>
-          <p className="text-xl text-gray-900 dark:text-gray-100 max-w-3xl mx-auto">
-            Our platform leverages cutting-edge AI and cloud technologies to deliver exceptional performance and reliability
+          <p className="text-xl text-gray-900 max-w-3xl mx-auto">
+            Built on modern, scalable technologies that power the world's most demanding applications
           </p>
         </div>
 
-        {/* E-commerce Platforms */}
-        <div className="mb-12">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 text-center">
-            E-commerce Platforms
+        {/* Frontend Stack */}
+        <div className="mb-16">
+          <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">
+            Frontend & User Experience
           </h3>
-          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            {integrations
-              .filter(integration => integration.category === 'ecommerce')
-              .map((integration, index) => (
-                <Card 
-                  key={integration.id} 
-                  className="group hover:shadow-lg transition-all duration-300 border-0 shadow-md hover:-translate-y-1 animate-fade-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <CardContent className="p-6 text-center">
-                    <div className={`mx-auto mb-4 flex items-center justify-center ${integration.id === 'shopify' || integration.id === 'woocommerce' ? 'w-24 h-24' : 'w-16 h-16'}`}>
-                      <Image
-                        src={integration.logo}
-                        alt={integration.name}
-                        width={integration.id === 'shopify' || integration.id === 'woocommerce' ? 96 : 64}
-                        height={integration.id === 'shopify' || integration.id === 'woocommerce' ? 96 : 64}
-                        className="w-full h-full object-contain group-hover:scale-110 transition-transform"
-                      />
-                    </div>
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                      {integration.name}
-                    </h4>
-                    <p className="text-sm text-gray-900 dark:text-gray-100">
-                      {integration.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {frontendStack.map((tech, index) => (
+              <Card 
+                key={tech.name} 
+                className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-2 animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                    <tech.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {tech.name}
+                  </h4>
+                  <p className="text-sm text-gray-900">
+                    {tech.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
 
-        {/* Messaging Platforms */}
-        <div>
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 text-center">
-            Messaging & Communication
+        {/* Backend Stack */}
+        <div className="mb-16">
+          <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">
+            Backend & Infrastructure
           </h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {integrations
-              .filter(integration => integration.category === 'messaging')
-              .map((integration, index) => (
-                <Card 
-                  key={integration.id} 
-                  className="group hover:shadow-lg transition-all duration-300 border-0 shadow-md hover:-translate-y-1 animate-fade-in"
-                  style={{ animationDelay: `${(index + 2) * 0.1}s` }}
-                >
-                  <CardContent className="p-6 text-center">
-                    <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center">
-                      <Image
-                        src={integration.logo}
-                        alt={integration.name}
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-contain group-hover:scale-110 transition-transform"
-                      />
-                    </div>
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                      {integration.name}
-                    </h4>
-                    <p className="text-sm text-gray-900 dark:text-gray-100">
-                      {integration.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+            {backendStack.map((tech, index) => (
+              <Card 
+                key={tech.name} 
+                className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-2 animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-secondary/10 to-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                    <tech.icon className="w-6 h-6 text-secondary" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {tech.name}
+                  </h4>
+                  <p className="text-sm text-gray-900">
+                    {tech.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
 
         {/* Bottom CTA */}
-        <div className="text-center mt-16">
-          <div className="inline-flex items-center px-6 py-3 rounded-full bg-white shadow-md">
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              Don't see your platform? We support 50+ integrations and custom APIs
-            </span>
+        <div className="text-center">
+          <div className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
+            <Shield className="w-5 h-5 text-primary mr-2" />
+            <span className="text-sm font-medium text-gray-900">Enterprise-grade security & compliance</span>
           </div>
         </div>
       </div>

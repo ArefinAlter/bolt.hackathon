@@ -171,7 +171,7 @@ const futureFeatures = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-20 bg-white dark:bg-gray-900 relative overflow-hidden">
+    <section id="features" className="py-20 bg-white relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute top-1/4 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 left-0 w-48 h-48 bg-secondary/5 rounded-full blur-3xl" />
@@ -183,11 +183,11 @@ export function FeaturesSection() {
             <Sparkles className="w-4 h-4 mr-2" />
             Powerful Features
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
             Everything You Need to{' '}
             <span className="gradient-text">Transform Returns</span>
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             From AI-powered triage to predictive analytics, our comprehensive platform handles every aspect of return management.
           </p>
         </div>
@@ -195,10 +195,10 @@ export function FeaturesSection() {
         {/* Current Features */}
         <div className="mb-20">
           <div className="text-center mb-12">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Available Now
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600">
               Core features that are ready to revolutionize your return process
             </p>
           </div>
@@ -209,24 +209,24 @@ export function FeaturesSection() {
               return (
                 <Card 
                   key={feature.id} 
-                  className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-2 animate-fade-in bg-white dark:bg-gray-800"
+                  className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-2 animate-fade-in bg-white"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <CardHeader className="pb-4">
                     <div className="w-14 h-14 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                       <IconComponent className="w-7 h-7 text-primary" />
                     </div>
-                    <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors">
+                    <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
                       {feature.title}
                     </CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-400 text-base leading-relaxed">
+                    <CardDescription className="text-gray-600 text-base leading-relaxed">
                       {feature.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
                     <ul className="space-y-3">
                       {feature.benefits.map((benefit, benefitIndex) => (
-                        <li key={benefitIndex} className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                        <li key={benefitIndex} className="flex items-center text-sm text-gray-700">
                           <div className="w-2 h-2 bg-gradient-to-r from-primary to-secondary rounded-full mr-3 flex-shrink-0" />
                           {benefit}
                         </li>
@@ -242,10 +242,10 @@ export function FeaturesSection() {
         {/* Future Features */}
         <div className="mb-16">
           <div className="text-center mb-12">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Coming Soon
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600">
               Cutting-edge features in development to keep you ahead of the competition
             </p>
           </div>
@@ -256,7 +256,7 @@ export function FeaturesSection() {
               return (
                 <Card 
                   key={feature.id} 
-                  className="group hover:shadow-xl transition-all duration-300 border-2 border-dashed border-gray-200 dark:border-gray-700 shadow-lg hover:-translate-y-2 animate-fade-in bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900"
+                  className="group hover:shadow-xl transition-all duration-300 border-2 border-dashed border-gray-200 shadow-lg hover:-translate-y-2 animate-fade-in bg-gradient-to-br from-gray-50 to-gray-100"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <CardHeader className="pb-4">
@@ -268,17 +268,17 @@ export function FeaturesSection() {
                         {feature.status}
                       </div>
                     </div>
-                    <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-secondary transition-colors">
+                    <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-secondary transition-colors">
                       {feature.title}
                     </CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-400 text-base leading-relaxed">
+                    <CardDescription className="text-gray-600 text-base leading-relaxed">
                       {feature.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
                     <ul className="space-y-3">
                       {feature.benefits.map((benefit, benefitIndex) => (
-                        <li key={benefitIndex} className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                        <li key={benefitIndex} className="flex items-center text-sm text-gray-700">
                           <div className="w-2 h-2 bg-gradient-to-r from-secondary to-primary rounded-full mr-3 flex-shrink-0" />
                           {benefit}
                         </li>
@@ -296,8 +296,8 @@ export function FeaturesSection() {
           <div className="inline-flex items-center px-8 py-4 rounded-2xl bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
             <Shield className="w-6 h-6 text-primary mr-3" />
             <div className="text-left">
-              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Enterprise-grade security</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">SOC 2 compliant • GDPR ready • 99.9% uptime</div>
+              <div className="text-sm font-semibold text-gray-900">Enterprise-grade security</div>
+              <div className="text-xs text-gray-600">SOC 2 compliant • GDPR ready • 99.9% uptime</div>
             </div>
           </div>
         </div>

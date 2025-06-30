@@ -205,12 +205,8 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
           <div className="px-4 py-3 bg-gray-50 border-b">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  {userRole === 'business' ? (
-                    <Users className="h-4 w-4 text-primary" />
-                  ) : (
-                    <Users className="h-4 w-4 text-primary" />
-                  )}
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <Users className="w-4 h-4 text-gray-900" />
                 </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-900">
@@ -233,72 +229,85 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4">
-            <ul className="space-y-1 px-2">
-              {filteredNavItems.map((item) => (
-                <li key={item.title}>
-                  {item.children ? (
-                    <div>
+          <nav className="flex-1 overflow-y-auto p-4">
+            <ul className="space-y-2">
+              {filteredNavItems.map((item) => {
+                const IconComponent = item.icon;
+                const isActiveItem = isActive(item.href);
+                const hasChildren = item.children && item.children.length > 0;
+                const isExpanded = expandedGroups[item.title] || false;
+
+                if (hasChildren) {
+                  return (
+                    <li key={item.title}>
                       <button
                         onClick={() => toggleGroup(item.title)}
-                        className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md font-medium ${
-                          isActive(item.href)
-                            ? 'bg-primary/10 text-primary'
+                        className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md ${
+                          isActiveItem
+                            ? 'bg-primary/10 text-primary font-medium'
                             : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
                         <div className="flex items-center">
-                          <item.icon className="h-5 w-5 mr-3" />
+                          <IconComponent className="w-4 h-4 mr-3" />
                           {item.title}
                         </div>
-                        {expandedGroups[item.title] ? (
-                          <ChevronDown className="h-4 w-4" />
+                        {isExpanded ? (
+                          <ChevronDown className="w-4 h-4" />
                         ) : (
-                          <ChevronRight className="h-4 w-4" />
+                          <ChevronRight className="w-4 h-4" />
                         )}
                       </button>
-                      {expandedGroups[item.title] && (
-                        <ul className="mt-1 pl-10 space-y-1">
-                          {item.children.map((child) => (
-                            <li key={child.title}>
-                              <Link
-                                href={child.href}
-                                className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                                  isActive(child.href)
-                                    ? 'bg-primary/10 text-primary font-medium'
-                                    : 'text-gray-700 hover:bg-gray-100'
-                                }`}
-                              >
-                                <child.icon className="h-4 w-4 mr-3" />
-                                {child.title}
-                              </Link>
-                            </li>
-                          ))}
+                      {isExpanded && item.children && (
+                        <ul className="ml-6 mt-2 space-y-1">
+                          {item.children.map((child) => {
+                            const ChildIconComponent = child.icon;
+                            const isActiveChild = isActive(child.href);
+                            return (
+                              <li key={child.href}>
+                                <Link
+                                  href={child.href}
+                                  className={`flex items-center px-3 py-2 text-sm rounded-md ${
+                                    isActiveChild
+                                      ? 'bg-primary/10 text-primary font-medium'
+                                      : 'text-gray-700 hover:bg-gray-100'
+                                  }`}
+                                >
+                                  <ChildIconComponent className="w-4 h-4 mr-3" />
+                                  {child.title}
+                                </Link>
+                              </li>
+                            );
+                          })}
                         </ul>
                       )}
-                    </div>
-                  ) : (
+                    </li>
+                  );
+                }
+
+                return (
+                  <li key={item.href}>
                     <Link
                       href={item.href}
                       className={`flex items-center justify-between px-3 py-2 text-sm rounded-md ${
-                        isActive(item.href)
+                        isActiveItem
                           ? 'bg-primary/10 text-primary font-medium'
                           : 'text-gray-700 hover:bg-gray-100'
                       }`}
                     >
                       <div className="flex items-center">
-                        <item.icon className="h-5 w-5 mr-3" />
+                        <IconComponent className="w-4 h-4 mr-3" />
                         {item.title}
                       </div>
                       {item.shortcut && (
-                        <kbd className="hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                        <kbd className="hidden lg:inline-flex items-center rounded border bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-600">
                           {item.shortcut}
                         </kbd>
                       )}
                     </Link>
-                  )}
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </nav>
 
@@ -309,7 +318,7 @@ export function Sidebar({ userRole, onRoleSwitch, onSignOut }: SidebarProps) {
               className="w-full justify-start text-gray-700 hover:bg-gray-100"
               onClick={onSignOut}
             >
-              <LogOut className="h-5 w-5 mr-3" />
+              <LogOut className="w-4 h-4 mr-3" />
               Sign Out
             </Button>
           </div>
