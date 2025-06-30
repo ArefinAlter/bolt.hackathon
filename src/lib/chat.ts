@@ -232,9 +232,12 @@ export function subscribeToChatUpdates(
 export async function uploadFile(
   businessId: string,
   file: File,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  demoMode = false
 ): Promise<string> {
   try {
+    console.log('Starting file upload:', { businessId, fileName: file.name, fileSize: file.size, demoMode });
+    
     // Convert file to base64
     const base64 = await fileToBase64(file);
     
@@ -273,7 +276,8 @@ export async function uploadFile(
           size: file.size,
           type: file.type,
           last_modified: file.lastModified
-        }
+        },
+        demo_mode: demoMode
       })
     });
     
@@ -287,6 +291,7 @@ export async function uploadFile(
     }
     
     const data = await response.json();
+    console.log('File upload successful:', data);
     return data.file_url;
   } catch (error) {
     console.error('Error uploading file:', error);

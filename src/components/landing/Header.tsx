@@ -43,9 +43,11 @@ export function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" className="text-gray-900 hover:text-gray-700">
-              Sign In
-            </Button>
+            <Link href="/auth/login">
+              <Button variant="ghost" className="text-gray-900 hover:text-gray-700">
+                Sign In
+              </Button>
+            </Link>
             <Link href="/auth/signup">
               <Button className="bg-primary hover:bg-primary/90 text-gray-900 font-medium">
                 Get Started
@@ -98,9 +100,11 @@ export function Header() {
               </Link>
             </nav>
             <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
-              <Button variant="ghost" className="w-full justify-start text-gray-900">
-                Sign In
-              </Button>
+              <Link href="/auth/login" className="block">
+                <Button variant="ghost" className="w-full justify-start text-gray-900">
+                  Sign In
+                </Button>
+              </Link>
               <Link href="/auth/signup" className="block">
                 <Button className="w-full bg-primary hover:bg-primary/90 text-gray-900">
                   Get Started

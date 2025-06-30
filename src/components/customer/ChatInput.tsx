@@ -105,24 +105,35 @@ export function ChatInput({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+            <DropdownMenuItem onClick={() => {
+              if (fileInputRef.current) {
+                fileInputRef.current.accept = "image/*";
+                fileInputRef.current.click();
+              }
+            }}>
               <ImageIcon className="h-4 w-4 mr-2" />
               <span>Upload Image</span>
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept="image/*"
-                onChange={onFileUpload}
-                multiple
-              />
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+            <DropdownMenuItem onClick={() => {
+              if (fileInputRef.current) {
+                fileInputRef.current.accept = "*/*";
+                fileInputRef.current.click();
+              }
+            }}>
               <File className="h-4 w-4 mr-2" />
               <span>Upload File</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        
+        {/* Hidden file input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={onFileUpload}
+          multiple
+        />
         
         <Button 
           className="bg-primary hover:bg-primary/90 text-black"
