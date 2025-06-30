@@ -56,19 +56,19 @@ export default function PolicyPage() {
         setBusinessId('550e8400-e29b-41d4-a716-446655440000');
       } else {
         // Get user profile to get business_id for live mode
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('business_id')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (profileError || !profile) {
-          console.error('Profile not found:', profileError);
-          setError('Unable to load your profile. Please try logging out and back in.');
-          setIsLoading(false);
-          return;
-        }
-        
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('business_id')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (profileError || !profile) {
+        console.error('Profile not found:', profileError);
+        setError('Unable to load your profile. Please try logging out and back in.');
+        setIsLoading(false);
+        return;
+      }
+      
         currentBusinessId = profile.business_id;
         setBusinessId(profile.business_id);
       }
@@ -220,12 +220,12 @@ export default function PolicyPage() {
         <CardHeader className="pb-2">
           <Grid cols={12} gap="md">
             <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
-              <div>
-                <CardTitle className="text-2xl">Policy Management</CardTitle>
-                <CardDescription>
-                  Configure and manage your return policies
-                </CardDescription>
-              </div>
+            <div>
+              <CardTitle className="text-2xl">Policy Management</CardTitle>
+              <CardDescription>
+                Configure and manage your return policies
+              </CardDescription>
+            </div>
             </GridItem>
             <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
               <Flex direction="col" gap="sm" responsive={{ 
@@ -234,14 +234,14 @@ export default function PolicyPage() {
                 lg: { direction: 'row', justify: 'end' },
                 xl: { direction: 'row', justify: 'end' }
               }}>
-                <Button 
+              <Button 
                   className="bg-primary hover:bg-primary/90 text-black w-full md:w-auto"
-                  onClick={handleCreateNewPolicy}
-                  disabled={activeTab === 'editor'}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create New Policy
-                </Button>
+                onClick={handleCreateNewPolicy}
+                disabled={activeTab === 'editor'}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create New Policy
+              </Button>
               </Flex>
             </GridItem>
           </Grid>
@@ -250,8 +250,8 @@ export default function PolicyPage() {
           <Grid cols={12} gap="sm">
             <GridItem span={12} responsive={{ sm: 12, md: 6, lg: 4, xl: 3 }}>
               <Flex direction="row" gap="sm" align="center">
-                <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-                <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
+            <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
+            <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
               </Flex>
             </GridItem>
           </Grid>
@@ -259,16 +259,16 @@ export default function PolicyPage() {
           {error && (
             <Grid cols={12} gap="sm">
               <GridItem span={12}>
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <AlertTriangle className="h-5 w-5 text-red-400" />
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm font-medium">{error}</p>
-                    </div>
-                  </div>
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertTriangle className="h-5 w-5 text-red-400" />
                 </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium">{error}</p>
+                </div>
+              </div>
+            </div>
               </GridItem>
             </Grid>
           )}

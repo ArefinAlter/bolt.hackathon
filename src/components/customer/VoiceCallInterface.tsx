@@ -413,13 +413,13 @@ export function VoiceCallInterface({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <Phone className="h-5 w-5 text-blue-600" />
+              <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center">
+                <Phone className="h-5 w-5 fill-white" />
               </div>
               <div>
                 <CardTitle className="text-lg">Voice Call</CardTitle>
                 <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <Clock className="h-4 w-4" />
+                  <Clock className="h-4 w-4 fill-gray-800" />
                   <span>{formatDuration(callDuration)}</span>
                   <CallQualityIndicator quality={callQuality} />
                 </div>
@@ -457,10 +457,10 @@ export function VoiceCallInterface({
               variant="outline"
               onClick={toggleMute}
               className={`w-16 h-16 rounded-full ${
-                isMuted ? 'bg-red-100 border-red-300' : 'bg-gray-100'
+                isMuted ? 'bg-red-600 border-red-600' : 'bg-gray-800 border-gray-800'
               }`}
             >
-              {isMuted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+              {isMuted ? <VolumeX className="h-6 w-6 fill-white" /> : <Volume2 className="h-6 w-6 fill-white" />}
             </Button>
 
             <Button
@@ -473,20 +473,20 @@ export function VoiceCallInterface({
               disabled={isProcessing || isMuted}
               className={`w-20 h-20 rounded-full ${
                 isRecording 
-                  ? 'bg-red-500 text-white hover:bg-red-600' 
-                  : 'bg-blue-500 text-white hover:bg-blue-600'
+                  ? 'bg-red-600 text-white hover:bg-red-700 border-red-600' 
+                  : 'bg-blue-600 text-white hover:bg-blue-700 border-blue-600'
               } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {isRecording ? <MicOff className="h-8 w-8" /> : <Mic className="h-8 w-8" />}
+              {isRecording ? <MicOff className="h-8 w-8 fill-white" /> : <Mic className="h-8 w-8 fill-white" />}
             </Button>
 
             <Button
               size="lg"
-              variant="destructive"
+              variant="outline"
               onClick={handleEndCall}
-              className="w-16 h-16 rounded-full"
+              className="w-16 h-16 rounded-full bg-red-600 border-red-600 hover:bg-red-700"
             >
-              <PhoneOff className="h-6 w-6" />
+              <PhoneOff className="h-6 w-6 fill-white" />
             </Button>
           </div>
           
@@ -507,7 +507,7 @@ export function VoiceCallInterface({
       <Card className="flex-1">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center">
-            <MessageSquare className="mr-2 h-5 w-5" />
+            <MessageSquare className="mr-2 h-5 w-5 fill-gray-800" />
             Live Transcript
           </CardTitle>
         </CardHeader>
@@ -515,7 +515,7 @@ export function VoiceCallInterface({
           <div className="space-y-3 max-h-64 overflow-y-auto">
             {transcript.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
-                <User className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                <User className="h-12 w-12 mx-auto mb-2 fill-gray-800" />
                 <p>Start speaking to see the transcript</p>
               </div>
             ) : (

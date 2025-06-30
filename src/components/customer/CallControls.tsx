@@ -46,13 +46,13 @@ export function CallControls({
         <Button 
           variant="ghost" 
           size="sm" 
-          className="p-0 mr-2"
+          className="p-0 mr-2 bg-gray-800 rounded-full w-8 h-8 flex items-center justify-center"
           onClick={() => onVolumeChange(volume === 0 ? [80] : [0])}
         >
           {volume === 0 ? (
-            <VolumeX className="h-5 w-5 text-gray-500" />
+            <VolumeX className="h-4 w-4 fill-white" />
           ) : (
-            <Volume2 className="h-5 w-5 text-gray-500" />
+            <Volume2 className="h-4 w-4 fill-white" />
           )}
         </Button>
         <Slider
@@ -69,23 +69,23 @@ export function CallControls({
         <Button 
           variant="outline" 
           size="icon" 
-          className={`rounded-full w-12 h-12 ${isMuted ? 'bg-red-100 text-red-600' : ''}`}
+          className={`rounded-full w-12 h-12 ${isMuted ? 'bg-red-600 border-red-600' : 'bg-gray-800 border-gray-800'}`}
           onClick={onToggleMute}
         >
           {isMuted ? (
-            <MicOff className="h-6 w-6" />
+            <MicOff className="h-6 w-6 fill-white" />
           ) : (
-            <Mic className="h-6 w-6" />
+            <Mic className="h-6 w-6 fill-white" />
           )}
         </Button>
         
         <Button 
-          variant="destructive" 
+          variant="outline" 
           size="icon" 
-          className="rounded-full w-12 h-12"
+          className="rounded-full w-12 h-12 bg-red-600 border-red-600 hover:bg-red-700"
           onClick={onEndCall}
         >
-          <PhoneOff className="h-6 w-6" />
+          <PhoneOff className="h-6 w-6 fill-white" />
         </Button>
         
         {isVideoCall && (
@@ -93,26 +93,26 @@ export function CallControls({
             <Button 
               variant="outline" 
               size="icon" 
-              className={`rounded-full w-12 h-12 ${isVideoOff ? 'bg-red-100 text-red-600' : ''}`}
+              className={`rounded-full w-12 h-12 ${isVideoOff ? 'bg-red-600 border-red-600' : 'bg-gray-800 border-gray-800'}`}
               onClick={onToggleVideo}
             >
               {isVideoOff ? (
-                <CameraOff className="h-6 w-6" />
+                <CameraOff className="h-6 w-6 fill-white" />
               ) : (
-                <Camera className="h-6 w-6" />
+                <Camera className="h-6 w-6 fill-white" />
               )}
             </Button>
             
             <Button 
               variant="outline" 
               size="icon" 
-              className={`rounded-full w-12 h-12 ${isScreenSharing ? 'bg-blue-100 text-blue-600' : ''}`}
+              className={`rounded-full w-12 h-12 ${isScreenSharing ? 'bg-blue-600 border-blue-600' : 'bg-gray-800 border-gray-800'}`}
               onClick={onToggleScreenShare}
             >
               {isScreenSharing ? (
-                <StopCircle className="h-6 w-6" />
+                <StopCircle className="h-6 w-6 fill-white" />
               ) : (
-                <ScreenShare className="h-6 w-6" />
+                <ScreenShare className="h-6 w-6 fill-white" />
               )}
             </Button>
           </>

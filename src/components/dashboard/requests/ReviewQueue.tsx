@@ -48,12 +48,12 @@ export function ReviewQueue({ businessId, onViewRequest }: ReviewQueueProps) {
         setPendingRequests(pendingRequests);
       } else {
         // Use the existing function for live mode
-        const data = await fetchReturnRequests(businessId, {
-          status: 'pending_review',
-          sortBy: 'created_at',
-          sortDirection: 'asc'
-        });
-        setPendingRequests(data);
+      const data = await fetchReturnRequests(businessId, {
+        status: 'pending_review',
+        sortBy: 'created_at',
+        sortDirection: 'asc'
+      });
+      setPendingRequests(data);
       }
     } catch (error) {
       console.error('Error loading pending requests:', error);
