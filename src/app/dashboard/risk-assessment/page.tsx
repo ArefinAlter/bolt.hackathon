@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Grid, GridItem, Flex, Container } from '@/components/ui/grid';
 import { RiskStatsCard } from '@/components/dashboard/risk-assessment/RiskStatsCard';
 import { RiskProfileTable } from '@/components/dashboard/risk-assessment/RiskProfileTable';
 import { RiskProfileDetail } from '@/components/dashboard/risk-assessment/RiskProfileDetail';
@@ -211,31 +212,55 @@ export default function RiskAssessmentPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-4 mb-4">
-        <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-        <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
-      </div>
+      <Grid cols={12} gap="sm">
+        <GridItem span={12} responsive={{ sm: 12, md: 6, lg: 4, xl: 3 }}>
+          <Flex direction="row" gap="sm" align="center">
+            <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
+            <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
+          </Flex>
+        </GridItem>
+      </Grid>
+      
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-black">Risk Assessment</h1>
-          <p className="text-black">Monitor customer risk profiles and fraud indicators</p>
-        </div>
-        <Button variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
-      </div>
+      <Grid cols={12} gap="md">
+        <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
+          <div>
+            <h1 className="text-2xl font-bold text-black">Risk Assessment</h1>
+            <p className="text-black">Monitor customer risk profiles and fraud indicators</p>
+          </div>
+        </GridItem>
+        <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
+          <Flex direction="col" gap="sm" responsive={{ 
+            sm: { direction: 'col' }, 
+            md: { direction: 'row', justify: 'end' },
+            lg: { direction: 'row', justify: 'end' },
+            xl: { direction: 'row', justify: 'end' }
+          }}>
+            <Button variant="outline" size="sm" className="w-full md:w-auto">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+          </Flex>
+        </GridItem>
+      </Grid>
 
       {/* Stats Cards */}
-      <RiskStatsCard stats={stats} />
+      <Grid cols={12} gap="lg">
+        <GridItem span={12}>
+          <RiskStatsCard stats={stats} />
+        </GridItem>
+      </Grid>
 
       {/* Risk Profiles Table */}
-      <RiskProfileTable 
-        riskProfiles={riskProfiles}
-        onViewProfile={handleViewProfile}
-        onRecalculateRisk={handleRecalculateRisk}
-      />
+      <Grid cols={12} gap="lg">
+        <GridItem span={12}>
+          <RiskProfileTable 
+            riskProfiles={riskProfiles}
+            onViewProfile={handleViewProfile}
+            onRecalculateRisk={handleRecalculateRisk}
+          />
+        </GridItem>
+      </Grid>
 
       {/* Risk Profile Detail Modal */}
       {businessId && (

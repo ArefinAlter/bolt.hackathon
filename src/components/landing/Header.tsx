@@ -32,7 +32,7 @@ export function Header() {
               Features
             </Link>
             <Link href="#benefits" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-              Benefits
+              Problem & Solution
             </Link>
             <Link href="#pricing" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
               Pricing
@@ -85,7 +85,7 @@ export function Header() {
                 className="block px-3 py-2 text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Benefits
+                Problem & Solution
               </Link>
               <Link
                 href="#pricing"

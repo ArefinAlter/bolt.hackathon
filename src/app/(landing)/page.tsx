@@ -1,4 +1,5 @@
 import { HeroSection } from '@/components/landing/HeroSection'
+import { TestimonialSlider } from '@/components/landing/TestimonialSlider'
 import { FeaturesSection } from '@/components/landing/FeaturesSection'
 import { BenefitsSection } from '@/components/landing/BenefitsSection'
 import { StackSection } from '@/components/landing/StackSection'
@@ -11,6 +12,7 @@ export default function LandingPage() {
     <main className="min-h-screen bg-white">
       <Header />
       <HeroSection />
+      <TestimonialSlider />
       <FeaturesSection />
       <BenefitsSection />
       <StackSection />

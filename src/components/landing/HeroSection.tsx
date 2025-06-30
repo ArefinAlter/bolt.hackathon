@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Play, Zap, Shield, TrendingUp } from 'lucide-react'
+import { ArrowRight, Play, Zap, Shield, TrendingUp, Clock, DollarSign, Users, Smartphone } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -21,36 +21,62 @@ export function HeroSection() {
           {/* Left column - Content */}
           <div className="text-center lg:text-left">
             {/* Badge */}
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 animate-fade-in">
-              <Zap className="w-4 h-4 mr-2" />
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-black text-sm font-medium mb-6 animate-fade-in">
+              <Zap className="w-4 h-4 mr-2 text-black" />
               AI-Powered Return Management
             </div>
 
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6 animate-slide-up">
-              Transform Your{' '}
-              <span className="gradient-text">E-commerce Returns</span>{' '}
-              with AI
+              Say Goodbye to{' '}
+              <span className="gradient-text">Return Headaches</span>
             </h1>
 
             {/* Subheadline */}
-            <p className="text-xl text-gray-900 dark:text-gray-100 mb-8 max-w-2xl mx-auto lg:mx-0 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-              Automate return triage, provide voice & video customer service, and recover more value from returns with our intelligent platform.
+            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto lg:mx-0 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+              Your AI powered solution to automate return triage, provide voice and video customer service, and recover more value for returns. Automate refunds and RMAs like Amazon — without the Amazon-sized budget.
             </p>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 mb-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">85%</div>
-                <div className="text-sm text-gray-900 dark:text-gray-100">Faster Processing</div>
+            <div className="grid grid-cols-2 gap-4 mb-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+              <div className="flex items-center bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-all duration-300 group">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
+                  <Clock className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">10x Faster</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Most requests in under 2 minutes</div>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">40%</div>
-                <div className="text-sm text-gray-900 dark:text-gray-100">Cost Reduction</div>
+
+              <div className="flex items-center bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-all duration-300 group">
+                <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
+                  <DollarSign className="w-6 h-6 text-success" />
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">35% Cost Cut</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">vs hiring agents ($40K-60K/year)</div>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">95%</div>
-                <div className="text-sm text-gray-900 dark:text-gray-100">Customer Satisfaction</div>
+
+              <div className="flex items-center bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-all duration-300 group">
+                <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
+                  <Users className="w-6 h-6 text-secondary" />
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">70% Prioritize</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Hassle-free return policies</div>
+                </div>
+              </div>
+
+              <div className="flex items-center bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-all duration-300 group">
+                <div className="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
+                  <Smartphone className="w-6 h-6 text-warning" />
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">24/7 Automation</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">No agents, no spreadsheets</div>
+                </div>
               </div>
             </div>
 

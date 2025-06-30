@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { Grid, GridItem, Flex, Container } from '@/components/ui/grid';
 import { CallHistory } from '@/components/dashboard/requests/CallHistory';
 import { useUserStore } from '@/store/useUserStore';
 import { supabase } from '@/lib/supabase';
@@ -96,11 +97,15 @@ export default function CallHistoryPage() {
   console.log('CallHistoryPage', { businessId, isDemoMode, user });
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <CallHistory 
-        businessId={businessId || '550e8400-e29b-41d4-a716-446655440000'} 
-        isDemoMode={isDemoMode}
-      />
-    </div>
+    <Container>
+      <Grid cols={12} gap="lg">
+        <GridItem span={12}>
+          <CallHistory 
+            businessId={businessId || '550e8400-e29b-41d4-a716-446655440000'} 
+            isDemoMode={isDemoMode}
+          />
+        </GridItem>
+      </Grid>
+    </Container>
   );
 } 

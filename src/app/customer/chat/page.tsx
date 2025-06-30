@@ -22,6 +22,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Grid, GridItem, Flex, Container } from '@/components/ui/grid';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -455,61 +456,80 @@ export default function CustomerChatPage() {
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b px-4 py-3">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-3">
-              <Image
-                src="/main_logo.svg"
-                alt="Dokani"
-                width={120}
-                height={32}
-                className="h-8 w-auto dark:hidden"
-              />
-              <Image
-                src="/white_logo.svg"
-                alt="Dokani"
-                width={120}
-                height={32}
-                className="h-8 w-auto hidden dark:block"
-              />
-              <div className="ml-3">
-                <h1 className="text-lg font-semibold text-black">Customer Support</h1>
-                <p className="text-sm text-black">
-                  {isCallActive 
-                    ? `${callType === 'voice' ? 'Voice' : 'Video'} call in progress...` 
-                    : 'Chat with our AI assistant'}
-                </p>
-              </div>
-            </Link>
-          </div>
-          
-          <div className="flex space-x-2">
-            <div className="flex items-center space-x-2 mr-4">
-              <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-              <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleStartVoiceCall}
-              disabled={isCallActive}
-              className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-            >
-              <Phone className="h-4 w-4 mr-2" />
-              Voice Call
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleStartVideoCall}
-              disabled={isCallActive}
-              className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-            >
-              <Video className="h-4 w-4 mr-2" />
-              Video Call
-            </Button>
-          </div>
-        </div>
+        <Container>
+          <Grid cols={12} gap="md">
+            <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
+              <Flex direction="row" gap="sm" align="center">
+                <Link href="/" className="flex items-center space-x-3">
+                  <Image
+                    src="/main_logo.svg"
+                    alt="Dokani"
+                    width={120}
+                    height={32}
+                    className="h-8 w-auto dark:hidden"
+                    style={{ width: 'auto' }}
+                  />
+                  <Image
+                    src="/white_logo.svg"
+                    alt="Dokani"
+                    width={120}
+                    height={32}
+                    className="h-8 w-auto hidden dark:block"
+                    style={{ width: 'auto' }}
+                  />
+                  <div className="ml-3">
+                    <h1 className="text-lg font-semibold text-black">Customer Support</h1>
+                    <p className="text-sm text-black">
+                      {isCallActive 
+                        ? `${callType === 'voice' ? 'Voice' : 'Video'} call in progress...` 
+                        : 'Chat with our AI assistant'}
+                    </p>
+                  </div>
+                </Link>
+              </Flex>
+            </GridItem>
+            <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
+              <Flex direction="col" gap="sm" responsive={{ 
+                sm: { direction: 'col' }, 
+                md: { direction: 'row', justify: 'end' },
+                lg: { direction: 'row', justify: 'end' },
+                xl: { direction: 'row', justify: 'end' }
+              }}>
+                <Flex direction="row" gap="sm" align="center">
+                  <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
+                  <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
+                </Flex>
+                <Flex direction="row" gap="sm" responsive={{ 
+                  sm: { direction: 'col' }, 
+                  md: { direction: 'row' },
+                  lg: { direction: 'row' },
+                  xl: { direction: 'row' }
+                }}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleStartVoiceCall}
+                    disabled={isCallActive}
+                    className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 w-full md:w-auto"
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    Voice Call
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleStartVideoCall}
+                    disabled={isCallActive}
+                    className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100 w-full md:w-auto"
+                  >
+                    <Video className="h-4 w-4 mr-2" />
+                    Video Call
+                  </Button>
+                </Flex>
+              </Flex>
+            </GridItem>
+          </Grid>
+        </Container>
       </header>
       
       {/* Main chat area */}
@@ -517,22 +537,26 @@ export default function CustomerChatPage() {
         <div className="max-w-4xl mx-auto h-full flex flex-col">
           {/* Error message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md m-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <AlertTriangle className="h-5 w-5 text-red-400" />
+            <Grid cols={12} gap="sm">
+              <GridItem span={12}>
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md m-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <AlertTriangle className="h-5 w-5 text-red-400" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium">{error}</p>
+                      <button 
+                        className="text-sm text-red-700 underline"
+                        onClick={() => setError(null)}
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium">{error}</p>
-                  <button 
-                    className="text-sm text-red-700 underline"
-                    onClick={() => setError(null)}
-                  >
-                    Dismiss
-                  </button>
-                </div>
-              </div>
-            </div>
+              </GridItem>
+            </Grid>
           )}
           
           {/* Messages */}
@@ -549,7 +573,7 @@ export default function CustomerChatPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
                   <Button 
                     variant="outline" 
-                    className="flex items-center justify-center"
+                    className="flex items-center justify-center w-full"
                     onClick={() => setNewMessage("I need to return an item")}
                   >
                     <Package className="mr-2 h-4 w-4" />
@@ -557,7 +581,7 @@ export default function CustomerChatPage() {
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="flex items-center justify-center"
+                    className="flex items-center justify-center w-full"
                     onClick={() => setNewMessage("I have a question about my order")}
                   >
                     <MessageSquare className="mr-2 h-4 w-4" />

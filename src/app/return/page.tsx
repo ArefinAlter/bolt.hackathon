@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Grid, GridItem, Flex, Container } from '@/components/ui/grid';
 import { Badge } from '@/components/ui/badge';
 import { ReturnRequest } from '@/types/return';
 import { supabase } from '@/lib/supabase';
@@ -189,242 +190,294 @@ export default function ReturnPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <Image
-                src="/main_logo.svg"
-                alt="Dokani"
-                width={240}
-                height={64}
-                className="h-16 w-auto dark:hidden"
-              />
-              <Image
-                src="/white_logo.svg"
-                alt="Dokani"
-                width={240}
-                height={64}
-                className="h-16 w-auto hidden dark:block"
-              />
-            </Link>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Return Portal
-            </div>
-          </div>
-        </div>
+        <Container>
+          <Grid cols={12} gap="md">
+            <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
+              <Flex direction="row" gap="sm" align="center">
+                <Link href="/" className="flex items-center space-x-2">
+                  <Image
+                    src="/main_logo.svg"
+                    alt="Dokani"
+                    width={240}
+                    height={64}
+                    className="h-16 w-auto dark:hidden"
+                    style={{ width: 'auto' }}
+                  />
+                  <Image
+                    src="/white_logo.svg"
+                    alt="Dokani"
+                    width={240}
+                    height={64}
+                    className="h-16 w-auto hidden dark:block"
+                    style={{ width: 'auto' }}
+                  />
+                </Link>
+              </Flex>
+            </GridItem>
+            <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
+              <Flex direction="col" gap="sm" responsive={{ 
+                sm: { direction: 'col' }, 
+                md: { direction: 'row', justify: 'end' },
+                lg: { direction: 'row', justify: 'end' },
+                xl: { direction: 'row', justify: 'end' }
+              }}>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Return Portal
+                </div>
+              </Flex>
+            </GridItem>
+          </Grid>
+        </Container>
       </header>
 
       {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Return Requests</h1>
-              <p className="text-gray-500 dark:text-gray-400">
-                Track and manage your return requests
-              </p>
-            </div>
-            <div className="mt-4 md:mt-0 flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
-                <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
-              </div>
-              <Button 
-                variant="outline"
-                onClick={() => router.push('/customer/chat')}
-              >
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Chat with Support
-              </Button>
-              <Button 
-                className="bg-primary hover:bg-primary/90 text-black"
-                onClick={() => router.push('/return/new')}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                New Return Request
-              </Button>
-            </div>
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <AlertTriangle className="h-5 w-5 text-red-400" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium">{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="border-0 shadow-md">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Total</p>
-                    <p className="text-2xl font-bold">{returns.length}</p>
-                  </div>
-                  <Package className="h-8 w-8 text-gray-400" />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-0 shadow-md">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Pending</p>
-                    <p className="text-2xl font-bold">{getStatusCount('pending_triage') + getStatusCount('pending_review')}</p>
-                  </div>
-                  <Clock className="h-8 w-8 text-yellow-400" />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-0 shadow-md">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Approved</p>
-                    <p className="text-2xl font-bold">{getStatusCount('approved')}</p>
-                  </div>
-                  <CheckCircle className="h-8 w-8 text-green-400" />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-0 shadow-md">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Denied</p>
-                    <p className="text-2xl font-bold">{getStatusCount('denied')}</p>
-                  </div>
-                  <XCircle className="h-8 w-8 text-red-400" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Filters */}
-          <Card className="border-0 shadow-md">
-            <CardHeader>
-              <CardTitle>Filters</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Search by email, order ID, or reason..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Filter className="h-4 w-4 text-gray-400" />
-                  <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="pending_triage">Pending Triage</option>
-                    <option value="pending_review">Pending Review</option>
-                    <option value="approved">Approved</option>
-                    <option value="denied">Denied</option>
-                  </select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Returns List */}
-          <div className="space-y-4">
-            {filteredReturns.length === 0 ? (
-              <Card className="border-0 shadow-md">
-                <CardContent className="p-8 text-center">
-                  <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No return requests found</h3>
-                  <p className="text-gray-500 dark:text-gray-400 mb-4">
-                    {searchTerm || filterStatus !== 'all' 
-                      ? 'Try adjusting your search or filters'
-                      : 'Get started by creating your first return request'
-                    }
+        <Container>
+          <div className="space-y-6">
+            {/* Header */}
+            <Grid cols={12} gap="md">
+              <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Return Requests</h1>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Track and manage your return requests
                   </p>
-                  {!searchTerm && filterStatus === 'all' && (
+                </div>
+              </GridItem>
+              <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
+                <Flex direction="col" gap="sm" responsive={{ 
+                  sm: { direction: 'col' }, 
+                  md: { direction: 'row', justify: 'end' },
+                  lg: { direction: 'row', justify: 'end' },
+                  xl: { direction: 'row', justify: 'end' }
+                }}>
+                  <Flex direction="row" gap="sm" align="center">
+                    <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
+                    <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
+                  </Flex>
+                  <Flex direction="row" gap="sm" responsive={{ 
+                    sm: { direction: 'col' }, 
+                    md: { direction: 'row' },
+                    lg: { direction: 'row' },
+                    xl: { direction: 'row' }
+                  }}>
                     <Button 
-                      className="bg-primary hover:bg-primary/90 text-black"
+                      variant="outline"
+                      onClick={() => router.push('/customer/chat')}
+                      className="w-full md:w-auto"
+                    >
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Chat with Support
+                    </Button>
+                    <Button 
+                      className="bg-primary hover:bg-primary/90 text-black w-full md:w-auto"
                       onClick={() => router.push('/return/new')}
                     >
                       <Plus className="mr-2 h-4 w-4" />
-                      Create Return Request
+                      New Return Request
                     </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ) : (
-              filteredReturns.map((returnRequest) => (
-                <Card key={returnRequest.id} className="border-0 shadow-md hover:shadow-lg transition-all">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            {returnRequest.public_id}
-                          </h3>
-                          {getStatusBadge(returnRequest.status)}
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <p className="text-gray-500">Customer</p>
-                            <p className="font-medium">{returnRequest.customer_email}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500">Order ID</p>
-                            <p className="font-medium">{returnRequest.order_id}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500">Reason</p>
-                            <p className="font-medium truncate">{returnRequest.reason_for_return || 'Not specified'}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-1" />
-                            {new Date(returnRequest.created_at).toLocaleDateString()}
-                          </div>
-                          {returnRequest.evidence_urls && returnRequest.evidence_urls.length > 0 && (
-                            <div className="flex items-center">
-                              <Package className="h-4 w-4 mr-1" />
-                              {returnRequest.evidence_urls.length} evidence file(s)
-                            </div>
-                          )}
-                        </div>
+                  </Flex>
+                </Flex>
+              </GridItem>
+            </Grid>
+
+            {error && (
+              <Grid cols={12} gap="sm">
+                <GridItem span={12}>
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <AlertTriangle className="h-5 w-5 text-red-400" />
                       </div>
-                      <div className="mt-4 md:mt-0 md:ml-4">
-                        <Button 
-                          variant="outline"
-                          onClick={() => router.push(`/return/${returnRequest.public_id}`)}
-                        >
-                          View Details
-                        </Button>
+                      <div className="ml-3">
+                        <p className="text-sm font-medium">{error}</p>
                       </div>
+                    </div>
+                  </div>
+                </GridItem>
+              </Grid>
+            )}
+
+            {/* Stats */}
+            <Grid cols={12} gap="md">
+              <GridItem span={12} responsive={{ sm: 6, md: 3, lg: 3, xl: 3 }}>
+                <Card className="border-0 shadow-md">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">Total</p>
+                        <p className="text-2xl font-bold">{returns.length}</p>
+                      </div>
+                      <Package className="h-8 w-8 text-gray-400" />
                     </div>
                   </CardContent>
                 </Card>
-              ))
-            )}
+              </GridItem>
+              
+              <GridItem span={12} responsive={{ sm: 6, md: 3, lg: 3, xl: 3 }}>
+                <Card className="border-0 shadow-md">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">Pending</p>
+                        <p className="text-2xl font-bold">{getStatusCount('pending_triage') + getStatusCount('pending_review')}</p>
+                      </div>
+                      <Clock className="h-8 w-8 text-yellow-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </GridItem>
+              
+              <GridItem span={12} responsive={{ sm: 6, md: 3, lg: 3, xl: 3 }}>
+                <Card className="border-0 shadow-md">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">Approved</p>
+                        <p className="text-2xl font-bold">{getStatusCount('approved')}</p>
+                      </div>
+                      <CheckCircle className="h-8 w-8 text-green-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </GridItem>
+              
+              <GridItem span={12} responsive={{ sm: 6, md: 3, lg: 3, xl: 3 }}>
+                <Card className="border-0 shadow-md">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">Denied</p>
+                        <p className="text-2xl font-bold">{getStatusCount('denied')}</p>
+                      </div>
+                      <XCircle className="h-8 w-8 text-red-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </GridItem>
+            </Grid>
+
+            {/* Filters */}
+            <Grid cols={12} gap="md">
+              <GridItem span={12}>
+                <Card className="border-0 shadow-md">
+                  <CardHeader>
+                    <CardTitle>Filters</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Grid cols={12} gap="md">
+                      <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input
+                            placeholder="Search by email, order ID, or reason..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10"
+                          />
+                        </div>
+                      </GridItem>
+                      <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
+                        <Flex direction="row" gap="sm" align="center">
+                          <Filter className="h-4 w-4 text-gray-400" />
+                          <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary w-full"
+                          >
+                            <option value="all">All Status</option>
+                            <option value="pending_triage">Pending Triage</option>
+                            <option value="pending_review">Pending Review</option>
+                            <option value="approved">Approved</option>
+                            <option value="denied">Denied</option>
+                          </select>
+                        </Flex>
+                      </GridItem>
+                    </Grid>
+                  </CardContent>
+                </Card>
+              </GridItem>
+            </Grid>
+
+            {/* Returns List */}
+            <div className="space-y-4">
+              {filteredReturns.length === 0 ? (
+                <Card className="border-0 shadow-md">
+                  <CardContent className="p-8 text-center">
+                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No return requests found</h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">
+                      {searchTerm || filterStatus !== 'all' 
+                        ? 'Try adjusting your search or filters'
+                        : 'Get started by creating your first return request'
+                      }
+                    </p>
+                    {!searchTerm && filterStatus === 'all' && (
+                      <Button 
+                        className="bg-primary hover:bg-primary/90 text-black"
+                        onClick={() => router.push('/return/new')}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Return Request
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                filteredReturns.map((returnRequest) => (
+                  <Card key={returnRequest.id} className="border-0 shadow-md hover:shadow-lg transition-all">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                              {returnRequest.public_id}
+                            </h3>
+                            {getStatusBadge(returnRequest.status)}
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <p className="text-gray-500">Customer</p>
+                              <p className="font-medium">{returnRequest.customer_email}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Order ID</p>
+                              <p className="font-medium">{returnRequest.order_id}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Reason</p>
+                              <p className="font-medium truncate">{returnRequest.reason_for_return || 'Not specified'}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              {new Date(returnRequest.created_at).toLocaleDateString()}
+                            </div>
+                            {returnRequest.evidence_urls && returnRequest.evidence_urls.length > 0 && (
+                              <div className="flex items-center">
+                                <Package className="h-4 w-4 mr-1" />
+                                {returnRequest.evidence_urls.length} evidence file(s)
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="mt-4 md:mt-0 md:ml-4">
+                          <Button 
+                            variant="outline"
+                            onClick={() => router.push(`/return/${returnRequest.public_id}`)}
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        </Container>
       </main>
     </div>
   );

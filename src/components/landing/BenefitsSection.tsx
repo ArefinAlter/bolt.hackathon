@@ -1,150 +1,308 @@
 'use client'
 
 import { Card, CardContent } from '@/components/ui/card'
-import { TrendingUp, Clock, DollarSign, Users, Shield, Zap } from 'lucide-react'
+import { Clock, DollarSign, Users, Shield, TrendingUp, AlertTriangle, Target, Zap, BarChart3, ShoppingCart } from 'lucide-react'
 import Image from 'next/image'
 
-const benefits = [
+const problemStats = [
   {
-    id: 'efficiency',
-    title: 'Increase Efficiency',
-    description: 'Automate 85% of return decisions and reduce processing time from hours to seconds.',
-    metric: '85% faster',
+    id: 'time-cost',
+    title: '15-20 Minutes',
+    subtitle: 'Per Manual Return',
+    description: 'Customer service, warehouse handling, and processing time',
     icon: Clock,
-    color: 'text-blue-600'
+    color: 'text-red-600',
+    bgColor: 'bg-red-50'
   },
   {
-    id: 'cost-savings',
-    title: 'Reduce Costs',
-    description: 'Cut operational costs by 40% through intelligent automation and optimized workflows.',
-    metric: '40% savings',
+    id: 'cost-per-return',
+    title: '$15-25',
+    subtitle: 'Cost Per Return',
+    description: 'Including shipping, processing, and restocking fees',
     icon: DollarSign,
-    color: 'text-green-600'
+    color: 'text-orange-600',
+    bgColor: 'bg-orange-50'
+  },
+  {
+    id: 'revenue-impact',
+    title: '20-65%',
+    subtitle: 'Of Item Value',
+    description: 'Return costs can equal a significant portion of revenue',
+    icon: AlertTriangle,
+    color: 'text-yellow-600',
+    bgColor: 'bg-yellow-50'
+  },
+  {
+    id: 'customer-loss',
+    title: '76%',
+    subtitle: 'Stop Buying',
+    description: 'After a single bad return experience',
+    icon: Users,
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-50'
+  }
+]
+
+const solutionStats = [
+  {
+    id: 'automation',
+    title: '85%',
+    subtitle: 'Automated Decisions',
+    description: 'Reduce processing time from hours to seconds',
+    icon: Zap,
+    color: 'text-green-600',
+    bgColor: 'bg-green-50'
+  },
+  {
+    id: 'cost-reduction',
+    title: '40%',
+    subtitle: 'Cost Reduction',
+    description: 'Through intelligent automation and optimized workflows',
+    icon: TrendingUp,
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50'
   },
   {
     id: 'satisfaction',
-    title: 'Improve Satisfaction',
-    description: 'Deliver exceptional customer experiences with instant responses and personalized service.',
-    metric: '95% satisfaction',
-    icon: Users,
-    color: 'text-purple-600'
+    title: '95%',
+    subtitle: 'Customer Satisfaction',
+    description: 'With instant responses and personalized service',
+    icon: Target,
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-50'
   },
   {
-    id: 'revenue',
-    title: 'Recover Revenue',
-    description: 'Maximize value recovery through intelligent disposition and fraud prevention.',
-    metric: '+25% recovery',
-    icon: TrendingUp,
-    color: 'text-orange-600'
+    id: 'revenue-recovery',
+    title: '+25%',
+    subtitle: 'Value Recovery',
+    description: 'Through intelligent disposition and fraud prevention',
+    icon: BarChart3,
+    color: 'text-indigo-600',
+    bgColor: 'bg-indigo-50'
+  }
+]
+
+const marketData = [
+  {
+    metric: '$70B',
+    label: 'Total Market Size',
+    description: 'Return management costs for SMBs'
+  },
+  {
+    metric: '$2.7B',
+    label: 'Serviceable Market',
+    description: 'English-speaking SMBs on major platforms'
+  },
+  {
+    metric: '15M',
+    label: 'Global SMBs',
+    description: 'Selling online worldwide'
+  },
+  {
+    metric: '25-40%',
+    label: 'E-commerce Returns',
+    description: 'Average return rates'
   }
 ]
 
 export function BenefitsSection() {
   return (
-    <section id="benefits" className="py-20 bg-white relative overflow-hidden">
-      {/* Background elements */}
-      <div className="absolute top-1/4 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 left-0 w-48 h-48 bg-secondary/5 rounded-full blur-3xl" />
+    <>
+      {/* Problem Section */}
+      <section id="benefits" className="py-20 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
+        <div className="absolute top-1/4 right-0 w-64 h-64 bg-red-100 dark:bg-red-900/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 left-0 w-48 h-48 bg-orange-100 dark:bg-orange-900/20 rounded-full blur-3xl" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left column - Content */}
-          <div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-              Transform Your Business with{' '}
-              <span className="gradient-text">Measurable Results</span>
+              The Hidden Cost of{' '}
+              <span className="text-red-600">Manual Returns</span>
             </h2>
-            <p className="text-xl text-gray-900 dark:text-gray-100 mb-8">
-              Join hundreds of e-commerce businesses that have revolutionized their return management and seen immediate impact on their bottom line.
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Small businesses lose thousands annually on inefficient return processes. 
+              Every manual return costs time, money, and customer relationships.
             </p>
+          </div>
 
-            {/* Benefits grid */}
-            <div className="grid sm:grid-cols-2 gap-6">
-              {benefits.map((benefit, index) => {
-                const IconComponent = benefit.icon
-                return (
-                  <Card 
-                    key={benefit.id} 
-                    className="border-0 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-start space-x-4">
-                        <div className={`w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0`}>
-                          <IconComponent className={`w-5 h-5 ${benefit.color}`} />
-                        </div>
-                        <div>
-                          <div className={`text-2xl font-bold ${benefit.color} mb-1`}>
-                            {benefit.metric}
-                          </div>
-                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                            {benefit.title}
-                          </h3>
-                          <p className="text-sm text-gray-900 dark:text-gray-100">
-                            {benefit.description}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {problemStats.map((stat, index) => {
+              const IconComponent = stat.icon
+              return (
+                <Card 
+                  key={stat.id} 
+                  className="border-0 shadow-sm hover:shadow-lg transition-all duration-300 animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className={`w-12 h-12 ${stat.bgColor} rounded-lg flex items-center justify-center mx-auto mb-4`}>
+                      <IconComponent className={`w-6 h-6 ${stat.color}`} />
+                    </div>
+                    <div className={`text-2xl font-bold ${stat.color} mb-1`}>
+                      {stat.title}
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                      {stat.subtitle}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      {stat.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+
+          {/* ROI Calculator */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg mb-8">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                Massive ROI Potential
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                See how much you could save with Dokani's automation
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-success mb-2">$58,800</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Annual savings for 1,000 returns/month</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">230% - 3,200%</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">ROI in the first year</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-secondary mb-2">$100 - $1,000</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Monthly cost vs $40K-60K/year for agents</div>
+              </div>
             </div>
           </div>
 
-          {/* Right column - Visual */}
-          <div className="relative">
-            {/* Spinning Bolt Badge */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-              <div className="animate-spin-slow">
-                <Image
-                  src="/bolt_badge.png"
-                  alt="Bolt Badge"
-                  width={120}
-                  height={120}
-                  className="w-30 h-30"
-                />
-              </div>
-            </div>
-
-            {/* Background circles */}
-            <div className="relative w-full h-96">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full" />
-              <div className="absolute inset-4 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-full" />
-              <div className="absolute inset-8 bg-white rounded-full shadow-lg" />
-              
-              {/* Floating metrics */}
-              <div className="absolute top-8 left-8 bg-white rounded-lg shadow-lg p-3 animate-float">
-                <div className="flex items-center space-x-2">
-                  <Zap className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">Real-time Processing</span>
+          {/* Customer Impact */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
+            <div className="grid lg:grid-cols-2 gap-8 items-center">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                  Customer Experience Crisis
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-gray-700 dark:text-gray-300">66% check return policies before purchasing</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-gray-700 dark:text-gray-300">52-78% abandon purchases due to poor return policies</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-gray-700 dark:text-gray-300">59% leave after multiple bad experiences</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-gray-700 dark:text-gray-300">60%+ value return experience over product price</span>
+                  </div>
                 </div>
               </div>
-              
-              <div className="absolute top-8 right-8 bg-white rounded-lg shadow-lg p-3 animate-float" style={{ animationDelay: '1s' }}>
-                <div className="flex items-center space-x-2">
-                  <Shield className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium">Fraud Protected</span>
-                </div>
-              </div>
-              
-              <div className="absolute bottom-8 left-8 bg-white rounded-lg shadow-lg p-3 animate-float" style={{ animationDelay: '2s' }}>
-                <div className="flex items-center space-x-2">
-                  <TrendingUp className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium">Revenue Recovery</span>
-                </div>
-              </div>
-              
-              <div className="absolute bottom-8 right-8 bg-white rounded-lg shadow-lg p-3 animate-float" style={{ animationDelay: '3s' }}>
-                <div className="flex items-center space-x-2">
-                  <Users className="w-4 h-4 text-purple-600" />
-                  <span className="text-sm font-medium">Happy Customers</span>
-                </div>
+              <div className="text-center">
+                <div className="text-6xl font-bold text-red-600 mb-2">$9B+</div>
+                <div className="text-lg text-gray-600 dark:text-gray-400">Annual retail losses from return fraud</div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Solution Section */}
+      <section className="py-20 bg-white dark:bg-gray-800 relative overflow-hidden">
+        <div className="absolute top-1/4 left-0 w-64 h-64 bg-green-100 dark:bg-green-900/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-0 w-48 h-48 bg-blue-100 dark:bg-blue-900/20 rounded-full blur-3xl" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+              Amazon-Level{' '}
+              <span className="gradient-text">Return Automation</span>
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Transform your return process with intelligent automation that reduces costs, 
+              improves customer satisfaction, and recovers more value.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {solutionStats.map((stat, index) => {
+              const IconComponent = stat.icon
+              return (
+                <Card 
+                  key={stat.id} 
+                  className="border-0 shadow-sm hover:shadow-lg transition-all duration-300 animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className={`w-12 h-12 ${stat.bgColor} rounded-lg flex items-center justify-center mx-auto mb-4`}>
+                      <IconComponent className={`w-6 h-6 ${stat.color}`} />
+                    </div>
+                    <div className={`text-2xl font-bold ${stat.color} mb-1`}>
+                      {stat.title}
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                      {stat.subtitle}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      {stat.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+
+          {/* Customer Retention Benefits */}
+          <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-8 mb-8">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                Turn Returns Into Repeat Sales
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Transform a pain point into a positive, trust-building experience
+              </p>
+            </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-success mb-2">60% - 80%</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Faster resolution times</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">70%</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Shoppers prioritize hassle-free returns</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Market Opportunity */}
+          <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-8">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                Massive Market Opportunity
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Join the revolution in return management technology
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {marketData.map((data, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-3xl font-bold text-primary mb-1">{data.metric}</div>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">{data.label}</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">{data.description}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   )
 }

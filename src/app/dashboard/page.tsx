@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Grid, GridItem, Flex, Container } from '@/components/ui/grid';
 import { supabase } from '@/lib/supabase';
 
 export default function DashboardPage() {
@@ -130,144 +131,160 @@ export default function DashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-4 gap-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Total Returns</p>
-                  <p className="text-2xl font-bold">{stats.totalReturns}</p>
-                </div>
-                <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                  <Package className="w-5 h-5 text-blue-600" />
+          <Grid cols={4} gap="md" responsive={{ sm: 2, md: 4, lg: 4, xl: 4 }}>
+            <GridItem span={4} responsive={{ sm: 2, md: 1, lg: 1, xl: 1 }}>
+              <div className="bg-gray-50 rounded-lg p-4 h-full">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">Total Returns</p>
+                    <p className="text-2xl font-bold">{stats.totalReturns}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                    <Package className="w-5 h-5 text-blue-600" />
+                  </div>
                 </div>
               </div>
-            </div>
+            </GridItem>
             
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Pending</p>
-                  <p className="text-2xl font-bold">{stats.pendingReturns}</p>
-                </div>
-                <div className="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-orange-600" />
+            <GridItem span={4} responsive={{ sm: 2, md: 1, lg: 1, xl: 1 }}>
+              <div className="bg-gray-50 rounded-lg p-4 h-full">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">Pending</p>
+                    <p className="text-2xl font-bold">{stats.pendingReturns}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-orange-600" />
+                  </div>
                 </div>
               </div>
-            </div>
+            </GridItem>
             
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Approved</p>
-                  <p className="text-2xl font-bold">{stats.approvedReturns}</p>
-                </div>
-                <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-green-600" />
+            <GridItem span={4} responsive={{ sm: 2, md: 1, lg: 1, xl: 1 }}>
+              <div className="bg-gray-50 rounded-lg p-4 h-full">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">Approved</p>
+                    <p className="text-2xl font-bold">{stats.approvedReturns}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-green-600" />
+                  </div>
                 </div>
               </div>
-            </div>
+            </GridItem>
             
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Denied</p>
-                  <p className="text-2xl font-bold">{stats.deniedReturns}</p>
-                </div>
-                <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
+            <GridItem span={4} responsive={{ sm: 2, md: 1, lg: 1, xl: 1 }}>
+              <div className="bg-gray-50 rounded-lg p-4 h-full">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">Denied</p>
+                    <p className="text-2xl font-bold">{stats.deniedReturns}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </GridItem>
+          </Grid>
         </CardContent>
       </Card>
 
       {/* Quick actions */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-0 shadow-md hover:shadow-lg transition-all">
-          <CardHeader>
-            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
-              <Package className="w-6 h-6 text-blue-600" />
-            </div>
-            <CardTitle>Return Requests</CardTitle>
-            <CardDescription>
-              View and manage customer return requests
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Button 
-              className="w-full bg-primary hover:bg-primary/90 text-black"
-              onClick={() => router.push('/dashboard/requests')}
-            >
-              View Requests
-              <ArrowUpRight className="ml-2 h-4 w-4" />
-            </Button>
-          </CardFooter>
-        </Card>
+      <Grid cols={4} gap="lg" responsive={{ sm: 1, md: 2, lg: 4, xl: 4 }}>
+        <GridItem span={4} responsive={{ sm: 1, md: 2, lg: 1, xl: 1 }}>
+          <Card className="border-0 shadow-md hover:shadow-lg transition-all h-full">
+            <CardHeader>
+              <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
+                <Package className="w-6 h-6 text-blue-600" />
+              </div>
+              <CardTitle>Return Requests</CardTitle>
+              <CardDescription>
+                View and manage customer return requests
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90 text-black"
+                onClick={() => router.push('/dashboard/requests')}
+              >
+                View Requests
+                <ArrowUpRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardFooter>
+          </Card>
+        </GridItem>
         
-        <Card className="border-0 shadow-md hover:shadow-lg transition-all">
-          <CardHeader>
-            <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mb-4">
-              <FileText className="w-6 h-6 text-green-600" />
-            </div>
-            <CardTitle>Policy Management</CardTitle>
-            <CardDescription>
-              Configure and update return policies
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Button 
-              className="w-full bg-primary hover:bg-primary/90 text-black"
-              onClick={() => router.push('/dashboard/policy')}
-            >
-              Manage Policies
-              <ArrowUpRight className="ml-2 h-4 w-4" />
-            </Button>
-          </CardFooter>
-        </Card>
+        <GridItem span={4} responsive={{ sm: 1, md: 2, lg: 1, xl: 1 }}>
+          <Card className="border-0 shadow-md hover:shadow-lg transition-all h-full">
+            <CardHeader>
+              <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mb-4">
+                <FileText className="w-6 h-6 text-green-600" />
+              </div>
+              <CardTitle>Policy Management</CardTitle>
+              <CardDescription>
+                Configure and update return policies
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90 text-black"
+                onClick={() => router.push('/dashboard/policy')}
+              >
+                Manage Policies
+                <ArrowUpRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardFooter>
+          </Card>
+        </GridItem>
         
-        <Card className="border-0 shadow-md hover:shadow-lg transition-all">
-          <CardHeader>
-            <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
-              <BarChart3 className="w-6 h-6 text-purple-600" />
-            </div>
-            <CardTitle>Analytics</CardTitle>
-            <CardDescription>
-              View detailed analytics and insights
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Button 
-              className="w-full bg-primary hover:bg-primary/90 text-black"
-              onClick={() => router.push('/dashboard/analytics')}
-            >
-              View Analytics
-              <ArrowUpRight className="ml-2 h-4 w-4" />
-            </Button>
-          </CardFooter>
-        </Card>
+        <GridItem span={4} responsive={{ sm: 1, md: 2, lg: 1, xl: 1 }}>
+          <Card className="border-0 shadow-md hover:shadow-lg transition-all h-full">
+            <CardHeader>
+              <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
+                <BarChart3 className="w-6 h-6 text-purple-600" />
+              </div>
+              <CardTitle>Analytics</CardTitle>
+              <CardDescription>
+                View detailed analytics and insights
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90 text-black"
+                onClick={() => router.push('/dashboard/analytics')}
+              >
+                View Analytics
+                <ArrowUpRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardFooter>
+          </Card>
+        </GridItem>
         
-        <Card className="border-0 shadow-md hover:shadow-lg transition-all">
-          <CardHeader>
-            <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center mb-4">
-              <Users className="w-6 h-6 text-orange-600" />
-            </div>
-            <CardTitle>Risk Assessment</CardTitle>
-            <CardDescription>
-              Monitor customer risk profiles
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Button 
-              className="w-full bg-primary hover:bg-primary/90 text-black"
-              onClick={() => router.push('/dashboard/risk-assessment')}
-            >
-              View Risk Profiles
-              <ArrowUpRight className="ml-2 h-4 w-4" />
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+        <GridItem span={4} responsive={{ sm: 1, md: 2, lg: 1, xl: 1 }}>
+          <Card className="border-0 shadow-md hover:shadow-lg transition-all h-full">
+            <CardHeader>
+              <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-orange-600" />
+              </div>
+              <CardTitle>Risk Assessment</CardTitle>
+              <CardDescription>
+                Monitor customer risk profiles
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90 text-black"
+                onClick={() => router.push('/dashboard/risk-assessment')}
+              >
+                View Risk Profiles
+                <ArrowUpRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardFooter>
+          </Card>
+        </GridItem>
+      </Grid>
 
       {/* Recent activity */}
       <Card className="border-0 shadow-md">

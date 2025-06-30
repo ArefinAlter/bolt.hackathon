@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Grid, GridItem, Flex, Container } from '@/components/ui/grid';
 import { VoicePersonaCreator } from '@/components/dashboard/personas/VoicePersonaCreator';
 import { VideoPersonaCreator } from '@/components/dashboard/personas/VideoPersonaCreator';
 import { PersonaCard } from '@/components/dashboard/personas/PersonaCard';
@@ -139,44 +140,58 @@ export default function PersonasPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Support Personas</h1>
-          <p className="text-gray-500">
-            Create and manage voice and video AI personas for customer interactions
-          </p>
-        </div>
-        <div className="mt-4 md:mt-0 flex space-x-2">
-          <Button 
-            variant="outline" 
-            onClick={handleRefresh}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button 
-            className="bg-primary hover:bg-primary/90 text-black"
-            onClick={() => setIsCreating(true)}
-            disabled={isCreating}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create New Persona
-          </Button>
-        </div>
-      </div>
+      <Grid cols={12} gap="md">
+        <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Support Personas</h1>
+            <p className="text-gray-500">
+              Create and manage voice and video AI personas for customer interactions
+            </p>
+          </div>
+        </GridItem>
+        <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
+          <Flex direction="col" gap="sm" responsive={{ 
+            sm: { direction: 'col' }, 
+            md: { direction: 'row', justify: 'end' },
+            lg: { direction: 'row', justify: 'end' },
+            xl: { direction: 'row', justify: 'end' }
+          }}>
+            <Button 
+              variant="outline" 
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="w-full md:w-auto"
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button 
+              className="bg-primary hover:bg-primary/90 text-black w-full md:w-auto"
+              onClick={() => setIsCreating(true)}
+              disabled={isCreating}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Create New Persona
+            </Button>
+          </Flex>
+        </GridItem>
+      </Grid>
       
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <AlertTriangle className="h-5 w-5 text-red-400" />
+        <Grid cols={12} gap="sm">
+          <GridItem span={12}>
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertTriangle className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium">{error}</p>
+                </div>
+              </div>
             </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium">{error}</p>
-            </div>
-          </div>
-        </div>
+          </GridItem>
+        </Grid>
       )}
       
       {isCreating ? (

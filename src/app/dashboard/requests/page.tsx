@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Grid, GridItem, Flex, Container } from '@/components/ui/grid';
 import { ReturnsTable } from '@/components/dashboard/requests/ReturnsTable';
 import { ReviewQueue } from '@/components/dashboard/requests/ReviewQueue';
 import { RequestDetailModal } from '@/components/dashboard/requests/RequestDetailModal';
@@ -46,19 +47,19 @@ export default function RequestsPage() {
           setBusinessId('550e8400-e29b-41d4-a716-446655440000');
         } else {
           // Get user profile to get business_id for live mode
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('business_id')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profileError || !profile) {
-            console.error('Profile not found:', profileError);
-            setError('Unable to load your profile. Please try logging out and back in.');
-            setIsLoading(false);
-            return;
-          }
-          
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('business_id')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profileError || !profile) {
+          console.error('Profile not found:', profileError);
+          setError('Unable to load your profile. Please try logging out and back in.');
+          setIsLoading(false);
+          return;
+        }
+        
           currentBusinessId = profile.business_id;
           setBusinessId(profile.business_id);
         }
@@ -133,37 +134,53 @@ export default function RequestsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+      <Grid cols={12} gap="md">
+        <GridItem span={12} responsive={{ sm: 12, md: 8, lg: 8, xl: 8 }}>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Return Requests</h1>
           <p className="text-gray-500">
             Manage and process customer return requests
           </p>
         </div>
-        <div className="mt-4 md:mt-0 flex space-x-2">
+        </GridItem>
+        <GridItem span={12} responsive={{ sm: 12, md: 4, lg: 4, xl: 4 }}>
+          <Flex direction="col" gap="sm" responsive={{ 
+            sm: { direction: 'col' }, 
+            md: { direction: 'row', justify: 'end' },
+            lg: { direction: 'row', justify: 'end' },
+            xl: { direction: 'row', justify: 'end' }
+          }}>
           <Button 
             variant="outline" 
             onClick={() => window.location.reload()}
+              className="w-full md:w-auto"
           >
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
           <Button 
-            className="bg-primary hover:bg-primary/90 text-black"
+              className="bg-primary hover:bg-primary/90 text-black w-full md:w-auto"
             onClick={() => router.push('/dashboard/requests/new')}
           >
             <Plus className="mr-2 h-4 w-4" />
             Create Manual Return
           </Button>
-        </div>
-      </div>
+          </Flex>
+        </GridItem>
+      </Grid>
       
-      <div className="flex items-center space-x-4 mb-4">
+      <Grid cols={12} gap="sm">
+        <GridItem span={12} responsive={{ sm: 12, md: 6, lg: 4, xl: 3 }}>
+          <Flex direction="row" gap="sm" align="center">
         <Switch checked={isDemoMode} onCheckedChange={setIsDemoMode} />
         <Badge variant={isDemoMode ? 'default' : 'secondary'}>{isDemoMode ? 'Demo' : 'Live'}</Badge>
-      </div>
+          </Flex>
+        </GridItem>
+      </Grid>
       
       {error && (
+        <Grid cols={12} gap="sm">
+          <GridItem span={12}>
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
           <div className="flex">
             <div className="flex-shrink-0">
@@ -174,19 +191,29 @@ export default function RequestsPage() {
             </div>
           </div>
         </div>
+          </GridItem>
+        </Grid>
       )}
       
       {/* Review Queue */}
+      <Grid cols={12} gap="lg">
+        <GridItem span={12}>
       <ReviewQueue 
-        businessId={businessId || '550e8400-e29b-41d4-a716-446655440000'} 
+            businessId={businessId || '550e8400-e29b-41d4-a716-446655440000'} 
         onViewRequest={handleViewRequest}
       />
+        </GridItem>
+      </Grid>
       
       {/* All Returns Table */}
+      <Grid cols={12} gap="lg">
+        <GridItem span={12}>
       <ReturnsTable 
-        businessId={businessId || '550e8400-e29b-41d4-a716-446655440000'}
+            businessId={businessId || '550e8400-e29b-41d4-a716-446655440000'}
         onViewRequest={handleViewRequest}
       />
+        </GridItem>
+      </Grid>
       
       {/* Request Detail Modal */}
       {selectedRequest && (
